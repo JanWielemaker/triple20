@@ -92,4 +92,4 @@ win_register(Ext) :-
 	rdf_file_extension(Ext, Name),
 	win_register(Ext, Name).
 
-
+:- win_setup, halt.
