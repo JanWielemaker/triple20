@@ -79,14 +79,14 @@ win_register(Ext, Name) :-
 	absolute_file_name(image('32x32/owl.ico'), IconFile),
 	atom_concat(IconFile, ',0', Icon),
 	current_prolog_flag(executable, Exe),
-	absolute_file_name(ontoshow(load),
+	absolute_file_name(triple20(load),
 			   [ file_type(prolog),
 			     access(read)
 			   ],
 			   LoadFile),
 	sformat(Command, '"~w" -s "~w" -g winmain -- "%1"',
 		[Exe, LoadFile]),
-	shell_register_file_type(Ext, 'ontoshow.type', Name, Command, Icon).
+	shell_register_file_type(Ext, 'triple20.type', Name, Command, Icon).
 
 win_register(Ext) :-
 	rdf_file_extension(Ext, Name),

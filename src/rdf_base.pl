@@ -36,8 +36,37 @@
 	    required_base_ontology/1	% -Id
 	  ]).
 :- use_module(concur).
+:- use_module(semweb(rdf_db)).
 
-%	load_base_ontoloty(+Identifier)
+
+/* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+This file defines commonly used namespaces,   base ontologies. etc. Note
+that the namespaces must be loaded *before*   they can be used in Prolog
+source-code.
+- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
+
+
+		 /*******************************
+		 *    PREDEFINED NAMESPACES	*
+		 *******************************/
+:- dynamic
+	rdf_db:ns/2.
+:- multifile
+	rdf_db:ns/2.
+
+rdf_db:ns(vra,	   'http://www.swi.psy.uva.nl/mia/vra#').
+rdf_db:ns(aat,	   'http://www.swi.psy.uva.nl/mia/aat#').
+rdf_db:ns(ulan,	   'http://www.swi.psy.uva.nl/mia/ulan#').
+rdf_db:ns(wn,	   'http://www.cogsci.princeton.edu/~wn/concept#').
+rdf_db:ns(wns,	   'http://www.cogsci.princeton.edu/~wn/schema/').
+rdf_db:ns(paint,   'http://www.swi.psy.uva.nl/mia/painting#').
+rdf_db:ns(subject, 'http://www.swi.psy.uva.nl/mia/subject#').
+rdf_db:ns(ic,	   'http://www.swi.psy.uva.nl/mia/iconclass#').
+rdf_db:ns(ghs,	   'http://www.swi.psy.uva.nl/mia/ghs#').
+rdf_db:ns(vin,     'http://www.w3.org/2001/sw/WebOnt/guide-src/wine#').
+rdf_db:ns(cyc,     'http://www.cyc.com/cyc#').
+
+%	load_base_ontology(+Identifier)
 
 load_base_ontology(Category) :-
 	load_base_ontology(1, Category).
@@ -60,28 +89,28 @@ current_base_ontology(Id) :-
 %	
 %	Register the file that belong to a base ontology
 
-rdf_file(rdfs,	 	 'rdfs.rdfs').
-rdf_file(owl,		 'owl.owl').
-rdf_file(dc,	 	 'dc.rdfs').
-rdf_file(dc,	 	 'eor.rdfs').
-rdf_file(vra,	 	 'vra.owl').
-rdf_file(painting, 	 'subject.owl').
-rdf_file(painting,	 'painting.owl').
+rdf_file(rdfs,	 	 ontology('rdfs.rdfs')).
+rdf_file(owl,		 ontology('owl.owl')).
+rdf_file(dc,	 	 ontology('dc.rdfs')).
+rdf_file(dc,	 	 ontology('eor.rdfs')).
+rdf_file(vra,	 	 ontology('vra.owl')).
+rdf_file(painting, 	 ontology('subject.owl')).
+rdf_file(painting,	 ontology('painting.owl')).
 
-rdf_file(aat,		 'aatmeta.rdfs').
-rdf_file(aat,		 'aat.rdfs').
+rdf_file(aat,		 ontology('aatmeta.rdfs')).
+rdf_file(aat,		 ontology('aat.rdfs')).
 
-rdf_file(ulan,		 'ulan.rdfs').
-rdf_file(ulan,		 'ulan.rdf').
+rdf_file(ulan,		 ontology('ulan.rdfs')).
+rdf_file(ulan,		 ontology('ulan.rdf')).
 
-rdf_file(wn,		 'wordnet-20000620.rdfs').
-rdf_file(wn,		 'wordnet_glossary-20010201.rdf').
-rdf_file(wn,		 'wordnet_hyponyms-20010201.rdf').
-rdf_file(wn,		 'wordnet_nouns-20010201.rdf').
-rdf_file(wn,		 'wordnet_similar-20010201.rdf').
-rdf_file(wnrdfs,	 'wnclass.rdfs').
+rdf_file(wn,		 ontology('wordnet-20000620.rdfs')).
+rdf_file(wn,		 ontology('wordnet_glossary-20010201.rdf')).
+rdf_file(wn,		 ontology('wordnet_hyponyms-20010201.rdf')).
+rdf_file(wn,		 ontology('wordnet_nouns-20010201.rdf')).
+rdf_file(wn,		 ontology('wordnet_similar-20010201.rdf')).
+rdf_file(wnrdfs,	 ontology('wnclass.rdfs')).
 
-rdf_file(ic,		 'iconclass.rdfs').
+rdf_file(ic,		 ontology('iconclass.rdfs')).
 
 %	requires(+Id1, -Id2)
 %	

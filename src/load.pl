@@ -41,36 +41,17 @@
 
 user:file_search_path(semweb, library(semweb)).
 
-:- retractall(file_search_path(ontoshow, _)),
+:- retractall(file_search_path(triple20, _)),
    prolog_load_context(directory, Dir),
-   asserta(file_search_path(ontoshow, Dir)),
-   asserta(file_search_path(library, '.')).
+   asserta(file_search_path(triple20, Dir)),
+   asserta(file_search_path(library,  triple20('.'))),
+   asserta(file_search_path(ontology, triple20('.'))).
 
-
-		 /*******************************
-		 *    PREDEFINED NAMESPACES	*
-		 *******************************/
-:- dynamic
-	rdf_db:ns/2.
-:- multifile
-	rdf_db:ns/2.
-
-rdf_db:ns(vra,	   'http://www.swi.psy.uva.nl/mia/vra#').
-rdf_db:ns(aat,	   'http://www.swi.psy.uva.nl/mia/aat#').
-rdf_db:ns(ulan,	   'http://www.swi.psy.uva.nl/mia/ulan#').
-rdf_db:ns(wn,	   'http://www.cogsci.princeton.edu/~wn/concept#').
-rdf_db:ns(wns,	   'http://www.cogsci.princeton.edu/~wn/schema/').
-rdf_db:ns(paint,   'http://www.swi.psy.uva.nl/mia/painting#').
-rdf_db:ns(subject, 'http://www.swi.psy.uva.nl/mia/subject#').
-rdf_db:ns(ic,	   'http://www.swi.psy.uva.nl/mia/iconclass#').
-rdf_db:ns(ghs,	   'http://www.swi.psy.uva.nl/mia/ghs#').
-rdf_db:ns(vin,     'http://www.w3.org/2001/sw/WebOnt/guide-src/wine#').
-
-:- load_files([ library(rdf),		% parser
+:- load_files([ rdf_base,		% Info on base ontologies
+		library(rdf),		% parser
 		semweb(rdf_db),		% triple store
 		semweb(rdfs),		% RDFS rules
 		semweb(rdf_edit),	% transactions and changes
-		rdf_base,		% Info on base ontologies
 		rdf_text,		% basic text representation
 		rules,			% rendering rules
 		rdfs_explorer,		% visualization

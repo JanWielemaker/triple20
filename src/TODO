@@ -6,7 +6,6 @@
 ================================================================
 * Bugs:
 
-	+ Discard empty transactions
 
 ================================================================
 * rdf_db
@@ -15,8 +14,21 @@
 	+ Add explicit re-hash?
 
 ================================================================
+* rdf_diagram
+
+	+ Undo visual changes
+	+ Use labels from toolkit
+	+ Summarise long literals
+	+ Selectively expand relations
+
+================================================================
+* rdfs_class_sheet
+	
+	+ Discriminate between `own' en inherited properties
+	+ Select own/inherited properties.
+
+================================================================
 * MISC
 
 	+ Save modules as RDF
-	+ History visualisation (tag transactions with user?)
 	+ Sort cache update to how long they take
