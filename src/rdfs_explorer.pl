@@ -54,6 +54,7 @@
 :- use_module(library(tabbed_window)).
 :- use_module(window).
 :- use_module(rdf_dialog).
+:- use_module(rdf_file).
 
 :- pce_autoload(report_dialog,	       library(pce_report)).
 :- pce_autoload(rdf_statistics_dialog, library(rdf_statistics)).
@@ -300,10 +301,12 @@ load_ontology(_OV) :->
       
 open_project(OV) :->
 	"Open an existing journal file"::
+	rdf_file_extension(rdfj, Comment),
 	get(@finder, file, open,
-	    tuple('RDF Editor journal', rdfj),
+	    tuple(Comment, rdfj),
 	    FileName),
 	rdfe_reset,
+	rdf_ensure_snapshot_directory,
 	rdfe_open_journal(FileName, append),
 	send(OV, set_label).
 
@@ -313,6 +316,7 @@ new_project(OV) :->
 	    tuple('RDF Editor journal', rdfj),
 	    FileName),
 	rdfe_reset,
+	rdf_ensure_snapshot_directory,
 	rdfe_open_journal(FileName, write),
 	send(OV, set_label).
 
@@ -375,7 +379,8 @@ update_base_popup(_OV, Popup:popup) :->
 
 load_base_ontology(_OV, Base:name) :->
 	"Load a registered base"::
-	rdfe_transaction(load_base_ontology(Base)).
+	rdfe_transaction(load_base_ontology(Base),
+			 load_base_ontology(Base)).
 
 statistics(OV) :->
 	"Show elementary statistics"::

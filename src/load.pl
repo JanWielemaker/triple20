@@ -126,6 +126,10 @@ go(Argv) :-
 	    ->	JournalLoaded = true
 	    ;	true
 	    ),
+	    (	Mode \== read
+	    ->	rdf_ensure_snapshot_directory
+	    ;	true
+	    ),
 	    rdfe_open_journal(Journal, Mode)
 	;   Argv2 = Argv
 	),
@@ -135,15 +139,13 @@ go(Argv) :-
 	),
 	(   JournalLoaded == true
 	->  true
-	;   rdfe_transaction(parse_argv(Argv3), load_argv)
-	),
-	(   (   NoBase == true
-	    ;	Mode == append
+	;   rdfe_transaction(parse_argv(Argv3), load_argv),
+	    (	NoBase == true
+	    ->	true
+	    ;   rdfe_transaction(forall(required_base_ontology(O),
+					load_base_ontology(O)),
+				 required_base_ontologies)
 	    )
-	->  true
-	;   rdfe_transaction(forall(required_base_ontology(O),
-				    load_base_ontology(O)),
-			     required_base_ontologies)
 	),
 	new(X, rdfs_explorer),
 	send(X, open).

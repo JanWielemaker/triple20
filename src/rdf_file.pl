@@ -32,8 +32,12 @@
 :- module(rdf_file,
 	  [ rdf_file_extension/2,	% Ext, Description
 	    rdf_snapshot_directory/1,	% -Dir
-	    rdf_ensure_snapshot_directory/0
+	    rdf_ensure_snapshot_directory/0,
+	    rdf_archive_journal/1,	% +File
+	    rdf_install_archive/1	% +File
 	  ]).
+:- use_module(semweb(rdf_edit)).
+:- use_module(library(debug)).
 
 %	rdf_file_extension(?Ext, ?Description)
 
@@ -64,12 +68,7 @@ rdf_snapshot_directory(Dir) :-
 %	be used.
 
 rdf_ensure_snapshot_directory :-
-	absolute_file_name(snapshot(.),
-			   [ file_type(directory),
-			     access(write),
-			     file_errors(fail)
-			   ],
-			   Dir), !,
+	snapshot_directory(Dir), !,
 	debug(snapshot, 'Using snapshot directory ~w', [Dir]).
 rdf_ensure_snapshot_directory :-
 	findall(Dir,
@@ -82,9 +81,61 @@ rdf_ensure_snapshot_directory :-
 		Dirs),
 	rdf_snapshot_directory(Base),
 	absolute_file_name(Base, Local),
-	(   delete(Local, Dirs, TheDirs)
+	(   delete(Dirs, Local, TheDirs)
 	;   TheDirs = Dirs
 	),
 	member(Dir, TheDirs),
 	catch(make_directory(Dir), _, fail),
 	debug(snapshot, 'Created snapshot directory ~w', [Dir]).
+
+snapshot_directory(Dir) :-
+	absolute_file_name(snapshot(.),
+			   [ file_type(directory),
+			     access(write),
+			     file_errors(fail)
+			   ],
+			   Dir).
+
+		 /*******************************
+		 *	      ARCHIVE		*
+		 *******************************/
+
+%	rdf_archive_journal(+FileSpec)
+%	
+%	Create, using InfoZip, an archive containing the journal
+%	(project) file and all files on which it depends.
+
+rdf_archive_journal(Spec) :-
+	absolute_file_name(Spec,
+			   [ extensions([zip]),
+			     access(write)
+			   ],
+			   Archive),
+	catch(delete_file(Archive), _, true),
+	rdfe_current_journal(Journal),
+	findall(X, rdfe_snapshot_file(X), SnapShots),
+	concat_atom([Journal|SnapShots], '" "', Cmd0),
+	sformat(Cmd, 'zip -j "~w" "~w"', [Archive, Cmd0]),
+	shell(Cmd).
+
+%	rdf_install_archive(+Spec)
+%	
+%	Extract an archive created with rdf_archive_journal/1 to the
+%	proper environment.
+
+rdf_install_archive(Spec) :-
+	rdf_ensure_snapshot_directory,
+	absolute_file_name(Spec,
+			   [ extensions([zip]),
+			     access(read)
+			   ],
+			   Archive),
+	snapshot_directory(Dir),
+	prolog_to_os_filename(Dir, OsDir),
+	prolog_to_os_filename(Archive, OsArchive),
+	debug(snapshot, 'Restoring snapshots into ~w', [Dir]),
+	sformat(Cmd, 'unzip -qq -n -d "~w" "~w" "*.trp"', [OsDir, OsArchive]),
+	shell(Cmd),
+	debug(snapshot, 'Restoring journal', []),
+	sformat(Cmd2, 'unzip "~w" "*.rdfj"', [OsArchive]),
+	shell(Cmd2).
