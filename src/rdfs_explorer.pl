@@ -53,6 +53,7 @@
 
 :- pce_autoload(report_dialog,	       library(pce_report)).
 :- pce_autoload(rdf_statistics_dialog, library(rdf_statistics)).
+:- pce_autoload(rdf_namespace_window,  rdf_ns).
 :- pce_autoload(finder,		       library(find_file)).
 :- pce_global(@finder, new(finder)).
 
@@ -148,6 +149,7 @@ fill_tool_dialog(OV) :->
 		    menu_item(save_all,
 			      condition := message(OV, is_modified)),
 		    gap,
+		    menu_item(name_spaces),
 		    menu_item(statistics),
 		    gap,
 		    menu_item(exit)
@@ -415,6 +417,11 @@ statistics(OV) :->
 	send(D, modal, transient),
 	send(D, open_centered, OV?area?center).
 
+name_spaces(OV) :->
+	new(D, rdf_namespace_window),
+	send(D, transient_for, OV),
+	send(D, modal, transient),
+	send(D, open_centered, OV?area?center).
 
 :- pce_group(preferences).
 
