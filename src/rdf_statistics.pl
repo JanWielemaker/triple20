@@ -35,9 +35,11 @@
 	  ]).
 :- use_module(library(pce)).
 :- use_module(library(tabular)).
+:- use_module(library(broadcast)).
 :- use_module(semweb(rdf_db)).
 :- use_module(semweb(rdf_edit)).
 :- use_module(rdf_cache).
+:- use_module(rdf_util).
 
 :- pce_begin_class(rdf_statistics_dialog, tabbed_window,
 		   "Show various statistics").
@@ -86,6 +88,7 @@ show_sources(ST) :->
 	send(ST, append, 'Loaded source', bold, center, background := khaki1),
 	send(ST, append, 'Triples',       bold, center, background := khaki1),
 	send(ST, append, 'Loaded',        bold, center, background := khaki1),
+	send(ST, append, 'Access',        bold, center, background := khaki1),
 	send(ST, next_row),
 	flag(rdf_triples, Old, 0),
 	(   rdf_source(Source),
@@ -104,14 +107,61 @@ show_sources(ST) :->
 	send(ST, next_row).
 
 show_source(ST, Source:name) :->
+	get(ST, layout_manager, LM),	% TBD: move to tabular
+	get(LM, current, point(_, Y)),
+	get(LM, row, Y, @on, Row),
+	send(Row, valign, center),
 	send(ST, append, Source),
 	rdf_statistics(triples_by_file(Source, Triples)),
 	send(ST, append, Triples, halign := right),
 	rdf_db:rdf_source(Source, _, Loaded, _MD5),
 	send(ST, append, Loaded, halign := right),
+	send(ST, append, new(AM, rdf_file_access_menu(Source)),
+	     halign := center),
+	send(AM, border, 2),		% narrow version to improve layout
 	send(ST, next_row).
 
 :- pce_end_class(rdf_file_table).
+
+
+:- pce_begin_class(rdf_file_access_menu, menu,
+		   "Control access to the file").
+
+variable(file, name, get, "Controlled file").
+
+initialise(AM, File:name) :->
+	"Create access menu for file"::
+	send_super(AM, initialise, access, cycle, message(AM, access, @arg1)),
+	send(AM, show_label, @off),
+	send_list(AM, append, [rw, ro, all, fallback]),
+	send(AM, slot, file, File),
+	send(AM, update),
+	listen(AM, rdf_file_property(_, _), send(AM, update)).
+
+unlink(AM) :->
+	unlisten(AM),
+	send_super(AM, unlink).
+
+update(AM) :->
+	get(AM, file, File),
+	(   rdf_get_file_property(F, default(Mode)),
+	    F == File
+	->  send(AM, selection, Mode)
+	;   rdf_get_file_property(File, access(Access))
+	->  send(AM, selection, Access)
+	).
+
+access(AM, Mode:name) :->
+	"Modify the access"::
+	get(AM, file, File),
+	(   (   Mode == all
+	    ;	Mode == fallback
+	    )
+	->  rdf_set_file_property(File, default(Mode))
+	;   rdf_set_file_property(File, access(Mode))
+	).
+
+:- pce_end_class(rdf_file_access_menu).
 
 
 		 /*******************************

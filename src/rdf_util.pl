@@ -45,7 +45,11 @@
 	    rdf_new_property/2,		% +S, +P
 	    rdf_list_operation/3,	% +Action, +Triple, +Resource
 	    rdf_delete_hierarchy/3,	% +Root, +Relation, +Options
+
+	    rdf_set_file_property/2,	% +File, +Property
+	    rdf_get_file_property/2,	% ?File, ?Property
 	    rdf_merge_files/2,		% +Into, +From
+	    
 	    rdf_change_resource/2	% +From, +To
 	  ]).
 :- use_module(semweb(rdf_db)).
@@ -216,12 +220,17 @@ same_label(L-_, L-_).
 %	Where to store facts about Resource? Should be extended to
 %	include triples (or at least relations).
 
+rdf_default_file(_, File) :-
+	rdf_get_file_property(File, default(all)), !.
 rdf_default_file(Resource, File) :-
 	rdf_has(Resource, rdf:type, Object, P),
-	rdf(Resource, P, Object, File:_), !.
+	rdf(Resource, P, Object, File:_), !,
+	\+ rdf_get_file_property(File, access(ro)), !.
 rdf_default_file(Resource, File) :-
-	rdf(Resource, _, _, File:_), !.
-rdf_default_file(_, user).
+	rdf(Resource, _, _, File:_), !,
+	\+ rdf_get_file_property(File, access(ro)), !.
+rdf_default_file(_, File) :-
+	rdf_get_file_property(File, default(fallback)).
 
 
 		 /*******************************
@@ -428,6 +437,49 @@ delete_hierarchy(Root, Property, Options) :-
 		 *	      FILES		*
 		 *******************************/
 	
+:- dynamic
+	rdf_source_permission/2,	% file, ro/rw
+	rdf_current_default_file/2.	% file, all/fallback
+
+%	rdf_set_file_property(+File, +Options)
+%	
+%	Set properties on the file.  Options is one of
+%	
+%		access(ro/rw)
+%		default(all/fallback)
+
+rdf_set_file_property(File, access(Access)) :-
+	retractall(rdf_source_permission(File, _)),
+	assert(rdf_source_permission(File, Access)),
+	broadcast(rdf_file_property(File, access(Access))).
+rdf_set_file_property(File, default(Type)) :-
+	retractall(rdf_current_default_file(_,_)),
+	assert(rdf_current_default_file(File, Type)),
+	broadcast(rdf_file_property(File, default(Type))).
+
+
+%	rdf_get_file_property(?File, ?Option)
+%	
+%	Fetch file properties set with rdf_set_file_property/2.
+
+rdf_get_file_property(File, access(Access)) :-
+	rdf_source(File),
+	(   rdf_source_permission(File, Access0)
+	->  Access0 = Access
+	;   access_file(File, write)
+	->  assert(rdf_source_permission(File, rw)),
+	    Access = rw
+	;   assert(rdf_source_permission(File, ro)),
+	    Access = ro
+	).
+rdf_get_file_property(File, default(Default)) :-
+	(   rdf_current_default_file(File, Default)
+	->  true
+	;   File = user,
+	    Default = fallback
+	).
+
+
 %	rdf_merge_files(+Into, +From)
 %	
 %	Merge all triple that have From as their payload into Into.
