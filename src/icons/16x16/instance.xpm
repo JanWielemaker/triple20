@@ -1,0 +1,22 @@
+/* XPM */
+static char * instance_xpm[] = {
+"15 15 4 1",
+" 	c None",
+".	c #6E6E6E6E6E6E",
+"X	c #FFFFCCCCFFFF",
+"o	c #000000000000",
+"       .       ",
+"      .X.      ",
+"     .XXX.     ",
+"    .XXXXX.    ",
+"   .XoooooX.   ",
+"  .XXXXoXXXX.  ",
+" .XXXXXoXXXXX. ",
+".XXXXXXoXXXXXX.",
+" .XXXXXoXXXXX. ",
+"  .XXXXoXXXX.  ",
+"   .XoooooX.   ",
+"    .XXXXX.    ",
+"     .XXX.     ",
+"      .X.      ",
+"       .       "};
