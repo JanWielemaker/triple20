@@ -19,7 +19,6 @@
 :- use_module(semweb(rdf_db)).
 :- use_module(semweb(rdfs)).
 :- use_module(library(broadcast)).
-:- use_module(pcecall).
 
 :- dynamic
 	cache_directory/2,		% +Key, -Index
