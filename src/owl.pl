@@ -64,6 +64,10 @@ user:goal_expansion(owl_restriction(Res0, Restriction),
 user:goal_expansion(owl_description(Res0, Description),
 		    owl_description(Res, Description)) :-
 	rdf_global_id(Res0, Res).
+user:goal_expansion(owl_satisfies(Desc0, Res0),
+		    owl_satisfies(Desc, Res)) :-
+	rdf_global_term(Desc0, Desc),
+	rdf_global_id(Res0, Res).
 
 
 		 /*******************************
@@ -273,8 +277,12 @@ owl_description(ID, Restriction) :-
 %	enforced.
 
 					% Short-cut
-owl_satisfies(Domain, _) :-
-	rdf_equal(rdfs:'Resource', Domain), !.
+owl_satisfies(Domain, Resource) :-
+	rdf_equal(rdfs:'Resource', Domain), !,
+	(   atom(Resource)
+	->  true
+	;   rdf_subject(Resource)
+	).
 					% Descriptions
 owl_satisfies(class(Domain), Resource) :- !,
 	(   rdf_equal(Domain, rdfs:'Resource')
@@ -283,22 +291,25 @@ owl_satisfies(class(Domain), Resource) :- !,
 	).
 owl_satisfies(union_of(Domains), Resource) :- !,
 	member(Domain, Domains),
-	owl_satisfies(Domain, Resource), !.
+	owl_satisfies(Domain, Resource).
 owl_satisfies(intersection_of(Domains), Resource) :- !,
 	in_all_domains(Domains, Resource).
 owl_satisfies(complement_of(Domain), Resource) :- !,
 	\+ owl_satisfies(Domain, Resource).
 owl_satisfies(one_of(List), Resource) :- !,
-	memberchk(Resource, List).
+	member(Resource, List).
 					% Restrictions
-owl_satisfies(all_values_from(Domain), Resource) :-
+owl_satisfies(all_values_from(Domain), Resource) :- !,
 	(   rdf_equal(Domain, rdfs:'Resource')
-	->  true
+	->  (   atom(Resource)
+	    ->  true
+	    ;   rdf_subject(Resource)
+	    )
 	;   rdfs_individual_of(Resource, Domain)
-	), !.
+	).
 owl_satisfies(some_values_from(_Domain), _Resource) :- !.
 owl_satisfies(has_value(Value), Resource) :-
-	rdf_equal(Value, Resource).
+	rdf_equal(Value, Resource).	% TBD: equality
 
 
 in_all_domains([], _).
