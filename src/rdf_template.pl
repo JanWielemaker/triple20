@@ -180,11 +180,13 @@ rdf_diagram(T, Diagram:rdf_explorer) :<-
 
 :- pce_group(drag_and_drop).
 
-preview_drop(T, Resource:name*) :->
-	(   Resource == @nil
+preview_drop(T, Visual:visual*) :->
+	(   Visual == @nil
 	->  send(T, report, status, '')
-	;   call_rules(T, drop_command(T, Resource, Cmd)),
+	;   send(Visual, has_get_method, resource),
+	    call_rules(T, drop_command(T, Visual, Cmd)),
 	    get(T, resource, OnTo),
+	    get(Visual, resource, Resource),
 	    rdfs_ns_label(Resource, RL),
 	    rdfs_ns_label(OnTo, OntoLabel),
 	    send(T, report, status,
