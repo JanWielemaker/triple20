@@ -184,7 +184,8 @@ delete(Cell) :->
 	"Delete triple from database"::
 	get(Cell, image, Image),
 	get(Image, triple, rdf(S,P,O)),
-	rdfe_transaction(rdfe_retractall(S,P,O)).
+	rdfe_transaction(rdfe_retractall(S,P,O),
+			 delete_property).
 
 modify(Cell) :->
 	format('Request to modify ~p~n', [Cell]).

@@ -604,7 +604,6 @@ geometry(B, X:[int], Y:[int], W:[int], H:[int]) :->
 	send_super(B, geometry, X, Y, W, H),
 	get(B, client, Client),
 	get(B, display_position, point(DX, DY)),
-	format('Moving to ~w,~w~n', [DX, DY]),
 					% -1: hack
 	send(Client?frame, geometry, string('+%d+%d', DX-1, DY-1)).
 
@@ -647,10 +646,10 @@ create_resource(D) :->
 	get(IDI, selection, Label),
 	local_uri_from_label(NS, Label, Local),
 	atom_concat(NS, Local, Resource),
-	rdfe_transaction(send(D, do_create_resource, Resource, Label)),
+	rdfe_transaction(send(D, do_create_resource, Resource, Label),
+			 create_resource),
 	send(IDI, clear),
 	(   get(D, hypered, node, Node),
-	    format('Node: ~p~n', [Node]),
 	    send(Node, has_send_method, resource_created)
 	->  get(D, role, Role),
 	    send(Node, resource_created, Resource, Role)

@@ -461,7 +461,7 @@ drop(modify, Gr, Resource) :-
 	get(Gr, triple, rdf(Subject, Predicate, Old)),
 	rdfe_transaction(rdfe_update(Subject, Predicate, Old,
 				     object(Resource)),
-			 'Modify property').
+			 move_property).
 
 :- end_particle.
 
@@ -474,7 +474,7 @@ drop_command(_Me, _Resource, add) :-
 drop(add, Gr, Resource) :-
 	get(Gr, triple, rdf(Subject, Predicate, _)),
 	rdfe_transaction(rdfe_assert(Subject, Predicate, Resource),
-			 'Add property').
+			 add_property).
 
 :- end_particle.
 
@@ -484,7 +484,7 @@ drop(modify, _Gr, Resource) :-
 	get(@particle, triple, rdf(Subject, Predicate, Old)),
 	rdfe_transaction(rdfe_update(Subject, Predicate, Old,
 				     object(Resource)),
-			 'Change range').
+			 modify_range).
 
 :- end_particle.
 
@@ -495,7 +495,7 @@ drop(modify, _Gr, Resource) :-
 	get(@particle, triple, rdf(Subject, Predicate, Old)),
 	rdfe_transaction(rdfe_update(Subject, Predicate, Old,
 				     object(Resource)),
-			 'Change domain').
+			 modify_domain).
 
 :- end_particle.
 

@@ -96,7 +96,8 @@ create_individual(NI, Resource:name) :<-
 	atom_concat(NS, LocalResource, Resource),
 	get(NI, rdf_class, Class),
 	rdfe_transaction((rdfe_assert(Resource, rdf:type, Class),
-			  rdfe_assert(Resource, rdfs:label, literal(Label)))).
+			  rdfe_assert(Resource, rdfs:label, literal(Label))),
+			 create_resource).
 
 :- pce_end_class(rdfs_new_item).
 

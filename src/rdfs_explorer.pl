@@ -325,7 +325,7 @@ load_ontology(OV) :->
 		  tuple('OWL files', owl),
 		  tuple('RDF files', rdf)),
 	    FileName),
-	rdfe_transaction(rdfe_load(FileName)),
+	rdfe_transaction(rdfe_load(FileName), load_file(FileName)),
 	get(OV, tree, Tree),
 	send(Tree, refresh).
       
@@ -422,10 +422,18 @@ help_message(B, _Which:{tag,summary}, _Ev:[event], Tooltip:char_array) :<-
 	;   get(Action, label_name, Tooltip)
 	).
 
-t_name(TID, Name) :-
-	rdfe_transaction_name([TID], Name), !.
-t_name(TID, Name) :-
-	rdfe_transaction_name([TID|_], Name), !.
+%	t_name(+TID, -Atom)
+%	
+%	Describe a transaction using the rdfe_transaction_name/2 data.  This
+%	must be generalised and centralised as it can also be used for general
+%	version management on the journal.
+
+t_name(TID, Atom) :-
+	rdfe_transaction_name([TID], Name), !,
+	term_to_atom(Name, Atom).
+t_name(TID, Atom) :-
+	rdfe_transaction_name([TID|_], Name), !,
+	term_to_atom(Name, Atom).
 
 :- pce_end_class(rdf_undo_button).
 
@@ -871,26 +879,40 @@ rdf_modified(AL, Part:graphical, From:prolog, To:prolog) :->
 	(   Column == 2			% value side
 	->  get(AL, property_on_row, Row, PropertyItem),
 	    get(PropertyItem, resource, Property),
-	    rdfe_transaction(rdfe_update(R, Property, From, object(To)))
+	    rdfe_transaction(rdfe_update(R, Property, From, object(To)),
+			     modify_property)
 	;   tbd				% edited other column?
 	).
 
 
 add_predicate(AL, From:button) :->
 	"Add another attribute"::
-	(   setof(Pred, missing_subject_predicate(AL, Pred), Preds)
+	(   setof(Pred, missing_subject_predicate(AL, Pred), Preds0),
+	    sort_by_label(Preds0, Preds)
 	->  new(D, dialog('New predicate')),
-	    send(D, append, new(M, menu(predicate, choice,
-					message(D, return, @arg1)))),
-	    send(D, append, button(cancel, message(D, return, @nil))),
-	    send(M, layout, vertical),
-	    send(M, multiple_selection, @on),
-	    (   member(Pred, Preds),
-		rdfs_ns_label(Pred, Label),
-		send(M, append, menu_item(Pred, @default, Label)),
-		fail
-	    ;   true
+	    length(Preds, NPreds),
+	    (	NPreds > 20
+	    ->	send(D, append, new(LB, list_browser)),
+		send(LB, width, 50),
+		send(LB, select_message, message(D, return, @arg1?key)),
+		(   member(Pred, Preds),
+		    rdfs_ns_label(Pred, Label),
+		    send(LB, append, dict_item(Pred, Label)),
+		    fail
+		;   true
+		)
+	    ;	send(D, append, new(M, menu(predicate, choice,
+					    message(D, return, @arg1)))),
+		send(M, layout, vertical),
+		send(M, multiple_selection, @on),
+		(   member(Pred, Preds),
+		    rdfs_ns_label(Pred, Label),
+		    send(M, append, menu_item(Pred, @default, Label)),
+		    fail
+		;   true
+		)
 	    ),
+	    send(D, append, button(cancel, message(D, return, @nil))),
 	    get(From, display_position, point(X, Y)),
 	    send(D, transient_for, AL?frame),
 	    send(D, modal, transient),
@@ -910,6 +932,23 @@ add_predicate(AL, From:button) :->
 		 'No more properties are defined')
 	).
 
+
+%	sort_by_label(+Resources, -Sorted)
+
+sort_by_label(Resources, Sorted) :-
+	tag_label(Resources, Tagged),
+	keysort(Tagged, Sorted0),
+	unkey(Sorted0, Sorted).
+
+tag_label([], []).
+tag_label([H|T0], [K-H|T]) :-
+	rdfs_ns_label(H, K),
+	tag_label(T0, T).
+
+unkey([], []).
+unkey([_-H|T0], [H|T]) :-
+	unkey(T0, T).
+
 new_predicate(AL, Predicate:name, Value:any, Type:{resource,literal}) :->
 	"Assert a new value"::
 	get(AL, resource, Subject),
@@ -917,12 +956,14 @@ new_predicate(AL, Predicate:name, Value:any, Type:{resource,literal}) :->
 	->  Object = literal(Value)
 	;   Object = Value
 	),
-	rdfe_transaction(rdfe_assert(Subject, Predicate, Object)).
+	rdfe_transaction(rdfe_assert(Subject, Predicate, Object),
+			 add_property).
 
 %	missing_subject_predicate(+Sheet, -Property)
 %	
 %	Enumerate the properties that are defined for the subject, but
-%	not displayed in the property-sheet.
+%	do not yet have a value.  Note that this should be made more
+%	subtle if we include OWL (probably calling rules).
 
 missing_subject_predicate(AL, Property) :-
 	get(AL, resource, Subject),
@@ -930,13 +971,7 @@ missing_subject_predicate(AL, Property) :-
 	rdfs_individual_of(Property, rdf:'Property'),
 	rdf_has(Property, rdfs:domain, Domain),
 	rdfs_subclass_of(Class, Domain),
-					% do we represent this?
-					% TBD: cleanup this mess
-%	\+ get(AL?graphicals, find,
-%	       and(message(@arg1, instance_of, rdf_predicate_text),
-%		   @arg1?resource == Property),
-%	       _),
-	\+ rdf_equal(Property, rdf:type).
+	\+ rdf(Subject, Property, _).
 
 :- pce_end_class(rdfs_instance_sheet).
 

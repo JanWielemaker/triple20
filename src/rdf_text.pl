@@ -271,7 +271,7 @@ delete(T) :->
 	"Delete associated triple"::
 	get(T, triple, rdf(Subject, Predicate, Object)),
 	rdfe_transaction(rdfe_retractall(Subject, Predicate, Object),
-			 'Delete property').
+			 delete_property).
 
 forward(T) :->
 	"Set new value"::
@@ -286,7 +286,7 @@ forward(T) :->
 	->  rdfe_transaction(rdfe_update(Subject, Predicate,
 					 literal(OldText),
 					 object(literal(NewText))),
-			     'Modify property')
+			     modify_literal)
 	;   get(T, contained_in, Dev),
 	    send(Dev, has_send_method, rdf_modified)
 	->  send(Dev, rdf_modified, T, literal(OldText), literal(NewText))
