@@ -92,7 +92,7 @@ initialise(OV, Domain0:[prolog], Label:[name]) :->
 	send(P, name, hierarchy_window),
 	send(OV, append, TD),
 	send(P, width, 250),
-	send(new(D, rdf_search_dialog), above, new(rdfs_sheet)),
+	send(new(D, rdf_search_dialog), above, new(rdf_sheet)),
 	send(D, name, search_dialog),
 	send_list([D,TD], hor_stretch, 100),
 	send_list([D,TD], hor_shrink, 100),
@@ -234,7 +234,7 @@ fill_tool_dialog(OV) :->
 append_tool_buttons(OV) :->
 	"Append the buttons for this tool"::
 	get(OV, member, tool_dialog, D),
-	get(OV, member, rdfs_sheet, Sheet),
+	get(OV, member, rdf_sheet, Sheet),
 	get(Sheet, button, forward, Forward),
 	get(Sheet, button, backward, Backward),
 	send_list(D, append,
@@ -299,7 +299,7 @@ show_resource(OV, Resource:name, How:name) :->
 	    send(Tree, selection, Node?image),
 	    send(Tree?window, normalise, Node?image, y)
 	;   How == table
-	->  get(OV, member, rdfs_sheet, Sheet),
+	->  get(OV, member, rdf_sheet, Sheet),
 	    send(Sheet, resource, Resource)
 	).
 
@@ -656,7 +656,7 @@ t_name(TID, Atom) :-
 		 *	     RDF VIEW		*
 		 *******************************/
 
-:- pce_begin_class(rdfs_sheet, tabbed_window,
+:- pce_begin_class(rdf_sheet, tabbed_window,
 		   "Visualise a resource as instance or class").
 :- use_class_template(rdf_arm).
 
@@ -670,11 +670,12 @@ initialise(OS) :->
 	send(OS, hor_stretch, 100),
 	send(OS, ver_stretch, 100),
 	send(OS, ver_shrink, 100),
-	send_list(OS, append,
-		  [ table_window(class,    new(rdfs_class_sheet)),
-		    table_window(instance, new(rdfs_instance_sheet)),
-		    table_window(triples,  new(rdf_cached_triple_table))
-		  ]).
+	(   call_rules(OS, resource_tab(Name, Window)),
+	    send(Window, name, Name),
+	    send(OS, append, Window),
+	    fail
+	;   true
+	).
 
 sheet(OS, Name:name, Table:rdf_tabular) :<-
 	"Get named table"::
@@ -698,15 +699,16 @@ resource(OS, Resource:name) :->
 
 triples(OS, Cache:int*) :->
 	"Display triple-set from (query-) cache"::
-	send(OS, on_top, triples),
-	get(OS, sheet, triples, TripleSheet),
-	send(TripleSheet, cache, Cache).
+	(   get(OS, sheet, triples, TripleSheet)
+	->  send(OS, on_top, triples),
+	    send(TripleSheet, cache, Cache)
+	).
 
 button(OS, Dir:{forward,backward}, B:tool_button) :<-
 	"Get button for history navigation"::
 	get(OS?history, button, Dir, B).
 
-:- pce_end_class(rdfs_sheet).
+:- pce_end_class(rdf_sheet).
 
 
 :- pce_begin_class(table_window, dialog,
@@ -813,7 +815,7 @@ append_continuation_value(AL, V:prolog, Property:[name]) :->
 
 
 
-:- pce_begin_class(rdfs_class_sheet, rdf_resource_tabular,
+:- pce_begin_class(rdf_class_sheet, rdf_resource_tabular,
 		   "Show attributes of a class").
 
 variable(show_properties, {all,self},	get, "Which properties to show").
@@ -1009,14 +1011,14 @@ triple_from_part(AL, Part:graphical, Triple:prolog) :<-
 	),
 	Triple = rdf(S, P, O).
 
-:- pce_end_class(rdfs_class_sheet).
+:- pce_end_class(rdf_class_sheet).
 
 
 		 /*******************************
 		 *	     INSTANCES		*
 		 *******************************/
 
-:- pce_begin_class(rdfs_instance_sheet, rdf_resource_tabular,
+:- pce_begin_class(rdf_instance_sheet, rdf_resource_tabular,
 		   "Show attributes of an instance").
 
 initialise(AL, Instance:[name]) :->
@@ -1215,13 +1217,13 @@ has_standard_predicates(AL) :-
 	call_rules(AL, standard_predicate(Subject, Predicate)),
 	\+ rdf(Subject, Predicate, _), !.
 
-:- pce_end_class(rdfs_instance_sheet).
+:- pce_end_class(rdf_instance_sheet).
 
 
 :- pce_begin_class(rdf_predicate_row, device,
 		   "Display predicate title").
 
-initialise(D, AL:rdfs_instance_sheet) :->
+initialise(D, AL:rdf_instance_sheet) :->
 	send_super(D, initialise),
 	send(D, format, new(F, format(vertical, 1, @on))),
 	send(F, adjustment, vector(center)),

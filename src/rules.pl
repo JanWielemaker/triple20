@@ -519,6 +519,33 @@ clicked(V) :-
 :- end_particle.
 
 
+:- begin_particle(rdf_tab, []).
+
+%	resource_tab(-Name, -Window)
+%	
+%	Create the windows that appear as tabs in the right-hand window
+%	of the explorer.  The <-name of the window determines the label
+%	in the tab.
+
+resource_tab(class, Window) :-
+	new(Window, table_window(class, new(rdf_class_sheet))).
+resource_tab(instance, Window) :-
+	new(Window, table_window(class, new(rdf_instance_sheet))).
+resource_tab(triples, Window) :-
+	new(Window, table_window(class, new(rdf_cached_triple_table))).
+
+%	default_resource_tab(+Resource, -Tab)
+%	
+%	Return the name of the tab that should be on top after selecting
+%	Resource.
+
+default_resource_tab(Resource, class) :-
+	rdfs_individual_of(Resource, rdfs:'Class').
+default_resource_tab(_, instance).
+	
+:- end_particle.
+
+
 
 		 /*******************************
 		 *	  BIND TO OBJECTS	*
@@ -531,7 +558,8 @@ clicked(V) :-
 		    rdf_resource_menu,
 		    rdf_drag_and_drop,
 		    rdf_click,
-		    rdf_predicate
+		    rdf_predicate,
+		    rdf_tab
 		  ]).
 :- end_particle.
 
@@ -852,7 +880,7 @@ icon_resource(R, Icon) :-
 
 show_triple_cache(Cache) :-
 	get(@particle, self, Tool),
-	get(Tool, member, rdfs_sheet, Sheet),
+	get(Tool, member, rdf_sheet, Sheet),
 	send(Sheet, triples, Cache).
 
 view_owl_class_extension :-
