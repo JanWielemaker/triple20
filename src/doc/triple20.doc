@@ -50,14 +50,37 @@ in the \pllib{rdf_db} \emph{triple store}.
 
 \section{Namespaces}
 
-\section{Project files}
+\section{Project files and snapshots}
 
 A \emph{project file} \fileext{rdfj} is a \jargon{journal} of executed
-edit operations.  
+edit operations.  This approach has several advantages over the normal
+load-modify-save cycle.
 
+\begin{itemize}
+    \item Ontology files can be very large.  Managing a journal of actions
+          provides space and time performance benefits.
 
+    \item A journal protects the user from loosing work due to crashes or
+          other malfunctioning of experimental software.
 
+    \item A journal provides an excelent starting point for advanced 
+          version management as well as studying user behaviour.
+\end{itemize}
 
+There are various alternatives for handling the loading of ontology
+files in the journal. One is to simply add the fact that a file is
+loaded. This can be attractive because the journal acts as a set of edit
+operations that can be executed on a modified version of the same file.
+Unfortunately it also easily leads to problems if the file is saved from
+the tool. For this reason Triple20 maintains a \jargon{snapshot}
+directory where it stores snapshots of ontology files loaded into
+projects.  The name for these files is created from the original file
+as well as an MD5 digest constructed from the triples.  The journal
+contains information on the original file (name, time modified, size,
+number of triples) as well as the MD5 digest. If the journal is replayed
+it will first try to locate the snapshot from the MD5 digest and name,
+loading exactly the same file.  If this fails Triple20 tries to locate
+the ontology file itself.
 
 
 		 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
