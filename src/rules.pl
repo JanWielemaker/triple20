@@ -317,13 +317,26 @@ child_cache(R, Cache, Class) :-
 		),
 		Class = rdf_individual_node
 	    ;	rdfs_subclass_of(R, owl:'Restriction'),
-		rdf_cache(lsorted(V), rdf_has(V, rdf:type, R), Cache),
+		rdf_cache(V, ordered_restriction(V, R), Cache),
 		Class = owl_restriction_node
 	    )
 	).
 child_cache(R, Cache, rdf_individual_node) :-
 	rdfs_individual_of(R, rdf:'List'), !,
 	rdf_cache(lsorted(V), rdfs_member(V, R), Cache).
+
+ordered_restriction(R, Class) :-
+	findall(L-R, owl_restriction_with_label(Class, R, L), Pairs),
+	keysort(Pairs, Sorted),
+	rdf_util:unique_unkey(Sorted, Restrictions),
+	member(R, Restrictions).
+
+owl_restriction_with_label(Class, Restriction, Label) :-
+	rdf_has(Restriction, rdf:type, Class),
+	(   rdf_has(Restriction, owl:onProperty, Property)
+	->  rdfs_label(Property, Label)
+	;   rdfs_label(Restriction, Label)
+	).
 
 
 %	parent(+Resource, -Parent, -Class)

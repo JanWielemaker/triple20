@@ -231,14 +231,19 @@ owl_satisfies_restriction(Resource, Restriction) :-
 	(   rdf_has(Restriction, owl:hasValue, Value)
 	->  rdf_has(Resource, Property, Value)
 	;   rdf_has(Restriction, owl:allValuesFrom, Class)
-	->  forall(rdf_has(Resource, Property, Value),
-		   owl_individual_of(Value, Class))
+	->  setof(V, rdf_has(Resource, Property, V), Vs),
+	    all_individual_of(Vs, Class)
 	;   rdf_has(Restriction, owl:someValuesFrom, Class)
 	->  rdf_has(Resource, Property, Value),
 	    owl_individual_of(Value, Class)
 	;   rdf_subject(Resource)
 	),
 	owl_satisfies_cardinality(Resource, Property, Restriction).
+
+all_individual_of([], _).
+all_individual_of([H|T], Class) :-
+	owl_individual_of(H, Class), !,
+	all_individual_of(T, Class).
 
 %	owl_satisfies_cardinality(?Resource[, +Property], +Restriction)
 %	
