@@ -1,4 +1,4 @@
-This is pdfTeX, Version 3.14159-14f-released-20000525 (Web2C 7.3.1) (format=pdflatex 2002.12.11)  26 FEB 2003 10:00
+This is pdfTeX, Version 3.14159-14f-released-20000525 (Web2C 7.3.1) (format=pdflatex 2002.12.11)  24 SEP 2003 13:21
 **semweb
 (semweb.tex{/usr/local/teTeX/texmf/pdftex/config/pdftex.cfg}
 LaTeX2e <1999/12/01> patch level 1
@@ -247,49 +247,93 @@ loading : Context Support Macros / PDF
 )
 LaTeX Font Info:    External font `cmex10' loaded for size
 (Font)              <12> on input line 25.
+LaTeX Font Info:    External font `cmex10' loaded for size
+(Font)              <7> on input line 30.
+LaTeX Font Info:    External font `cmex10' loaded for size
+(Font)              <5> on input line 30.
  [1
 
-{/usr/local/teTeX/texmf/dvips/config/pdftex.map}] (semweb.toc)
+{/usr/local/teTeX/texmf/dvips/config/pdftex.map}]
+No file semweb.toc.
 \tf@toc=\write7
 \openout7 = `semweb.toc'.
 
- [2]
-<figs/modules.pdf 500.87125pt, 354.32375pt, image 153>
-File: figs/modules.pdf Graphic file (type pdf)
- <use figs/modules.pdf>
-LaTeX Font Info:    Try loading font information for OMS+cmr on input line 85.
-
-(/usr/local/teTeX/texmf/tex/latex/base/omscmr.fd
-File: omscmr.fd 1999/05/25 v2.5h Standard LaTeX font definitions
-)
-LaTeX Font Info:    Font shape `OMS/cmr/m/n' in size <10.95> not available
-(Font)              Font shape `OMS/cmsy/m/n' tried instead on input line 85.
-LaTeX Font Info:    External font `cmex10' loaded for size
-(Font)              <9> on input line 95.
-LaTeX Font Info:    External font `cmex10' loaded for size
-(Font)              <5> on input line 95.
- [3 <./figs/modules.pdf>]
-[4] [5] [6] [7] [8] [9] [10] [11] [12] (semweb.ind [13] [14
-
-] [15
-
-]) (semweb.aux) ) 
+[2]
+No file semweb.ind.
+[3] (semweb.aux) ) 
 Here is how much of TeX's memory you used:
- 3250 strings out of 10482
- 39598 string characters out of 191517
- 96794 words of memory out of 263001
- 6167 multiletter control sequences out of 10000+0
- 12310 words of font info for 44 fonts, out of 400000 for 1000
+ 3190 strings out of 10482
+ 38893 string characters out of 191517
+ 90772 words of memory out of 263001
+ 6138 multiletter control sequences out of 10000+0
+ 10092 words of font info for 37 fonts, out of 400000 for 1000
  54 hyphenation exceptions out of 1000
- 34i,8n,36p,241b,400s stack positions out of 300i,100n,500p,50000b,4000s
-</usr/local/teTeX/texmf/fonts/type1/bluesky/cm/cmtt9.pfb></usr
-/local/teTeX/texmf/fonts/type1/bluesky/cm/cmr9.pfb></usr/local/teTeX/texmf/font
-s/type1/bluesky/cm/cmr6.pfb></usr/local/teTeX/texmf/fonts/type1/bluesky/cm/cmr8
-.pfb></usr/local/teTeX/texmf/fonts/type1/bluesky/cm/cmsy10.pfb></usr/local/teTe
-X/texmf/fonts/type1/bluesky/cm/cmtt10.pfb></usr/local/teTeX/texmf/fonts/type1/b
-luesky/cm/cmbx12.pfb></usr/local/teTeX/texmf/fonts/type1/bluesky/cm/cmti10.pfb>
-</usr/local/teTeX/texmf/fonts/type1/bluesky/cm/cmr10.pfb></usr/local/teTeX/texm
-f/fonts/type1/bluesky/cm/cmbx10.pfb></usr/local/teTeX/texmf/fonts/type1/bluesky
-/cm/cmtt12.pfb></usr/local/teTeX/texmf/fonts/type1/bluesky/cm/cmr12.pfb></usr/l
-ocal/teTeX/texmf/fonts/type1/bluesky/cm/cmr17.pfb>
-Output written on semweb.pdf (15 pages, 196069 bytes).
+ 34i,6n,36p,241b,254s stack positions out of 300i,100n,500p,50000b,4000s
+
+! pdfTeX warning (dest): name{subsection.6.6} has been referenced but does not 
+exist, replaced by a fixed one
+
+! pdfTeX warning (dest): name{subsection.6.5} has been referenced but does not 
+exist, replaced by a fixed one
+
+! pdfTeX warning (dest): name{subsection.6.4} has been referenced but does not 
+exist, replaced by a fixed one
+
+! pdfTeX warning (dest): name{subsection.6.3} has been referenced but does not 
+exist, replaced by a fixed one
+
+! pdfTeX warning (dest): name{subsection.6.2} has been referenced but does not 
+exist, replaced by a fixed one
+
+! pdfTeX warning (dest): name{subsection.6.1} has been referenced but does not 
+exist, replaced by a fixed one
+
+! pdfTeX warning (dest): name{section.6} has been referenced but does not exist
+, replaced by a fixed one
+
+! pdfTeX warning (dest): name{section.5} has been referenced but does not exist
+, replaced by a fixed one
+
+! pdfTeX warning (dest): name{subsection.4.3} has been referenced but does not 
+exist, replaced by a fixed one
+
+! pdfTeX warning (dest): name{subsection.4.2} has been referenced but does not 
+exist, replaced by a fixed one
+
+! pdfTeX warning (dest): name{subsection.4.1} has been referenced but does not 
+exist, replaced by a fixed one
+
+! pdfTeX warning (dest): name{section.4} has been referenced but does not exist
+, replaced by a fixed one
+
+! pdfTeX warning (dest): name{subsection.3.6} has been referenced but does not 
+exist, replaced by a fixed one
+
+! pdfTeX warning (dest): name{subsection.3.5} has been referenced but does not 
+exist, replaced by a fixed one
+
+! pdfTeX warning (dest): name{subsection.3.4} has been referenced but does not 
+exist, replaced by a fixed one
+
+! pdfTeX warning (dest): name{subsubsection.3.3.2} has been referenced but does
+ not exist, replaced by a fixed one
+
+! pdfTeX warning (dest): name{subsubsection.3.3.1} has been referenced but does
+ not exist, replaced by a fixed one
+
+! pdfTeX warning (dest): name{subsection.3.3} has been referenced but does not 
+exist, replaced by a fixed one
+
+! pdfTeX warning (dest): name{subsection.3.2} has been referenced but does not 
+exist, replaced by a fixed one
+
+! pdfTeX warning (dest): name{subsection.3.1} has been referenced but does not 
+exist, replaced by a fixed one
+
+</usr/local/teTeX/texmf/fonts/type1/bluesky/cm/cmbx12.pfb></usr/local/teTeX/tex
+mf/fonts/type1/bluesky/cm/cmtt10.pfb></usr/local/teTeX/texmf/fonts/type1/bluesk
+y/cm/cmr10.pfb></usr/local/teTeX/texmf/fonts/type1/bluesky/cm/cmbx10.pfb></usr/
+local/teTeX/texmf/fonts/type1/bluesky/cm/cmtt12.pfb></usr/local/teTeX/texmf/fon
+ts/type1/bluesky/cm/cmr12.pfb></usr/local/teTeX/texmf/fonts/type1/bluesky/cm/cm
+r17.pfb>
+Output written on semweb.pdf (3 pages, 52281 bytes).
