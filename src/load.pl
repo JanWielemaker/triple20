@@ -81,6 +81,9 @@ dbg :-
 %:- nav.
 %:- dbg.
 
+:- catch(['~/.xpcerc'], _, true).
+
+
 go :-
 %	rdfe_open_journal(journal, append),
 	new(X, rdfs_explorer),

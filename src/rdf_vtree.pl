@@ -64,7 +64,7 @@ child(VN, Child:name, Role:name) :->
 	).
 
 expand(VN) :->
-	"Generate by siblings"::
+	"Generate my siblings"::
 	get(VN, resource, Resource),
 	get(VN, role, Role),
 	get(VN, rules, Rules),
