@@ -119,7 +119,7 @@ resource(class,       image, image('16x16/class.xpm')).
 resource(metaclass,   image, image('16x16/Metaclass.gif')).
 resource(orphanclass, image, image('16x16/orphanclass.xpm')).
 resource(orphanres,   image, image('16x16/orphanres.xpm')).
-resource(individual,  image, image('16x16/Instance.gif')).
+resource(individual,  image, image('16x16/instance.xpm')).
 resource(property,    image, image('16x16/SlotDirect.gif')).
 resource(list,        image, image('16x16/list.xpm')).
 resource(list_member, image, image('16x16/list_member.xpm')).
@@ -733,14 +733,14 @@ orphan_resource(Resource) :-
 		 *	      TABLE		*
 		 *******************************/
 
-:- begin_particle(rdf_tabular, display).
+:- begin_particle(rdf_tabular, []).
 
 clicked(V) :-
 	send(V?device, selection, V).
 
 :- end_particle.
 
-:- begin_particle(rdf_object_cell, rdf_tabular).
+:- begin_particle(rdf_object_cell, []).
 
 menu_item(Group, Item) :-
 	super::menu_item(Group, Item).
@@ -758,7 +758,7 @@ drop(modify, Gr, V) :-
 :- end_particle.
 
 
-:- begin_particle(rdf_predicate_cell, rdf_tabular).
+:- begin_particle(rdf_predicate_cell, []).
 
 menu_item(Group, Item) :-
 	super::menu_item(Group, Item).
@@ -783,7 +783,7 @@ drop(modify, Gr, V) :-
 
 :- end_particle.
 
-:- begin_particle(rdf_range_cell, rdf_object_cell).
+:- begin_particle(rdf_range_cell, []).
 
 drop(modify, _Gr, V) :-
 	get(V, resource, Resource),
@@ -793,7 +793,7 @@ drop(modify, _Gr, V) :-
 :- end_particle.
 
 
-:- begin_particle(rdf_domain_cell, rdf_object_cell).
+:- begin_particle(rdf_domain_cell, []).
 
 drop(modify, _Gr, V) :-
 	get(V, resource, Resource),
@@ -803,7 +803,7 @@ drop(modify, _Gr, V) :-
 :- end_particle.
 
 
-:- begin_particle(rdf_not_filled_label, rdf_resource_menu).
+:- begin_particle(rdf_not_filled_label, []).
 
 menu_item(edit, delete).
 menu_item(edit, fill=modify).

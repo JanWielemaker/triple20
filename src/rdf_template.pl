@@ -279,14 +279,14 @@ container_with_get_method(Gr, Method, Container) :-
 		 *******************************/
 
 :- dynamic
-	class_particle/2.		% XPCE class --> particle
+	class_particle/3.		% Class, Particle, implicit/explicit
 
 update_class_particle(ClassName, Particle) :-
 	isa_class(ClassName, Particle),
 	current_particle(Particle), !,
-	assert(class_particle(ClassName, Particle)).
+	assert(class_particle(ClassName, Particle, implicit)).
 update_class_particle(ClassName, _) :-
-	assert(class_particle(ClassName, [])),
+	assert(class_particle(ClassName, [], implicit)),
 	fail.
 
 :- multifile
@@ -295,20 +295,37 @@ update_class_particle(ClassName, _) :-
 	user:message_hook/3.
 
 user:message_hook(load_file(_), _, _) :-
-	retractall(class_particle(_,_)),
+	retractall(class_particle(_,_, implicit)),
 	fail.
 
 :- pce_extend_class(object).
 
 rdf_particle(O, Particle:name) :<-
 	get(O, class_name, ClassName),
-	(   class_particle(ClassName, Particle)
+	(   class_particle(ClassName, Particle, _)
 	->  Particle \== []
 	;   update_class_particle(ClassName, Particle)
 	).
 
 rdf_container(O, Container:visual) :<-
 	get(O, contained_in, Container).
+
+:- pce_end_class.
+
+:- pce_extend_class(class).
+
+rdf_particle(Class, Particle:name) :<-
+	get(Class, name, ClassName),
+	(   class_particle(ClassName, Particle, _)
+	->  Particle \== []
+	;   update_class_particle(ClassName, Particle)
+	).
+
+rdf_particle(Class, Particle:name) :->
+	"Bind to a particle"::
+	get(Class, name, ClassName),
+	retractall(class_particle(ClassName, _, _)),
+	assert(class_particle(ClassName, Particle, explicit)).
 
 :- pce_end_class.
 
@@ -335,14 +352,6 @@ rdf_container(O, Container:layout_manager) :<-
 
 rdf_container(O, Container:device) :<-
 	get(O, device, Container),
-	Container \== @nil.
-
-:- pce_end_class.
-
-:- pce_extend_class(node).
-
-rdf_container(N, Container:visual) :<-
-	get(N, tree, Container),
 	Container \== @nil.
 
 :- pce_end_class.

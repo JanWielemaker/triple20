@@ -44,7 +44,6 @@
 
 :- pce_autoload(rdfs_resource_item,	 library(rdfs_resource_item)).
 :- pce_autoload(rdf_literal_item,	 library(rdf_literal_item)).
-:- pce_autoload(rdf_object_list_browser, library(rdf_collection_item)).
 
 	  
 		 /*******************************

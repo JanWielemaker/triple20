@@ -126,12 +126,14 @@ user:goal_expansion(super::G, Expanded) :-
 	    ->	(   current_particle(S)
 		->  true
 		;   throw(error(existence_error(particle, S), super))
+		),
+		(   current_predicate(_, S:G)
+		->  Expanded = S:G
+		;   Expanded = call_outer(G)
 		)
+	    ;	Supers == []
+	    ->	Expanded = call_outer(G)
 	    ;	throw(error(ambiguous(super, Supers), _))
-	    ),
-	    (	current_predicate(_, S:G)
-	    ->	Expanded = S:G
-	    ;	Expanded = call_outer(G)
 	    )
 	).
 user:goal_expansion(outer::G, call_outer(G)) :- !. % See rdf_template
