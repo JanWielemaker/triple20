@@ -175,6 +175,12 @@ initialise(C, R:prolog, P:[name]) :->
 	;   true
 	).
 
+delete(Cell) :->
+	"Delete triple from database"::
+	get(Cell, image, Image),
+	get(Image, triple, rdf(S,P,O)),
+	rdfe_transaction(rdfe_retractall(S,P,O)).
+
 modify(Cell) :->
 	format('Request to modify ~p~n', [Cell]).
 

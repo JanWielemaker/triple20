@@ -352,11 +352,6 @@ clicked(V) :-
 	;   super::clicked(V)
 	).
 
-:- end_particle.
-
-
-:- begin_particle(rdf_node, rdfs_hierarchy).
-
 menu_item(Gr, Group, Item, Receiver) :-
 	super::menu_item(Gr, Group, Item, Receiver),
 	Item \== hierarchy_location.
@@ -373,6 +368,11 @@ menu_item(Gr, edit, delete=delete_resource, Node) :-
 	).
 
 :- end_particle.
+
+:- begin_particle(rdf_node, rdfs_hierarchy).
+
+:- end_particle.
+
 
 :- begin_particle(rdf_individual_node, rdf_node).
 
