@@ -1,6 +1,21 @@
 user:file_search_path(semweb, library(semweb)).
 :- asserta(file_search_path(library, '.')).
 
+:- dynamic
+	rdf_db:ns/2.
+:- multifile
+	rdf_db:ns/2.
+
+rdf_db:ns(vra,	   'http://www.swi.psy.uva.nl/mia/vra#').
+rdf_db:ns(aat,	   'http://www.swi.psy.uva.nl/mia/aat#').
+rdf_db:ns(ulan,	   'http://www.swi.psy.uva.nl/mia/ulan#').
+rdf_db:ns(wn,	   'http://www.cogsci.princeton.edu/~wn/concept#').
+rdf_db:ns(wns,	   'http://www.cogsci.princeton.edu/~wn/schema/').
+rdf_db:ns(paint,   'http://www.swi.psy.uva.nl/mia/painting#').
+rdf_db:ns(subject, 'http://www.swi.psy.uva.nl/mia/subject#').
+rdf_db:ns(ic,	   'http://www.swi.psy.uva.nl/mia/iconclass#').
+rdf_db:ns(ghs,	   'http://www.swi.psy.uva.nl/mia/ghs#').
+
 :- load_files([ library(rdf),
 		semweb(rdf_db),
 		semweb(rdfs),
@@ -17,18 +32,6 @@ user:file_search_path(semweb, library(semweb)).
 :- pce_autoload(ulan_timestamp_object_item,
 		library(ulan)).
 
-:- multifile
-	rdf_db:ns/2.
-
-rdf_db:ns(vra,	   'http://www.swi.psy.uva.nl/mia/vra#').
-rdf_db:ns(aat,	   'http://www.swi.psy.uva.nl/mia/aat#').
-rdf_db:ns(ulan,	   'http://www.swi.psy.uva.nl/mia/ulan#').
-rdf_db:ns(wn,	   'http://www.cogsci.princeton.edu/~wn/concept#').
-rdf_db:ns(wns,	   'http://www.cogsci.princeton.edu/~wn/schema/').
-rdf_db:ns(paint,   'http://www.swi.psy.uva.nl/mia/painting#').
-rdf_db:ns(subject, 'http://www.swi.psy.uva.nl/mia/subject#').
-rdf_db:ns(ic,	   'http://www.swi.psy.uva.nl/mia/iconclass#').
-rdf_db:ns(ghs,	   'http://www.swi.psy.uva.nl/mia/ghs#').
 
 rdf_file(base(rdfs),	 'rdfs.rdfs').
 rdf_file(base(owl),	 'owl.owl').
@@ -97,6 +100,9 @@ go(['--aat'|T]) :-
 	go(T).
 go(['--wn'|T]) :-
 	wn,
+	go(T).
+go(['--ulan'|T]) :-
+	load(ulan),
 	go(T).
 go([]) :-
 	new(X, rdfs_explorer),

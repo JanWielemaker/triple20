@@ -18,6 +18,7 @@
 :- pce_autoload(rdf_literal_item,	 library(rdf_literal_item)).
 :- pce_autoload(rdf_object_list_browser, library(rdf_collection_item)).
 :- pce_autoload(editable_text,		 library(pce_editable_text)).
+:- pce_autoload(ulan_timestamp_object_item, ulan).
 
 	  
 		 /*******************************
@@ -557,6 +558,8 @@ object_visual(rdf(S,P,O), Table, ObjGraphical) :-
 object_visual_class(rdf(_S,_P,literal(_O)), rdf_literal_text) :- !.
 object_visual_class(rdf(_S,_P,O), rdf_object_list_browser) :-
 	rdfs_individual_of(O, rdf:'List').
+object_visual_class(rdf(_S,_P,O), ulan_timestamp_object_item) :-
+	rdfs_individual_of(O, ulan:'TimeStamp').
 object_visual_class(rdf(_S,_P,_O), rdf_object_text).
 
 :- end_particle.

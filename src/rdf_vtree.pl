@@ -15,6 +15,7 @@
 variable(children,	sheet*,       none, "Children by role").
 variable(modified,      bool := @off, both, "Child-set is modified").
 variable(rules,		[name],	      send, "Ruleset for expansion").
+variable(expand_status,	{none,partial,full} := none, get, "Expansion").
 
 initialise(VN, Resource:name) :->
 	"Create from resource"::
@@ -46,7 +47,7 @@ rules(VN, Rules:name) :<-
 	;   Rules = class_hierarchy
 	).
 
-child(VN, Child:name, Role:name) :->
+add_child(VN, Child:name, Role:name, ChildNode:rdf_vnode) :<-
 	"Add a child, given a specified role"::
 	(   get(VN, slot, children, Sheet),
 	    Sheet \== @nil
@@ -57,9 +58,9 @@ child(VN, Child:name, Role:name) :->
 	->  true
 	;   send(Sheet, value, Role, new(Set, rdf_vnodeset(VN, Role)))
 	),
-	(   send(Set, member, Child)
+	(   get(Set, member, Child, ChildNode)
 	->  true
-	;   send(Set, append, rdf_vnode(Child)),
+	;   send(Set, append, new(ChildNode, rdf_vnode(Child))),
 	    send(VN, modified, @on)
 	).
 
@@ -69,11 +70,12 @@ expand(VN) :->
 	get(VN, role, Role),
 	get(VN, rules, Rules),
 	(   Rules:child(Resource, Role, Child, ChildRole),
-	    send(VN, child, Child, ChildRole),
+	    get(VN, add_child, Child, ChildRole, _ChildNode),
 	    fail
 	;   true
 	),
-	send(VN, sort_childs).
+	send(VN, sort_childs),
+	send(VN, slot, expand_status, full).
 
 sort_childs(VN) :->
 	"Sort the childs by <-label"::
@@ -85,13 +87,12 @@ sort_childs(VN) :->
 
 children(VN, Children:sheet) :<-
 	"Get children, update if necessary"::
-	(   get(VN, slot, children, Children),
-	    Children \== @nil
-	->  true
-	;   send(VN, expand),
-	    get(VN, slot, children, Children),
-	    Children \== @nil
-	).
+	(   \+ get(VN, expand_status, full)
+	->  send(VN, expand)
+	;   true
+	),
+	get(VN, slot, children, Children),
+	Children \== @nil.
 
 can_expand(VN) :->
 	"Test if there are children"::
@@ -106,12 +107,22 @@ can_expand(VN) :->
 	->  true
 	).
 
-child(VN, Resource:name, Child:rdf_vnode) :<-
-	get(VN, children, Sheet),
-	get(Sheet?members, find,
-	    message(@arg1?value, member, Resource), Attr),
-	get(Attr, value, Set),
-	get(Set, member, Resource, Child).
+child(VN, Child:name, ChildNode:rdf_vnode) :<-
+	(   get(VN, slot, children, Sheet),
+	    Sheet \== @nil,
+	    get(Sheet?members, find,
+		message(@arg1?value, member, Child), Attr)
+	->  get(Attr, value, Set),
+	    get(Set, member, Child, ChildNode)
+	;   \+ get(VN, expand_status, full),
+	    get(VN, resource, Resource),
+	    get(VN, role, Role),
+	    get(VN, rules, Rules),
+	    Rules:child(Resource, Role, Child, ChildRole)
+	->  get(VN, add_child, Child, ChildRole, ChildNode),
+	    send(VN, slot, expand_status, partial)
+	).
+	    
 
 :- pce_end_class(rdf_vnode).
 

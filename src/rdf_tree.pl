@@ -15,6 +15,7 @@
 
 resource(class,       image, image('16x16/class.xpm')).
 resource(metaclass,   image, image('16x16/Metaclass.gif')).
+resource(orphanclass, image, image('16x16/orphanclass.xpm')).
 resource(individual,  image, image('16x16/Instance.gif')).
 resource(property,    image, image('16x16/SlotDirect.gif')).
 resource(list,        image, image('16x16/list.xpm')).
@@ -111,7 +112,7 @@ display_path([H|_], OT, Node) :-
 display_path([H|T], OT, Node) :-
 	display_path(T, OT, Parent),
 	get(Parent, virtual, VP),
-	get(VP, child, H, VN),		% TBD: implement
+	get(VP, child, H, VN),
 	get(Parent?tree, create_node, VN, Node),
 	send(Parent, son, Node),
 	send_class(Parent, node, collapsed(@off)).
@@ -178,6 +179,7 @@ variable(resource, name,   get,	"Represented resource").
 variable(icon,	   image*, get,	"Prepresented icon").
 
 class_variable(icon, image*, resource(class)).
+class_variable(font, font,   normal).
 
 :- pce_global(@rdf_node_format, make_rdf_node_format).
 make_rdf_node_format(F) :-
@@ -194,7 +196,8 @@ initialise(N, VN:rdf_vnode, Tree:rdf_tree) :->
 	->  send(D, display, bitmap(Icon))
 	;   true
 	),
-	send(D, display, text(Label)),
+	get(N, font, Font),
+	send(D, display, text(Label, font := Font)),
 	new(_, hyper(N, VN, virtual, node)),
 	(   send(N, can_expand)
 	->  send_super(N, collapsed, @on)
@@ -373,6 +376,8 @@ class_variable(icon, image*, resource(metaclass)).
 :- pce_end_class.
 
 :- pce_begin_class(rdf_orphan_node, rdf_class_node).
+class_variable(icon, image*, resource(orphanclass)).
+class_variable(font, font, italic).
 :- pce_end_class.
 
 :- pce_begin_class(rdf_property_node, rdf_node).

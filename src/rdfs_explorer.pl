@@ -421,6 +421,8 @@ selection(OS, Resource:name) :->
 	"Show the indicated object"::
 	get(OS, sheet, instance, InstanceSheet),
 	get(OS, sheet, class, ClassSheet),
+	send(OS?members, for_all,
+	     message(@arg1, scroll_to, point(0,0))),
 	send(InstanceSheet, resource, Resource),
 	(   rdfs_individual_of(Resource, rdfs:'Class')
 	->  send(ClassSheet, resource, Resource),
@@ -451,6 +453,7 @@ node_label(OS, Id:name, Label:name) :<-
 
 initialise(TT, Name:name, Table:tabular) :->
 	send_super(TT, initialise, Name),
+	send(TT, scrollbars, vertical),
 	send(TT, name, Name),
 	send(TT, display, Table).	% do not use automatic layout
 
