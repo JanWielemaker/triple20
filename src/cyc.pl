@@ -9,16 +9,8 @@ rdf_db:ns(cyc,	   'http://www.cyc.com/cyc#').
 
 :- [load].
 
-link_root :-
-	rdfe_transaction((rdfs_individual_of(X, rdfs:'Class'),
-			  \+ rdf_has(X, rdfs:subClassOf, _),
-			  rdfe_assert(X, rdfs:subClassOf, rdfs:'Resource'),
-			  fail;
-			 true)).
-
 cyc :-
-	go(['cyc.rdfj', 'cyc.rdfs']).
-%	link_root.
+	go(['--reset', 'cyc.rdfj', 'cyc.rdfs']).
 
 :- cyc.
 

@@ -104,19 +104,38 @@ go :-
 	new(X, rdfs_explorer),
 	send(X, open).
 
+%	go(+Argv)
+%	
+%	Main entry.  Options:
+%	
+%		<file>.rdfj		Specify a journal file
+%		--reset			Ignore existing journal
+%		--nobase		Do not load any files
+%		--world			Load everything we know
+%		--aat			Load AAT
+%		--wn			Load Wordnet
+%		--ulan			Load ULAN
+%		<file>.{rdf,rdfs,owl}	Load this file
+
 go(Argv) :-
 	(   select(Journal, Argv, Argv1),
 	    file_name_extension(_, rdfj, Journal)
-	->  (   exists_file(Journal)
+	->  (   select('--reset', Argv1, Argv2)
+	    ->	Mode = write
+	    ;   Mode = append,
+		Argv2 = Argv1
+	    ),
+	    (   Mode == append,
+		exists_file(Journal)
 	    ->	JournalLoaded = true
 	    ;	true
 	    ),
-	    rdfe_open_journal(Journal, append)
-	;   Argv1 = Argv
+	    rdfe_open_journal(Journal, Mode)
+	;   Argv2 = Argv
 	),
 	(   JournalLoaded == true
 	->  true
-	;   rdfe_transaction(parse_argv1(Argv1))
+	;   rdfe_transaction(parse_argv1(Argv2))
 	),
 	new(X, rdfs_explorer),
 	send(X, open).
