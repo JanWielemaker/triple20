@@ -20,6 +20,10 @@ resource(individual,  image, image('16x16/Instance.gif')).
 resource(property,    image, image('16x16/SlotDirect.gif')).
 resource(list,        image, image('16x16/list.xpm')).
 resource(list_member, image, image('16x16/list_member.xpm')).
+resource(untyped,     image, image('16x16/untyped.xpm')).
+resource(resource,    image, image('16x16/resource.xpm')).
+resource(restriction, image, image('16x16/restriction.xpm')).
+resource(description, image, image('16x16/description.xpm')).
 
 		 /*******************************
 		 *	     HIERARCHY		*
@@ -61,17 +65,18 @@ create_root(H) :->
 	send(H, clear),
 	get(H, vtree, VNode),
 	get(H, create_node, VNode, Node),
-	send(H, root, Node).
+	send(H, root, Node),
+	send(Node, update).
 
 expand_root(H) :->
 	"Expand the root node"::
 	get(H, root, Root),
 	send(Root, collapsed, @off).
 
-create_node(H, V:rdf_vnode, N:rdf_node) :<-
+create_node(_H, V:rdf_vnode, N:rdf_node) :<-
 	"Create a real node from a virtual one"::
 	get(V, role, Role),
-	Term =.. [Role, V, H],
+	Term =.. [Role, V],
 	new(N, Term).
 
 node_label(OT, Id:name, Label:name) :<-
@@ -112,9 +117,8 @@ display_path([H|_], OT, Node) :-
 display_path([H|T], OT, Node) :-
 	display_path(T, OT, Parent),
 	get(Parent, virtual, VP),
-	get(VP, child, H, VN),
-	get(Parent?tree, create_node, VN, Node),
-	send(Parent, son, Node),
+	get(VP, child, H, @on, VN),
+	get(Parent, add_child, VN, Node),
 	send_class(Parent, node, collapsed(@off)).
 
 
@@ -186,23 +190,36 @@ make_rdf_node_format(F) :-
 	new(F, format(vertical, 1, @on)),
 	send(F, row_sep, 5).
 
-initialise(N, VN:rdf_vnode, Tree:rdf_tree) :->
+initialise(N, VN:rdf_vnode) :->
 	get(VN, resource, Resource),
-	get(Tree, node_label, Resource, Label),
 	send(N, slot, resource, Resource),
 	send_super(N, initialise, new(D, device)),
 	send(D, format, @rdf_node_format),
+	new(_, hyper(N, VN, virtual, node)).
+
+
+update(N) :->
+	"Update N and expansion-state"::
+	get(N, image, D),
+	send(D, clear),
 	(   get(N, icon, Icon), Icon \== @nil
 	->  send(D, display, bitmap(Icon))
 	;   true
 	),
+	get(N, label, Label),
 	get(N, font, Font),
 	send(D, display, text(Label, font := Font)),
-	new(_, hyper(N, VN, virtual, node)),
 	(   send(N, can_expand)
 	->  send_super(N, collapsed, @on)
 	;   send_super(N, collapsed, @nil)
 	).
+
+
+label(N, Label:name) :<-
+	"Create a label for the node"::
+	get(N, resource, Resource),
+	get(N?tree, node_label, Resource, Label).
+
 
 virtual(N, VN:rdf_vnode) :<-
 	get(N, hypered, virtual, VN).
@@ -248,22 +265,26 @@ expand_role(N, Role:name, Children:rdf_vnodeset, ShowMax:'[0..]') :->
 	    )
 	).
 
+add_child(N, VN:rdf_vnode, Son:rdf_node) :<-
+	"Create child for virtual node"::
+	get(N?tree, create_node, VN, Son),
+	send(N, son, Son),
+	send(Son, update).
 add_child(N, VN:rdf_vnode) :->
 	"Create child for virtual node"::
 	get(N?tree, create_node, VN, Son),
-	send(N, son, Son).
+	send(N, son, Son),
+	send(Son, update).
 	
 show_more(N, MoreNode:rdf_more_node, Role:name, Count:int) :->
 	"Show next Count nodes on Role"::
-	get(N, tree, Tree),
 	get(N, virtual, VN),
 	get(VN?children, value, Role, Set),
 	get(Set, members, Chain),
 	get(MoreNode, here, Here),
 	send(Chain, current_no, Here+1),
 	(   next_member(Chain, Count, New),
-	    get(Tree, create_node, New, Node),
-	    send(N, son, Node, MoreNode),
+	    send(N, add_child, New),
 	    fail
 	;   true
 	),
@@ -276,6 +297,11 @@ show_more(N, MoreNode:rdf_more_node, Role:name, Count:int) :->
 next_member(Chain, Max, Next) :-
 	between(1, Max, _),
 	get(Chain, next, Next).
+
+update(N) :->
+	"Check for modifications"::
+	get(N, virtual, VN),
+	send(VN, update).
 
 :- pce_group(event).
 
@@ -372,6 +398,29 @@ view_rdf_source(N) :->
 class_variable(icon, image*, resource(metaclass)).
 :- pce_end_class.
 
+:- pce_begin_class(owl_restriction_node, rdf_class_node).
+class_variable(icon, image*, resource(restriction)).
+
+label(N, Label:char_array) :<-
+	get(N, resource, Resource),
+	get(N, tree, Tree),
+	rdf_has(Resource, owl:onProperty, Prop),
+	get(Tree, node_label, Prop, PropLabel),
+	(   rdf_has(Resource, owl:cardinality, literal(Card))
+	->  new(Label, string('%s: cardinality = %s',
+			      PropLabel, Card))
+	;   rdf_has(Resource, owl:hasValue, Value)
+	->  (   Value == literal(ValueLabel)
+	    ->	true
+	    ;	get(Tree, node_label, Value, ValueLabel)
+	    ),
+	    new(Label, string('%s = %s',
+			      PropLabel, ValueLabel))
+	;   get_super(N, label, Label)
+	).
+
+:- pce_end_class(owl_restriction_node).
+
 :- pce_begin_class(rdf_root_node, rdf_class_node).
 :- pce_end_class.
 
@@ -384,16 +433,25 @@ class_variable(font, font, italic).
 class_variable(icon, image*, resource(property)).
 :- pce_end_class.
 
-:- pce_begin_class(rdf_individual_node, rdf_node).
-class_variable(icon, image*, resource(individual)).
-:- pce_end_class.
-
 :- pce_begin_class(rdf_list_node, rdf_node).
 class_variable(icon, image*, resource(list)).
 :- pce_end_class.
 
 :- pce_begin_class(rdf_list_member_node, rdf_node).
 class_variable(icon, image*, resource(list_member)).
+:- pce_end_class.
+
+:- pce_begin_class(rdf_individual_node, rdf_node).
+class_variable(icon, image*, resource(individual)).
+:- pce_end_class.
+
+:- pce_begin_class(rdf_untyped_node, rdf_node).
+class_variable(icon, image*, resource(untyped)).
+class_variable(font, font, italic).
+:- pce_end_class.
+
+:- pce_begin_class(rdf_resource_node, rdf_individual_node).
+class_variable(icon, image*, resource(resource)).
 :- pce_end_class.
 
 

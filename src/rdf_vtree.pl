@@ -8,13 +8,14 @@
 :- use_module(library(pce)).
 :- use_module(semweb(rdf_db)).
 :- use_module(semweb(rdfs)).
-:- use_module(library(particle)).
 
 :- pce_begin_class(rdf_vnode, dict_item, "Virtual node").
 
 variable(children,	sheet*,       none, "Children by role").
 variable(modified,      bool := @off, both, "Child-set is modified").
 variable(rules,		[name],	      send, "Ruleset for expansion").
+variable(generation,	int := 0,     get,  "RDF generation at create").
+variable(seen,		bool := @on,  none, "Was I seen last update?").
 variable(expand_status,	{none,partial,full} := none, get, "Expansion").
 
 initialise(VN, Resource:name) :->
@@ -47,6 +48,30 @@ rules(VN, Rules:name) :<-
 	;   Rules = class_hierarchy
 	).
 
+gone(VN) :->
+	"This node must be deleted"::
+	(   get(VN, parent, Parent)
+	->  get(Parent, slot, children, Sheet),
+	    send(Sheet, for_some,
+		 message(@arg1?value, delete, VN)),
+	    send(Parent, modified, @on)
+	;   ignore(send(VN, super_hyper, node, destroy))
+	).
+
+
+check_unseen_children(VN) :->
+	"Set all children to seen := @off"::
+	(   get(VN, slot, children, Sheet),
+	    Sheet \== @nil
+	->  send(Sheet, for_all,
+		 message(@arg1?value, for_all,
+			 if(?(@arg1, slot, seen) == @on,
+			    message(@arg1, slot, seen, @off),
+			    message(@arg1, gone))))
+	;   true
+	).
+
+
 add_child(VN, Child:name, Role:name, ChildNode:rdf_vnode) :<-
 	"Add a child, given a specified role"::
 	(   get(VN, slot, children, Sheet),
@@ -59,7 +84,7 @@ add_child(VN, Child:name, Role:name, ChildNode:rdf_vnode) :<-
 	;   send(Sheet, value, Role, new(Set, rdf_vnodeset(VN, Role)))
 	),
 	(   get(Set, member, Child, ChildNode)
-	->  true
+	->  send(ChildNode, slot, seen, @on)
 	;   send(Set, append, new(ChildNode, rdf_vnode(Child))),
 	    send(VN, modified, @on)
 	).
@@ -74,8 +99,14 @@ expand(VN) :->
 	    fail
 	;   true
 	),
-	send(VN, sort_childs),
-	send(VN, slot, expand_status, full).
+	send(VN, check_unseen_children),
+	send(VN, slot, expand_status, full),
+	rdf_generation(G),
+	send(VN, slot, generation, G),
+	(   get(VN, modified, @on)
+	->  send(VN, sort_childs)
+	;   true
+	).
 
 sort_childs(VN) :->
 	"Sort the childs by <-label"::
@@ -83,6 +114,15 @@ sort_childs(VN) :->
 	    Sheet \== @nil
 	->  send(Sheet, for_all, message(@arg1?value, sort))
 	;   true
+	).
+
+update(VN) :->
+	"Update if I'm fully expanded"::
+	(   get(VN, expand_status, full),
+	    get(VN, generation, G),
+	    rdf_generation(G)
+	->  true
+	;   send(G, expand)
 	).
 
 children(VN, Children:sheet) :<-
@@ -107,14 +147,15 @@ can_expand(VN) :->
 	->  true
 	).
 
-child(VN, Child:name, ChildNode:rdf_vnode) :<-
+child(VN, Child:name, Create:[bool], ChildNode:rdf_vnode) :<-
 	(   get(VN, slot, children, Sheet),
 	    Sheet \== @nil,
 	    get(Sheet?members, find,
 		message(@arg1?value, member, Child), Attr)
 	->  get(Attr, value, Set),
 	    get(Set, member, Child, ChildNode)
-	;   \+ get(VN, expand_status, full),
+	;   Create \== @off,
+	    \+ get(VN, expand_status, full),
 	    get(VN, resource, Resource),
 	    get(VN, role, Role),
 	    get(VN, rules, Rules),
@@ -139,67 +180,3 @@ initialise(NS, Parent:rdf_vnode, Role:name) :->
 
 :- pce_end_class(rdf_vnodeset).
 
-
-		 /*******************************
-		 *	      RULESETS		*
-		 *******************************/
-
-:- begin_particle(class_hierarchy, []).
-:- use_module(semweb(rdfs)).
-
-child(Resource, Role, Child, SubRole) :-
-	rdfs_individual_of(Resource, rdfs:'Class'),
-	isa_class(Role, rdf_class_node),
-	(   rdf_has(Child, rdfs:subClassOf, Resource),
-	    (	rdfs_subclass_of(Child, rdfs:'Class')
-	    ->	SubRole = rdf_metaclass_node
-	    ;	SubRole = Role
-	    )
-	;   rdf_has(Child, rdf:type, Resource),
-	    (	rdfs_individual_of(Child, rdf:'Property')
-	    ->	SubRole = rdf_property_node
-	    ;	rdfs_individual_of(Child, rdf:'List')
-	    ->	\+ rdf_has(_, rdf:rest, Child),
-	        SubRole = rdf_list_node
-	    ;	SubRole = rdf_individual_node
-	    )
-	;   rdf_equal(Resource, rdfs:'Resource'),
-	    orphan_class(_),
-	    Child = '<Orphan Classes>',
-	    SubRole = rdf_orphan_node
-	).
-child(Resource, Role, Child, Role) :-
-	isa_class(Role, rdf_property_node),
-	rdf_has(Child, rdfs:subPropertyOf, Resource).
-child(Resource, Role, Child, SubRole) :-
-	isa_class(Role, rdf_list_node),
-	SubRole = rdf_list_member_node,
-	rdfs_member(Child, Resource).
-child('<Orphan Classes>', rdf_orphan_node, Orphan, rdf_class_node) :-
-	orphan_class(Orphan).
-
-orphan_class(Orphan) :-
-	rdfs_individual_of(Orphan, rdfs:'Class'),
-	\+ rdf_has(Orphan, rdfs:subClassOf, _),
-	\+ rdf_equal(Orphan, rdfs:'Resource').
-
-parent('<Orphan Classes>', Parent) :- !,
-	rdf_equal(Parent, rdfs:'Resource').
-parent('<Untyped individuals>', Parent) :- !,
-	rdf_equal(Parent, rdfs:'Resource').
-parent(Resource, Parent) :-
-	(   rdfs_individual_of(Resource, rdfs:'Class')
-	->  (   rdf(Resource, rdfs:subClassOf, Parent)
-	    ->  true
-	    ;   Parent = '<Orphan Classes>'
-	    )
-	;   rdfs_individual_of(Resource, rdf:'Property'),
-	    rdf_has(Resource, rdfs:subPropertyOf, Parent)
-	->  true
-	;   (   rdf(Resource, rdf:type, Parent)
-	    ->	true
-	    ;	Parent = '<Untyped individuals>'
-	    )
-	).
-
-:- end_particle.

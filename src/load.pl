@@ -1,3 +1,9 @@
+/*  File:    load.pl
+    Author:  Jan Wielemaker
+    Created: Jun 25 2003
+    Purpose: Load demo version of the tool
+*/
+
 user:file_search_path(semweb, library(semweb)).
 :- asserta(file_search_path(library, '.')).
 
@@ -15,13 +21,17 @@ rdf_db:ns(paint,   'http://www.swi.psy.uva.nl/mia/painting#').
 rdf_db:ns(subject, 'http://www.swi.psy.uva.nl/mia/subject#').
 rdf_db:ns(ic,	   'http://www.swi.psy.uva.nl/mia/iconclass#').
 rdf_db:ns(ghs,	   'http://www.swi.psy.uva.nl/mia/ghs#').
+rdf_db:ns(vin,     'http://www.w3.org/2001/sw/WebOnt/guide-src/wine#').
+rdf_db:ns(food,    'http://www.w3.org/2001/sw/WebOnt/guide-src/food#').
 
-:- load_files([ library(rdf),
-		semweb(rdf_db),
-		semweb(rdfs),
-		rdfs_explorer,
-		concur,
-		semweb(rdf_edit)
+:- load_files([ library(rdf),		% parser
+		semweb(rdf_db),		% triple store
+		semweb(rdfs),		% RDFS rules
+		semweb(rdf_edit),	% transactions and changes
+		rdf_text,		% basic text representation
+		rules,			% rendering rules
+		rdfs_explorer,		% visualization
+		concur			% concurrency
 %		rdf_portray
 	      ],
 	      [ silent(true)
@@ -86,6 +96,10 @@ dbg :-
 
 :- catch(['~/.xpcerc'], _, true).
 
+rdf_file_extension(rdf).
+rdf_file_extension(rdfs).
+rdf_file_extension(owl).
+
 
 go :-
 %	rdfe_open_journal(journal, append),
@@ -103,6 +117,11 @@ go(['--wn'|T]) :-
 	go(T).
 go(['--ulan'|T]) :-
 	load(ulan),
+	go(T).
+go([File|T]) :-
+	file_name_extension(_, Ext, File),
+	rdf_file_extension(Ext), !,
+	rdf_load(File),
 	go(T).
 go([]) :-
 	new(X, rdfs_explorer),

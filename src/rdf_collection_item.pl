@@ -11,7 +11,6 @@
 :- use_module(semweb(rdf_db)).
 :- use_module(library(pce_graphical_browser)).
 :- use_module(library(rdf_template)).
-:- use_module(particle).
 	  
 :- pce_begin_class(rdf_list_browser, graphical_browser,
 		   "Browse a collection as a list").
@@ -80,16 +79,6 @@ fit(LB, MaxSize:[int]) :->
 	).
 
 :- pce_end_class(rdf_list_browser).
-
-
-:- begin_particle(rdf_list_rules, []).
-
-collection_item_class(rdf(_S, _P, literal(_)), _LB,
-		      rdf_literal_text).
-collection_item_class(_, _, rdf_object_text).
-
-:- end_particle.
-
 
 
 		 /*******************************

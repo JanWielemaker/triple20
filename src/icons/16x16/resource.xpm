@@ -1,0 +1,22 @@
+/* XPM */
+static char * resource_xpm[] = {
+"15 15 4 1",
+" 	c None",
+".	c gray43",
+"X	c #FFFFCCCCFFFF",
+"o	c black",
+"       .       ",
+"      .X.      ",
+"     .XXX.     ",
+"    .XXXXX.    ",
+"   .XooooXX.   ",
+"  .XXoXXXoXX.  ",
+" .XXXoXXXoXXX. ",
+".XXXXooooXXXXX.",
+" .XXXoXoXXXXX. ",
+"  .XXoXXoXXX.  ",
+"   .XoXXXoX.   ",
+"    .XXXXX.    ",
+"     .XXX.     ",
+"      .X.      ",
+"       .       "};
