@@ -44,7 +44,7 @@
 rdf_file_extension(rdf,  'RDF file').
 rdf_file_extension(rdfs, 'RDF Schema file').
 rdf_file_extension(owl,  'OWL ontology file').
-rdf_file_extension(rdfj, 'OntoShow project file').
+rdf_file_extension(rdfj, 'Triple20 project file').
 
 		 /*******************************
 		 *	    SNAPSHOTS		*
