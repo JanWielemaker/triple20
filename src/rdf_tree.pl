@@ -414,6 +414,26 @@ delete_hyper(N, Hyper:hyper) :->
 	;   true
 	).
 
+:- pce_group(drag_and_drop).
+
+preview_drop(N, R:name*) :->
+	"Show action on drop"::
+	(   R == @nil
+	->  send(N, report, status, '')
+	;   get(N, resource, NR),
+	    send(N, report, status, '%s: Accept drop %s', NR, R)
+	).
+
+drop(N, R:name) :->
+	get(N, resource, C),
+	rdfe_transaction(drop(C, R)).
+
+drop(C, R) :-				% drop R on C
+	rdfs_individual_of(C, rdfs:'Class'),
+	rdfs_individual_of(R, rdfs:'Class'),
+	rdfe_retractall(R, rdfs:subClassOf, _),
+	rdfe_assert(R, rdfs:subClassOf, C).
+
 :- pce_end_class(rdf_node).
 
 
