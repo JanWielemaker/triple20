@@ -57,6 +57,7 @@ typedef struct
 typedef struct
 {
 #ifdef WIN32
+  HINSTANCE	hinstance;
   HWND		window;
 #else /*WIN32*/
   int		pipe[2];
@@ -131,15 +132,15 @@ HiddenFrameClass()
   if ( !name )
   { char buf[50];
 
-    hinstance = GetModuleHandle("xpce2pl");
-    sprintf(buf, "PceCallWin%d", (int)hinstance);
+    context.hinstance = GetModuleHandle("xpce2pl");
+    sprintf(buf, "PceCallWin%d", (int)context.hinstance);
     name = strdup(buf);
 
     wndClass.style		= 0;
     wndClass.lpfnWndProc	= (LPVOID) call_wnd_proc;
     wndClass.cbClsExtra		= 0;
     wndClass.cbWndExtra		= 0;
-    wndClass.hInstance		= hinstance;
+    wndClass.hInstance		= context.hinstance;
     wndClass.hIcon		= NULL;
     wndClass.hCursor		= NULL;
     wndClass.hbrBackground	= GetStockObject(WHITE_BRUSH);
@@ -154,7 +155,7 @@ HiddenFrameClass()
 
 
 static void
-shutdown(void *closure)
+unsetup(int code, void *closure)
 { if ( context.window )
   { DestroyWindow(context.window);
     context.window = 0;
@@ -173,10 +174,10 @@ setup()
 				  "XPCE/SWI-Prolog call window",
 				  WS_POPUP,
 				  0, 0, 32, 32,
-				  NULL, NULL, hinstance, NULL);
-    PL_on_halt(shutdown, NULL);
+				  NULL, NULL, context.hinstance, NULL);
+    PL_on_halt(unsetup, NULL);
   }
-  DUNLOCK;
+  DUNLOCK();
 
   return TRUE;
 }
