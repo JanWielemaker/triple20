@@ -138,14 +138,6 @@ expand_relation(E, Pred:name) :->
 	).
 %	\+ rdfs_subproperty_of(Pred, rdfs:label).
 
-node_label(E, Resource:name, Label:name) :<-
-	"Compute label to use for Resource"::
-	(   get(E, show_namespace, @off)
-	->  rdfs_label(Resource, Label)
-	;   rdfs_ns_label(Resource, Label)
-	).
-
-
 :- pce_end_class(rdf_diagram_editor).
 
 

@@ -70,10 +70,9 @@ prompt_value(AL,
 	     Label:label=[name],
 	     For:for=[graphical]) :->
 	"Prompt for a (new) value"::
-	get(AL, window, Window),
 	(   Label == @default
-	->  get(Window, node_label, Subject, SubjectLabel),
-	    get(Window, node_label, Property, PropertyLabel),
+	->  rdfs_ns_label(Subject, SubjectLabel),
+	    rdfs_ns_label(Property, PropertyLabel),
 	    new(Lbl, string('Modify %s of %s', PropertyLabel, SubjectLabel))
 	;   Lbl = Label
 	),

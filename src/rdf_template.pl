@@ -5,9 +5,12 @@
 */
 
 
-:- module(rdf_template, []).
+:- module(rdf_template,
+	  [ call_rules/2
+	  ]).
 :- use_module(library(pce)).
 :- use_module(library(pce_template)).
+:- use_module(particle).
 
 :- pce_begin_class(rdf_visual, template,
 		   "Common behaviour to all RDF visualisers").
@@ -28,13 +31,6 @@ on_left_click(V) :->
 
 variable(show_namespace, bool := @on,  get, "Do (not) show namespace").
 
-node_label(T, Id:name, Label:name) :<-
-	"Get label to display for Id"::
-	(   get(T, show_namespace, @off)
-	->  rdfs_label(Id, Label)
-	;   rdfs_ns_label(Id, Label)
-	).
-
 :- pce_end_class(rdf_container).
 
 
@@ -47,3 +43,40 @@ container_with_send_method(Gr, Method, Gr) :-
 container_with_send_method(Gr, Method, Container) :-
 	get(Gr, contained_in, Container0),
 	container_with_send_method(Container0, Method, Container).
+
+
+		 /*******************************
+		 *	      PARTICLE		*
+		 *******************************/
+
+%	call_rules(+Obj, +Goal)
+%	
+%	Search the container classes for the first matching container
+%	defining Goal and call it.
+
+call_rules(Obj, Goal) :-
+	container_with_particle(Obj, Particle),
+	current_predicate(_, Particle:Goal),
+	Particle::Goal.
+
+container_with_particle(Obj, Particle) :-
+	get(Obj, class_name, Particle),
+	current_particle(Particle).
+container_with_particle(Obj, Particle) :-
+	(   get(Obj, contained_in, Container)
+	->  container_with_particle(Container, Particle)
+	;   get(Obj, create_context,
+		message(@arg1, instance_of, visual),
+		Context)
+	->  writeln(Context),
+	    container_with_particle(Context, Particle)
+	;   print_message(error, not_contained(Obj)),
+	    fail
+	).
+
+
+:- multifile
+	prolog:message/3.
+
+prolog:message(not_contained(Obj)) -->
+	[ 'Object ~p has no container'-[Obj] ].

@@ -41,6 +41,7 @@
 :- use_module(semweb(rdfs)).
 :- use_module(semweb(rdf_db)).
 :- use_module(owl).
+:- use_module(semweb(rdfs)).
 :- use_module(rdf_table).
 :- use_module(semweb(rdf_edit)).
 :- use_module(pce_history).
@@ -82,9 +83,8 @@ initialise(OV, Domain0:[prolog], Label:[name]) :->
 	send(D, right, P),
 	send(D, pen, 0),
 	send(new(report_dialog), below, P),
-	send(P, display,
-	     new(Tree, rdfs_hierarchy(Domain)),
-	     point(5,5)),
+	new(Tree, rdfs_hierarchy(Domain)),
+	send(P, display, Tree, point(5,5)),
 	send(Tree, selectable, @nil),	% allow selecting all nodes
 	send(Tree, message, message(OV, show_resource, @arg1, table)),
 	send(Tree, expand_domain),
@@ -438,15 +438,6 @@ button(OS, Dir:{forward,backward}, B:tool_button) :<-
 	"Get button for history navigation"::
 	get(OS?history, button, Dir, B).
 
-:- pce_group(label).
-
-node_label(OS, Id:name, Label:name) :<-
-	"Get label to display for Id"::
-	(   get(OS, show_namespace, @off)
-	->  rdfs_label(Id, Label)
-	;   rdfs_ns_label(Id, Label)
-	).
-
 :- pce_end_class(rdfs_sheet).
 
 
@@ -504,10 +495,10 @@ display_title(AL, Class:name) :->
 	"Display the title row"::
 	rdf_has(Class, rdf:type, Meta),
 	send(AL, append, 'Class', bold, right),
-	send(AL, append, rdf_resource_text(Class, AL), colspan := 2),
+	send(AL, append, rdf_resource_text(Class), colspan := 2),
 	send(AL, next_row),
 	send(AL, append, 'Meta Class', bold, right),
-	send(AL, append, rdf_resource_text(Meta), colspan := 2),
+	send(AL, append_resource, Meta, colspan := 2),
 	send(AL, next_row),
 	send(AL, append_owl_properties, Class),
 	(   rdf_has(Class, rdfs:comment, literal(Comment))
@@ -526,11 +517,18 @@ display_title(AL, Class:name) :->
 
 append_owl_properties(AL, Class:name) :->
 	(   owl_property(P),
-	    rdf_has(Class, P, Set, Prop),
-	    send(AL, append_resource, Prop),
-	    send(AL, append_resource, Set, colspan := 2),
+	    rdf_has(Class, P, Set, Prop)
+	->  send(AL, append, 'OWL Description facets', bold, center,
+		 colspan := 3, background := khaki1),
 	    send(AL, next_row),
-	    fail
+	    (   owl_property(P),
+		rdf_has(Class, P, Set, Prop),
+		send(AL, append_resource, Prop),
+		send(AL, append_resource, Set, colspan := 2),
+		send(AL, next_row),
+		fail
+	    ;   true
+	    )
 	;   true
 	).
 
@@ -707,7 +705,6 @@ append_continuation_value(AL, V:prolog) :->
 
 add_predicate(AL, From:button) :->
 	"Add another attribute"::
-	get(AL, window, Window),
 	(   setof(Pred, missing_subject_predicate(AL, Pred), Preds)
 	->  new(D, dialog('New predicate')),
 	    send(D, append, new(M, menu(predicate, choice,
@@ -716,7 +713,7 @@ add_predicate(AL, From:button) :->
 	    send(M, layout, vertical),
 	    send(M, multiple_selection, @on),
 	    (   member(Pred, Preds),
-		get(Window, node_label, Pred, Label),
+		rdfs_ns_label(Pred, Label),
 		send(M, append, menu_item(Pred, @default, Label)),
 		fail
 	    ;   true

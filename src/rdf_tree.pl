@@ -11,6 +11,7 @@
 :- use_module(semweb(rdf_db)).
 :- use_module(semweb(rdfs)).
 :- use_module(particle).
+:- use_module(rdf_template).
 
 resource(class,       image, image('16x16/class.xpm')).
 resource(metaclass,   image, image('16x16/Metaclass.gif')).
@@ -77,13 +78,6 @@ create_node(_H, V:rdf_vnode, N:rdf_node) :<-
 	get(V, role, Role),
 	Term =.. [Role, V],
 	new(N, Term).
-
-node_label(OT, Id:name, Label:name) :<-
-	"Get label to display for Id"::
-	(   get(OT, show_namespace, @off)
-	->  rdfs_label(Id, Label)
-	;   rdfs_ns_label(Id, Label)
-	).
 
 :- pce_group(build).
 
@@ -197,10 +191,10 @@ update(N) :->
 	).
 
 
-label(N, Label:name) :<-
+label(N, Label:graphical) :<-
 	"Create a label for the node"::
 	get(N, resource, Resource),
-	rdf_label_rules::label(Resource, Label).
+	call_rules(N, label(Resource, Label)).
 
 virtual(N, VN:rdf_vnode) :<-
 	get(N, hypered, virtual, VN).

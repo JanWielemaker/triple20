@@ -158,4 +158,12 @@ collection_item_class(_, _, rdf_object_text).
 :- end_particle.
 
 
+		 /*******************************
+		 *	  BIND TO OBJECTS	*
+		 *******************************/
 
+:- begin_particle(display,
+		  [ rdf_label_rules,
+		    class_hierarchy
+		  ]).
+:- end_particle.

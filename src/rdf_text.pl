@@ -288,11 +288,10 @@ can_add_value(T) :->
 
 add_value(T) :->
 	"Prompt for a new value"::
-	get(T, window, Window),
 	get(T, subject, Subject),
 	get(T, resource, Predicate),
-	get(Window, node_label, Subject, SubjectLabel),
-	get(Window, node_label, Predicate, PropertyLabel),
+	rdfs_ns_label(Subject, SubjectLabel),
+	rdfs_ns_label(Predicate, PropertyLabel),
 	new(Label, string('Extend %s of %s', PropertyLabel, SubjectLabel)),
 	send(T, prompt, Subject, Predicate, @default, Label).
 
