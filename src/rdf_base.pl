@@ -88,7 +88,7 @@ current_base_ontology(Id) :-
 	findall(X, (rdf_file(X, _);requires(X, _)), Xs),
 	sort(Xs, List),
 	member(Id, List),
-	forall(rdf_file(Id, FileSpec),		% check existence
+	forall(expand_category(Id, FileSpec),		% check existence
 	       absolute_file_name(FileSpec,
 				  [ access(read),
 				    file_errors(fail)
