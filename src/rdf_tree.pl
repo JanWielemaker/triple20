@@ -354,14 +354,11 @@ insert_node(R, Role, _, Cache, Parent) :-
 
 make_rdf_node_recogniser(G) :-
 	new(P, popup_gesture(@receiver?popup)),
-	new(C1, click_gesture(left, '', single,
-			      message(@receiver,
-				      on_left_click))),
 			      
 	new(C2, click_gesture(left, '', double,
 			      message(@receiver,
 				      on_double_left_click))),
-	new(G, handler_group(P, C1, C2)).
+	new(G, handler_group(P, C2)).
 			      
 
 popup(N, Popup:popup) :<-
@@ -373,14 +370,6 @@ event(N, Ev:event) :->
 	->  true
 	;   send(Ev, post, N?image, @rdf_node_recogniser)
 	).
-
-on_left_click(N) :->
-	"Select the current node"::
-	send(N?tree, selected, N).
-
-clicked(N, _:graphical) :->
-	"Resource has been clicked inside me"::
-	send(N, on_left_click).
 
 on_double_left_click(N) :->
 	"Select the current node"::

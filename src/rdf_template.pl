@@ -87,20 +87,8 @@ arm_object(W, Gr:graphical*) :->
 :- pce_end_class(rdf_arm).
 
 
-:- pce_begin_class(rdf_visual, template,
-		   "Common behaviour to all RDF visualisers").
-
-on_left_click(V) :->
-	"Left-click on object: find container that deals with it"::
-	container_with_send_method(V, clicked, Container), !,
-	send(Container, clicked, V).
-
-:- pce_end_class(rdf_visual).
-
-
 :- pce_begin_class(rdf_container, template,
 		   "Common behaviour for containers").
-:- use_class_template(rdf_visual).
 
 :- pce_group(namespace).
 
@@ -111,7 +99,6 @@ variable(show_namespace, bool := @on,  get, "Do (not) show namespace").
 
 :- pce_begin_class(rdf_resource_template, template,
 		   "RDF visual providing <-resource").
-
 
 :- pce_group(edit).
 
@@ -193,6 +180,10 @@ preview_drop(T, Resource:name*) :->
 
 drop(T, Resource:name) :->
 	call_rules(T, drop(T, Resource)).
+
+on_left_click(V) :->
+	"Left-click on object: find container that deals with it"::
+	call_rules(V, clicked(V)).
 
 :- pce_group(rdf).
 

@@ -26,7 +26,9 @@
 
 variable(resource,  name,  get, "Represented resource").
 variable(wrap,      {extend,wrap,wrap_fixed_width,clip}, get, "Wrapping mode").
-variable(opaque,    bool := @on, both, "Hide parts from event-handling").
+variable(opaque,    bool, both, "Hide parts from event-handling").
+
+class_variable(opaque, bool, @on).
 
 initialise(T, Resource:name) :->
 	send_super(T, initialise),
@@ -131,6 +133,8 @@ update(L) :->
 :- pce_begin_class(rdf_list_label, rdf_composite_label,
 		   "Show elements of a list").
 
+class_variable(opaque, bool, @off).
+
 update(L) :->				% TBD: limit length
 	get(L, resource, RDFList),
 	rdfs_list_to_prolog_list(RDFList, List),
@@ -207,6 +211,8 @@ update(L) :->
 :- pce_begin_class(owl_description_label, owl_class_label,
 		   "Represent an OWL class").
 
+class_variable(opaque, bool, @off).
+
 update(L) :->
 	"OWL Specialised labels"::
 	get(L, resource, Resource),
@@ -228,7 +234,8 @@ update(L) :->
 		send(L, append_resource, List)
 	    ;   send_super(L, update)
 	    )
-	;   send(L, append, rdf_resource_text(Resource))
+	;   send(L, append, rdf_resource_text(Resource)),
+	    send(L, opaque, @on)
 	).
 
 :- pce_end_class(owl_description_label).
@@ -236,6 +243,8 @@ update(L) :->
 
 :- pce_begin_class(owl_restriction_label, rdf_composite_label,
 		   "Represent an OWL restriction").
+
+class_variable(opaque, bool, @off).
 
 update(L) :->
 	get(L, resource, Resource),

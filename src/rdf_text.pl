@@ -20,7 +20,6 @@
 
 :- pce_begin_class(rdf_resource_text, text,
 		   "Visualize a resource as a text object").
-:- use_class_template(rdf_visual).
 :- use_class_template(rdf_resource_template).
 
 variable(resource,  name,  get, "Represented resource").

@@ -201,7 +201,7 @@ child_cache(R, Cache, Class) :-
 	    )
 	;   (   rdf_cache(lsorted(V), rdf_has(V, rdfs:subClassOf, R), Cache),
 	        Class = rdf_class_node
-	    ;   % \+ rdfs_subclass_of(R, rdfs:'Class'),
+	    ;   \+ rdfs_subclass_of(R, rdfs:'Class'),
 	        rdf_cache(lsorted(V), rdf_has(V, rdf:type, R), Cache),
 		Class = rdf_individual_node
 	    ;	rdfs_subclass_of(R, owl:'Restriction'),
@@ -301,6 +301,15 @@ drop_resource_command(C, R, change_type) :-
 
 :- end_particle.
 
+:- begin_particle(rdf_click, []).
+
+clicked(V) :-
+	get(V, resource, R),
+	format('Clicked ~p representing ~p~n', [V, R]).
+
+:- end_particle.
+
+
 
 		 /*******************************
 		 *	  BIND TO OBJECTS	*
@@ -311,7 +320,8 @@ drop_resource_command(C, R, change_type) :-
 		    rdf_icon_rules,
 		    class_hierarchy,
 		    rdf_resource_menu,
-		    rdf_drag_and_drop
+		    rdf_drag_and_drop,
+		    rdf_click
 		  ]).
 :- end_particle.
 
@@ -335,6 +345,14 @@ menu_item(Gr, edit, new(Role), Node) :-
 menu_item(Gr, edit, delete=delete_resource, Node) :-
 	(   container_with_method(Gr, delete_resource, Node)
 	->  true
+	).
+
+clicked(V) :-
+	get(V, resource, R),
+	get(V, container, rdf_node, Node),
+	(   get(Node, resource, R)
+	->  send(Node?tree, selected, Node)
+	;   super::clicked(V)
 	).
 
 :- end_particle.
