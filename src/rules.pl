@@ -561,7 +561,8 @@ menu_item(Gr, edit, new(Role), Node) :-
 	    send(Node, instance_of, rdf_node)
 	->  get(Node?caches, attribute_names, Roles),
 	    chain_list(Roles, List),
-	    member(Role, List)
+	    member(Role, List),
+	    Role \== rdf_orphan_node
 	).
 menu_item(Gr, Group, Item, Receiver) :-
 	outer::menu_item(Gr, Group, Item, Receiver),
