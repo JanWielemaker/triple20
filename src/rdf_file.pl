@@ -34,7 +34,8 @@
 	    rdf_snapshot_directory/1,	% -Dir
 	    rdf_ensure_snapshot_directory/0,
 	    rdf_archive_journal/1,	% +File
-	    rdf_install_archive/1	% +File
+	    rdf_install_archive/1,	% +File
+	    rdf_prepare_ontology_dirs/0
 	  ]).
 :- use_module(semweb(rdf_edit)).
 :- use_module(library(debug)).
@@ -45,6 +46,67 @@ rdf_file_extension(rdf,  'RDF file').
 rdf_file_extension(rdfs, 'RDF Schema file').
 rdf_file_extension(owl,  'OWL ontology file').
 rdf_file_extension(rdfj, 'Triple20 project file').
+
+
+		 /*******************************
+		 *	    FILE SEARCH		*
+		 *******************************/
+
+:- multifile
+	user:file_search_path/2.
+:- dynamic
+	user:file_search_path/2.
+
+%	rdf_prepare_ontology_dirs/0
+%	
+%	Prepare all subdirectories of the expansion of the ontology_root
+%	path-alias as ontology directories. It creates a cache directory
+%	if allowed and  adds  the  directory   to  the  search  path for
+%	ontology.
+
+rdf_prepare_ontology_dirs :-
+	(   absolute_file_name(ontology_root('.'),
+			       [ file_type(directory),
+				 solutions(all)
+			       ],
+			       Dir),
+	    prepare_ontology_root(Dir),
+	    fail
+	;   true
+	).
+
+prepare_ontology_root(Dir) :-
+	working_directory(Old, Dir),
+	call_cleanup(prepare_ontology_dir(.),
+		     working_directory(_, Old)).
+
+prepare_ontology_dir(Dir) :-
+	(   user:file_search_path(ontology, ontology_root(Dir))
+	->  true
+	;   assert(user:file_search_path(ontology, ontology_root(Dir)))
+	),
+	rdf_db:cache_dir(CacheBase),
+	concat_atom([Dir, CacheBase], /, CacheDir),
+	(   exists_directory(CacheDir)
+	->  true
+	;   catch(make_directory(CacheDir), _, fail)
+	->  debug(cache, 'Created cache directory ~w', [CacheDir])
+	;   true
+	),
+	forall(sub_dir(Dir, Sub),
+	       prepare_ontology_dir(Sub)).
+	
+sub_dir(Dir, Sub) :-
+	(   Dir == '.'
+	->  Pattern = '*'
+	;   atom_concat(Dir, '/*', Pattern)
+	),
+	expand_file_name(Pattern, Subs),
+	member(Sub, Subs),
+	Sub \== 'CVS',
+	\+ sub_atom(Sub, _, _, 0, '/CVS'), % skip CVS directories
+	exists_directory(Sub).
+
 
 		 /*******************************
 		 *	    SNAPSHOTS		*

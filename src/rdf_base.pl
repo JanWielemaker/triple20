@@ -38,7 +38,6 @@
 :- use_module(concur).
 :- use_module(semweb(rdf_db)).
 
-
 /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 This file defines commonly used namespaces,   base ontologies. etc. Note
 that the namespaces must be loaded *before*   they can be used in Prolog

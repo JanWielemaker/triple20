@@ -45,8 +45,7 @@ user:file_search_path(semweb,   library(semweb)).
    prolog_load_context(directory, Dir),
    asserta(file_search_path(triple20, Dir)),
    asserta(file_search_path(library,  triple20('.'))),
-   asserta(file_search_path(ontology, triple20('.'))),
-   asserta(file_search_path(ontology, triple20('../Ontologies'))).
+   asserta(file_search_path(ontology_root, triple20('../Ontologies'))).
 
 :- load_files([ rdf_base,		% Info on base ontologies
 		rdf_file,		% Info on files we manage
@@ -115,6 +114,8 @@ go(Argv) :-
 	usage,
 	halt(0).
 go(Argv) :-
+	debug(cache),
+	rdf_prepare_ontology_dirs,
 	(   select(Journal, Argv, Argv1),
 	    file_name_extension(_, rdfj, Journal)
 	->  (   select('--reset', Argv1, Argv2)
