@@ -141,10 +141,8 @@ popup(P, Popup:popup) :<-
 is_anonymous(TF) :->
 	"Test if the object is unnamed"::
 	get(TF, resource, Resource),
-	(   rdf_has(Resource, rdfs:label, _)
-	->  !, fail
-	;   sub_atom(Resource, _, _, _, '__')
-	), !.
+	\+ rdf_has(Resource, rdfs:label, _),
+	sub_atom(Resource, _, _, _, '__'), !.
 
 :- pce_group(layout).
 
@@ -403,34 +401,33 @@ class_variable(opaque, bool, @off).
 
 update(L) :->
 	get(L, resource, Resource),
-	call_rules(L, icon(Resource, Icon)),
-	send(L, icon, Icon),
-	rdf_has(Resource, owl:onProperty, Property),
-	(   rdf_has(Resource, owl:cardinality, Card)
-	->  send(L, append_resource, Property),
-	    send(L, print, ': cardinality = '),
-	    send(L, append_resource, Card)
-	;   rdf_has(Resource, owl:maxCardinality, Card)
-	->  send(L, append_resource, Property),
-	    send(L, print, ': cardinality =< '),
-	    send(L, append_resource, Card)
-	;   rdf_has(Resource, owl:minCardinality, Card)
-	->  send(L, append_resource, Property),
-	    send(L, print, ': cardinality >= '),
-	    send(L, append_resource, Card)
-	;   rdf_has(Resource, owl:hasValue, Value)
-	->  send(L, append_resource, Property),
-	    send(L, print, '='),
-	    send(L, append_resource, Value)
-	;   rdf_has(Resource, owl:allValuesFrom, Value),
-	    send(L, append_resource, Property),
-	    send(L, print, ': allValuesFrom '),
-	    send(L, append_resource, Value)
-	;   rdf_has(Resource, owl:someValuesFrom, Value),
-	    send(L, append_resource, Property),
-	    send(L, print, ': someValuesFrom '),
-	    send(L, append_resource, Value)
-	;   send(L, display, rdf_resource_text(Resource))
+	send(L, display_icons),
+	(   send(L, is_anonymous)
+	->  (   rdf_has(Resource, owl:onProperty, Property)
+	    ->  send(L, append_resource, Property)
+	    ;   send(L, print, '??')
+	    ),
+	    (   rdf_has(Resource, owl:cardinality, Card)
+	    ->  send(L, print, ': cardinality = '),
+		send(L, append_resource, Card)
+	    ;   rdf_has(Resource, owl:maxCardinality, Card)
+	    ->  send(L, print, ': cardinality =< '),
+		send(L, append_resource, Card)
+	    ;   rdf_has(Resource, owl:minCardinality, Card)
+	    ->  send(L, print, ': cardinality >= '),
+		send(L, append_resource, Card)
+	    ;   rdf_has(Resource, owl:hasValue, Value)
+	    ->  send(L, print, '='),
+		send(L, append_resource, Value)
+	    ;   rdf_has(Resource, owl:allValuesFrom, Value)
+	    ->  send(L, print, ': allValuesFrom '),
+		send(L, append_resource, Value)
+	    ;   rdf_has(Resource, owl:someValuesFrom, Value)
+	    ->  send(L, print, ': someValuesFrom '),
+		send(L, append_resource, Value)
+	    ;   true
+	    )
+	;   send(L, display_resource)
 	).
 
 :- pce_end_class(owl_restriction_label).

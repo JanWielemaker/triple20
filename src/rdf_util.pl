@@ -43,6 +43,7 @@
 	    rdf_set_object/3,		% +S, +P, +Object
 	    rdf_add_object/3,		% +S, +P, +O
 	    rdf_new_property/2,		% +S, +P
+	    rdf_new_property/3,		% +S, +P, +O
 	    rdf_list_operation/3,	% +Action, +Triple, +Resource
 	    rdf_delete_hierarchy/3,	% +Root, +Relation, +Options
 
@@ -56,6 +57,7 @@
 :- use_module(owl).
 :- use_module(library(option)).
 :- use_module(library(lists)).
+:- use_module(rdf_rules).
 
 %	user:goal_expansion(+NSGoal, -Goal)
 %	
@@ -159,19 +161,22 @@ adjust_restriction(R, R).
 %
 %		# resource
 %		Value is an arbitrary resource
-%		# literal
+%		# literal(Type)
 %		Value is a literal
 %		# list
 %		Value is a an indivisual of rdf:List
 
 property_type(Subject, Property, Type) :-
 	property_domain(Subject, Property, Domain),
-	(   Domain = all_values_from(LiteralClass),
-	    rdfs_subclass_of(LiteralClass, rdfs:'Literal')
-	->  Type = literal
-	;   Domain = all_values_from(LiteralClass),
-	    rdfs_subclass_of(LiteralClass, rdf:'List')
-	->  Type = list
+	(   Domain = all_values_from(Class)
+	->  (   rdfs_subclass_of(Class, rdfs:'Literal')
+	    ->  Type = literal(atom)
+	    ;   rdfs_subclass_of(Class, xsd:nonNegativeInteger)
+	    ->	Type = literal(integer(non_negative))
+	    ;   rdfs_subclass_of(Class, rdf:'List')
+	    ->  Type = list
+	    ;	Type = resource
+	    )
 	;   Type = resource
 	).
 
@@ -310,11 +315,14 @@ rdf_add_object(Subject, Predicate, Object) :-
 	).
 
 add_object(Subject, Predicate, Object) :-
-	rdf_default_file(Subject, File),
+	(   Object == '__not_filled'
+	->  File = user
+	;   rdf_default_file(Subject, File)
+	),
 	rdfe_assert(Subject, Predicate, Object, File).
 
 
-%	rdf_new_property(+Subject, +Property)
+%	rdf_new_property(+Subject, +Property, [Value])
 %	
 %	Add a dummy value for a new property on Subject that can be
 %	filled by editing or drag-and-drop modification.
@@ -322,19 +330,15 @@ add_object(Subject, Predicate, Object) :-
 %	TBD: Check cardinality
 
 rdf_new_property(Subject, Predicate) :-
-	property_type(Subject, Predicate, Type),
-	default_object(Type, Object, Source),
-	(   var(Source)
-	->  rdf_default_file(Subject, Source)
-	;   true
-	),
-	rdfe_transaction(rdfe_assert(Subject, Predicate, Object, Source),
-			 new_property).
+	rdf_new_property(Subject, Predicate, _).
 
-default_object(resource, '__not_filled', user).
-default_object(list, Nil, _) :-
-	rdf_equal(Nil, rdf:nil).
-default_object(literal, literal(''), _).
+rdf_new_property(Subject, Predicate, Object) :-
+	var(Object), !,
+	call_rules(@display, rdf_default(Subject, Predicate, Object)),
+	rdf_new_property(Subject, Predicate, Object).
+rdf_new_property(Subject, Predicate, Default) :-
+	rdfe_transaction(add_object(Subject, Predicate, Default),
+			 new_property).
 
 
 %	rdf_list_operation(+Action, +Triple, +Resource)

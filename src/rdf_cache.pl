@@ -314,16 +314,22 @@ update_loop :-
 update_cache :-
 	cache_attached(Cache, _Satelite),
 	(   cache_result(Cache, _)
-	->  rdf_update_cache(Cache, Modified),
+	->  catch(rdf_update_cache(Cache, Modified), E,
+		  update_error(Cache, E)),
 	    debug(rdf_cache, '~w: modified = ~w~n', [Cache, Modified])
 	;   cache_empty(Cache, _, _),
-	    rdf_update_empty(Cache, Modified),
+	    catch(rdf_update_empty(Cache, Modified), E,
+		  update_error(Cache, E)),
 	    debug(rdf_cache, '~w: empty modified = ~w~n', [Cache, Modified])
 	),
 	Modified == true,
 	in_pce_thread(updated(Cache)),
 	fail.
 update_cache.
+
+update_error(Cache, E) :-
+	print_message(error, rdf(cache_update_error(Cache, E))),
+	fail.
 
 updated(Cache) :-
 	(   rdf_cache_attached(Cache, Node),
@@ -335,3 +341,14 @@ updated(Cache) :-
 	;   true
 	).
 
+
+		 /*******************************
+		 *	       MESSAGES		*
+		 *******************************/
+
+:- multifile
+	prolog:message/3.
+
+prolog:message(rdf(cache_update_error(Cache, E))) -->
+	[ 'Failed to update cache ~w:'-[Cache], nl ],
+	'$messages':translate_message(E). 	% TBD: clean interface

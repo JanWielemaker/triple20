@@ -269,23 +269,28 @@ sub_menu(view).
 
 :- begin_rules(rdf_predicate, default).
 
-%	standard_predicate(+Resource, -Predicate)
+%	standard_predicate(+Resource, -Predicate, -Default)
 %	
-%	Return, on backtracking, predicates that should normally be defined
-%	immediately when defining a resource.  This should use properties of
-%	the ontology, but often it doesn't.
+%	Return, on backtracking, predicates  that   should  normally  be
+%	defined immediately when defining a   resource.  This should use
+%	properties of the  ontology,  but   often  it  doesn't.  Default
+%	specifies the default value. When left unspecified (unbound) the
+%	default is computed from the range of the property.
 
-standard_predicate(Resource, Pred) :-
+standard_predicate(Resource, Pred, _) :-
 	rdfs_individual_of(Resource, rdf:'Statement'), !,
 	(   rdf_equal(Pred, rdf:subject)
 	;   rdf_equal(Pred, rdf:predicate)
 	;   rdf_equal(Pred, rdf:object)
 	).
-standard_predicate(Resource, Pred) :-
+standard_predicate(Resource, Pred, _) :-
 	rdfs_individual_of(Resource, rdf:'Property'), !,
 	(   rdf_equal(Pred, rdfs:range)
 	;   rdf_equal(Pred, rdfs:domain)
 	).
+standard_predicate(Resource, Pred, _) :-
+	rdfs_individual_of(Resource, owl:'Restriction'), !,
+	rdf_equal(Pred, owl:onProperty).
 
 %	visible_predicate(+Resource, -Predicate)
 %	
@@ -306,6 +311,23 @@ class_predicate(Class, Predicate) :-
 	findall(P, rdfs_class_property(Class, P), Ps),
 	sort_by_label(Ps, Predicates),
 	member(Predicate, Predicates).
+
+%	rdf_default(+Subject, +Predicate, -Object)
+%	
+%	Provide a default value for a new Predicate on Subject
+
+rdf_default(_, P, literal('1')) :-
+	(   rdf_equal(P, owl:cardinality)
+	;   rdf_equal(P, owl:maxCardinality)
+	;   rdf_equal(P, owl:minCardinality)
+	), !.
+rdf_default(S, P, O) :-
+	property_type(S, P, Type),
+	default_object(Type, O).
+
+default_object(list, Nil) :-
+	rdf_equal(Nil, rdf:nil).
+default_object(literal(_), literal('')).
 
 :- end_rules.
 

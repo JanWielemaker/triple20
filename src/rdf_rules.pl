@@ -35,11 +35,30 @@
 
 	    call_rules/2,		% +Object, :Goal
 	    call_outer/1,		% :Goal
-	    call_inner/1		% :Goal
+	    call_inner/1,		% :Goal
+
+	    rdf_user_call/1,		% :Goal
+	    rdf_user_call/2		% +Graphical, :Goal
 	  ]).
 :- use_module(library(pce)).
 :- use_module(library(debug)).
 :- use_module(particle).
+
+
+%	user:goal_expansion(+NSGoal, -Goal)
+%	
+%	This predicate allows for writing down rdf queries in a friendly
+%	name-space fashion.  
+
+:- multifile
+	user:goal_expansion/2.
+
+user:goal_expansion(rdf_user_call(G0),
+		    rdf_user_call(G)) :-
+	expand_goal(G0, G).
+user:goal_expansion(rdf_user_call(Gr, G0),
+		    rdf_user_call(Gr, G)) :-
+	expand_goal(G0, G).
 
 
 		 /*******************************
@@ -269,6 +288,34 @@ container(Obj, Container) :-
 %	    trace,
 	    fail
 	).
+
+
+		 /*******************************
+		 *	  GUARDED CALLING	*
+		 *******************************/
+
+:- meta_predicate
+	rdf_user_call(:),
+	rdf_user_call(+, :).
+
+%	rdf_user_call(:Goal)
+%	
+%	Run goal, report messages in the status window.
+
+rdf_user_call(Goal) :-
+	rdf_user_call(@pce, Goal).
+
+rdf_user_call(Gr, Goal) :-
+	catch(Goal, E, rdf_rules:report_exception(Gr, E)).
+
+report_exception(Gr, E) :-
+	message_to_string(E, Message),
+	send(Gr, report, error, Message).
+
+
+		 /*******************************
+		 *	      MESSAGES		*
+		 *******************************/
 
 :- multifile
 	prolog:message/3.

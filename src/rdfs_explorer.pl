@@ -1234,7 +1234,7 @@ add_predicate(AL, From:graphical) :->
 	    Predicate \== @nil,
 
 	    get(AL, resource, Subject),
-	    rdf_new_property(Subject, Predicate)
+	    rdf_user_call(AL, rdf_new_property(Subject, Predicate))
 	;   send(AL, report, warning,
 		 'No more properties are defined')
 	).
@@ -1269,21 +1269,22 @@ missing_subject_predicate(AL, Property) :-
 
 add_standard_predicates(AL) :->
 	"Add missing predicates that should normally be present"::
-	rdfe_transaction(add_standard_predicates(AL),
-			 add_standard_predicates).
+	rdf_user_call(AL,
+		      rdfe_transaction(add_standard_predicates(AL),
+				       add_standard_predicates)).
 
 add_standard_predicates(AL) :-
 	get(AL, resource, Subject),
-	(   call_rules(AL, standard_predicate(Subject, Predicate)),
+	(   call_rules(AL, standard_predicate(Subject, Predicate, Default)),
 	    \+ rdf(Subject, Predicate, _),
-	    rdf_new_property(Subject, Predicate),
+	    rdf_new_property(Subject, Predicate, Default),
 	    fail
 	;   true
 	).
 
 has_standard_predicates(AL) :-
 	get(AL, resource, Subject),
-	call_rules(AL, standard_predicate(Subject, Predicate)),
+	call_rules(AL, standard_predicate(Subject, Predicate, _)),
 	\+ rdf(Subject, Predicate, _), !.
 
 :- pce_end_class(rdf_instance_sheet).

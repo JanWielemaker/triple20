@@ -122,21 +122,38 @@ restriction_facet(RestrictionID, R) :-
 	).
 restriction_facet(RestrictionID, has_value(Value)) :-
 	rdf_has(RestrictionID, owl:hasValue, Value).
-restriction_facet(RestrictionID, cardinality(Min, Max)) :-
-	(   rdf_has(RestrictionID, owl:cardinality, literal(Atom))
-	->  atom_number(Atom, Min),
+restriction_facet(R, cardinality(Min, Max)) :-
+	(   rdf_has(R, owl:cardinality, literal(Atom))
+	->  non_negative_integer(Atom, Min, R, owl:cardinality),
 	    Max = Min
-	;   rdf_has(RestrictionID, owl:minCardinality, literal(MinAtom))
-	->  atom_number(MinAtom, Min),
-	    (   rdf_has(RestrictionID, owl:maxCardinality, literal(MaxAtom))
-	    ->  atom_number(MaxAtom, Max)
+	;   rdf_has(R, owl:minCardinality, literal(MinAtom))
+	->  non_negative_integer(MinAtom, Min, R, owl:minCardinality),
+	    (   rdf_has(R, owl:maxCardinality, literal(MaxAtom))
+	    ->  non_negative_integer(MaxAtom, Max, R, owl:maxCardinality)
 	    ;	Max = inf
 	    )
-	;   rdf_has(RestrictionID, owl:maxCardinality, literal(MaxAtom))
-	->  atom_number(MaxAtom, Max),
+	;   rdf_has(R, owl:maxCardinality, literal(MaxAtom))
+	->  non_negative_integer(MaxAtom, Max, R, owl:maxCardinality),
 	    Min = 0
 	).
 	
+%	non_negative_integer(+Atom, -Integer, +Subject, +Predicate)
+%	
+%	Deduce integer value from rdf(Subject, Predicate, literal(Atom))
+%	and if a conversion error occurs warn compatible to the rdfs_validate
+%	library.
+
+non_negative_integer(Atom, Int, _, _) :-
+	catch(atom_number(Atom, Int), _, fail),
+	integer(Int),
+	Int >= 0.
+non_negative_integer(Atom, _, S, P) :-
+	rdf_equal(xsd:nonNegativeInteger, Range),
+	rdf_global_id(P, Pred),
+	print_message(error,
+		      rdf_illegal_object(S,Pred,literal(Atom),Range)),
+	fail.
+
 %	owl_merged_restriction(+Class, ?Property, ?Restriction)
 %	
 %	As owl_restriction_decl/3, but combines multiple restrictions
