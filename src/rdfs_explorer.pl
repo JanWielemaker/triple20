@@ -74,10 +74,15 @@ resource(open,		     image, image('16x16/open.xpm')).
 :- pce_begin_class(rdfs_explorer, persistent_frame,
 		   "Browse an RDFS database").
 
-variable(given_label,	      name*,  get, "User assigned label").
-variable(view_owl_class_extension, bool,   get, "Show/hide inferred class_extension").
+variable(given_label,	                 name*, get,
+	 "User assigned label").
+variable(view_owl_class_extension,       bool,  get,
+	 "Show/hide inferred class_extension").
+variable(view_inferred_super_properties, bool,  get,
+	 "Show/hide inferred super-properties").
 
 class_variable(view_owl_class_extension, bool, @on).
+class_variable(view_inferred_super_properties, bool, @off).
 
 initialise(OV, Domain0:[prolog], Label:[name]) :->
 	"Browse an RDFS ontology from given root"::
@@ -178,6 +183,7 @@ fill_tool_dialog(OV) :->
 				       message(OV, dialect, @arg1))),
 		    new(OWL, popup(owl))
 		  ]),
+	send(?(View, member, owl), label, 'OWL'),
 
 	send_list(Tools, append,
 		  [ add_missing_labels,
@@ -222,9 +228,13 @@ fill_tool_dialog(OV) :->
 	send_list(OWL, append,
 		  [ new(Entailment,
 			menu_item(class_extension,
-				  message(OV, view_owl_class_extension, @arg1)))
+				  message(OV, view_owl_class_extension, @arg1))),
+		    new(ViewSupreProps,
+			menu_item(super_properties,
+				  message(OV, view_inferred_super_properties, @arg1)))
 		  ]),
 	send(Entailment, selected, OV?view_owl_class_extension),
+	send(ViewSupreProps, selected, OV?view_inferred_super_properties),
 
 	send(SaveFile, update_message,
 	     message(OV, update_save_popup, SaveFile)),
@@ -251,12 +261,27 @@ append_tool_buttons(OV) :->
 		  ]).
 
 
-menu(OV, Name:name, Popup:popup) :<-
+menu(OV, Names:name ..., Popup:popup) :<-
 	"Get named menu from tool"::
+	Names = [Name|SubNames],
 	get(OV, member, tool_dialog, TD),
 	get(TD, menu_bar, MB),
-	get(MB, member, Name, Popup).
+	get(MB, member, Name, Popup0),
+	sub_popup(SubNames, Popup0, Popup).
 
+sub_popup([], P, P).
+sub_popup([Name|T], Popup0, Popup) :-
+	get(Popup0, member, Name, MenuItem),
+	get(MenuItem, popup, Popup1),
+	Popup1 \== @nil,
+	sub_popup(T, Popup1, Popup).
+
+menu_item(OV, Names:name ..., MenuItem:menu_item) :<-
+	"Get named menu-item from tool"::
+	append(Path, [Name], Names),
+	Msg =.. [menu|Path],
+	get(OV, Msg, Popup),
+	get(Popup, member, Name, MenuItem).
 
 search_field(OV, Field:prolog, Selected:[bool]) :->
 	"Define a field for textual search"::
@@ -270,6 +295,11 @@ tree(F, Tree:rdfs_hierarchy) :<-
 	"Get the tree object"::
 	get(F, member, hierarchy_window, P),
 	get(P, member, hierarchy, Tree).
+
+sheet(F, Name:name, Sheet:window) :<-
+	"Get named window from tabbed windows"::
+	get(F, member, rdf_sheet, TabbedWindow),
+	get(TabbedWindow, sheet, Name, Sheet).
 
 :- pce_group(find).
 
@@ -470,9 +500,7 @@ view_label_as(OV, As:name) :->
 	send(@resource_texts, for_all,
 	     message(@arg2, for_all,
 		     message(@arg1, update))),
-	(   get(OV, menu, view, View),
-	    get(View, member, label, PopupItem),
-	    get(PopupItem, popup, Popup)
+	(   get(OV, menu, view, label, Popup)
 	->  send(Popup, selection, As)
 	;   true
 	).
@@ -481,20 +509,27 @@ view_owl_class_extension(OV, Show:bool) :->
 	(   get(OV, view_owl_class_extension, Show)
 	->  true
 	;   send(OV, slot, view_owl_class_extension, Show),
-	    get(OV, menu, view, View),
-	    get(View, member, owl, OWLItem),
-	    get(OWLItem, popup, OWLPopup),
-	    get(OWLPopup, member, class_extension, Item),
+	    get(OV, menu_item, view, owl, class_extension, Item),
 	    send(Item, selected, Show),
 	    send(OV?tree, update)
+	).
+
+view_inferred_super_properties(OV, Show:bool) :->
+	(   get(OV, view_inferred_super_properties, Show)
+	->  true
+	;   send(OV, slot, view_inferred_super_properties, Show),
+	    get(OV, menu_item, view, owl, super_properties, Item),
+	    send(Item, selected, Show),
+	    (	get(OV, sheet, instance, InstanceSheet)
+	    ->	send(InstanceSheet, update)
+	    ;	true
+	    )
 	).
 
 dialect(OV, Dialect:{rdfs,owl_lite,owl_dl,owl_full}) :->
 	"Select visualisation dialect"::
 	rdf_set_dialect(Dialect),
-	(   get(OV, menu, view, View),
-	    get(View, member, dialect, PopupItem),
-	    get(PopupItem, popup, Popup)
+	(   get(OV, menu, view, dialect, Popup)
 	->  send(Popup, selection, Dialect)
 	;   true
 	).
@@ -1209,10 +1244,22 @@ reserved_instance_slot(Label) :-
 append_inferred_slots(AL) :->
 	"Append slots that can be inferred"::
 	get(AL, resource, I),
-	(   setof(P-Vs, setof(V, owl_has(I, P, V), Vs), Pairs),
-	    remove_super_properties(Pairs, Pairs1),
-	    sort_by_predicate_label(Pairs1, ByPred),
-	    member(Pred-Values, ByPred),
+	setof(P-Vs, setof(V, owl_has(I, P, V), Vs), Pairs),
+	remove_super_properties(Pairs, Pairs1, Covered),
+	send(AL, append_slot_values, Pairs1),
+	(   Covered \== [],
+	    call_rules(AL, view_inferred_super_properties)
+	->  send(AL, append, text('Super predicates', center, bold),
+		 halign := center, colspan := 2, background := khaki1),
+	    send(AL, next_row),
+	    send(AL, append_slot_values, Covered)
+	).
+
+	
+append_slot_values(AL, Pairs:prolog) :->
+	"Append list of Predicate-ListOfValues"::
+	sort_by_predicate_label(Pairs, ByPred),
+	(   member(Pred-Values, ByPred),
 	    \+ reserved_instance_slot(Pred),
 	    sort_by_label(Values, [V1|RestValues]),
 	    send(AL, append, rdf_predicate_cell(Pred)),
@@ -1227,18 +1274,18 @@ append_inferred_slots(AL) :->
 	;   true
 	).
 
-%	remove_super_properties(+Pairs, -Clean)
+%	remove_super_properties(+Pairs, -Clean, -Covered)
 %	
 %	If Pairs is a list of Property-Values, delete all elements whole
 %	values are completely covered by subproperties of Property.
 
-remove_super_properties(Set0, Set) :-
+remove_super_properties(Set0, Set, [P-Vs|T]) :-
 	select(P-Vs, Set0, Set1),
 	sub_property_values(P, Set1, SubValues),
 	sort(SubValues, Vs), !,
 	debug(owl, 'Values of ~p are covered by sub-properties', [P]),
-	remove_super_properties(Set1, Set).
-remove_super_properties(Set, Set).
+	remove_super_properties(Set1, Set, T).
+remove_super_properties(Set, Set, []).
 
 sub_property_values(_, [], []).
 sub_property_values(P, [SP-Vs|T], Values) :-

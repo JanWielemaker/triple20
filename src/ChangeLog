@@ -1,3 +1,10 @@
+Dec 01, 2003
+
+  * Added View/OWL/Super properties
+
+SNAPSHOT 0.3
+============
+
 Nov 20, 2003
 
   * ADDED: Check database for triples that are not in any context.  If

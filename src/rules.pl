@@ -896,6 +896,11 @@ view_owl_class_extension :-
 	send(Explorer, has_get_method, view_owl_class_extension),
 	get(Explorer, view_owl_class_extension, @on).
 
+view_inferred_super_properties :-
+	get(@particle, self, Explorer),
+	send(Explorer, has_get_method, view_inferred_super_properties),
+	get(Explorer, view_inferred_super_properties, @on).
+
 open_resource(Resource, How) :-
 	get(@particle, self, Explorer),
 	send(Explorer, open_resource, Resource, How).
