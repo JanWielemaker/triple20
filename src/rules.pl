@@ -522,6 +522,7 @@ drop_command(Gr, V, Command) :-
 	send(V, has_get_method, resource),
 	get(Gr, resource, C),
 	get(V, resource, R),
+	C \== R,			% do not allow dropping on `self'
 	inner::drop_resource_command(C, R, Command).
 
 drop_resource_command(C, R, move_property) :-

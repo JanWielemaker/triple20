@@ -190,7 +190,7 @@ parse_argv([File|T]) :-
 	rdfe_load(AbsName, [namespaces(NSList)]),
 	register_default_ns(AbsName, NSList),
 	(   access_file(File, write)
-	->  rdfe_set_file_property(File, default(fallback))
+	->  rdfe_set_file_property(File, default(all))
 	;   true
 	),
 	parse_argv(T).

@@ -1517,3 +1517,21 @@ arm(D, Arm:bool) :->
 	send(T, underline, Arm).
 
 :- pce_end_class.
+
+
+		 /*******************************
+		 *	       SAVE		*
+		 *******************************/
+
+check_saved :-
+	rdfe_is_modified(_), !,
+	(   rdfe_is_modified(File),
+	    send(@display, confirm, 'Save %s?', File),
+	    rdf_save(File, File),
+	    fail
+	;   true
+	).
+check_saved.
+
+:- at_halt(check_saved).
+	
