@@ -28,7 +28,18 @@ initialise(T, Resource:name, _Container:[object]) :->
 	"Create from resource and table"::
 	send(T, slot, resource, Resource),
 	get(T, label, Label),
-	send_super(T, initialise, Label).
+	send_super(T, initialise, Label),
+	send(@resource_texts, append, Resource, T).
+
+unlink(T) :->
+	get(T, resource, Resource),
+	send(@resource_texts, delete, Resource, T),
+	send_super(T, unlink).
+
+update(T) :->
+	"Update for possible databae changes"::
+	get(T, label, Label),
+	send(T, string, Label).
 
 label(T, Label:char_array) :<-
 	"Compute label from resource"::
@@ -37,11 +48,13 @@ label(T, Label:char_array) :<-
 
 resource(T, Resource:name) :->
 	"Modify the represented resource"::
-	(   get(T, resource, Resource)
+	get(T, resource, Old),
+	(   get(T, resource, Old)
 	->  true
-	;   send(T, slot, resource, Resource),
-	    get(T, label, Label),
-	    send(T, string, Label)
+	;   send(@resource_texts, delete, Old, T),
+	    send(T, slot, resource, Resource),
+	    send(@resource_texts, append, Resource, T),
+	    send(T, update)
 	).
 
 :- pce_global(@rdf_resource_text_recogniser,
@@ -80,6 +93,30 @@ entered(TF, Enter:bool) :->
 	).
 
 :- pce_end_class(rdf_resource_text).
+
+
+		 /*******************************
+		 *	      UPDATE		*
+		 *******************************/
+
+%	@resource_texts
+%	
+%	This object defines a table Resource --> resource text objects.
+
+:- pce_global(@resource_texts, new(chain_table)).
+
+:- listen(rdf_transaction(X), text_changes(X)),
+   listen(rdf_undo(X), text_changes(X)).
+
+text_changes(X) :-
+	debug(update, 'Transaction: ~w', [X]),
+	rdfe_transaction_member(X, Action),
+	arg(1, Action, Resource),
+	get(@resource_texts, member, Resource, TextChain),
+	debug(update, 'Updating resource-texts for ~p~n', [Resource]),
+	send(TextChain, for_all, message(@arg1, update)),
+	fail.
+text_changes(_).
 
 
 		 /*******************************

@@ -245,7 +245,8 @@ root_property(Class, P) :-
 :- begin_particle(rdf_node, display).
 
 menu_item(Group, Item) :-
-	super::menu_item(Group, Item).
+	super::menu_item(Group, Item),
+	Item \== hierarchy_location.
 menu_item(edit, new_class).
 menu_item(edit, new_individual).
 menu_item(edit, delete=delete_resource).
