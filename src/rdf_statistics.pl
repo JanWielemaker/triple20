@@ -38,18 +38,35 @@
 :- use_module(semweb(rdf_db)).
 :- use_module(semweb(rdf_edit)).
 
-:- pce_begin_class(rdf_statistics_dialog, dialog,
-		   "Show statistics").
+:- pce_begin_class(rdf_statistics_dialog, tabbed_window,
+		   "Show various statistics").
 
-initialise(D) :->
-	send_super(D, initialise, 'RDF Statistics'),
-	send(D, append, new(rdf_statistics_table)),
-	send(D, append, button(ok, message(D, destroy))).
+initialise(SD) :->
+	send_super(SD, initialise, 'RDF Statistics'),
+	send(SD, append, new(rdf_file_dialog), files),
+	send(SD, append, new(rdf_call_dialog), calls),
+	send(new(D2, dialog), below, SD),
+	send(D2, resize_message, message(D2, layout, @arg2)),
+	send(D2, append, button(ok, message(SD, destroy))).
+
 
 :- pce_end_class(rdf_statistics_dialog).
 
 
-:- pce_begin_class(rdf_statistics_table, tabular,
+		 /*******************************
+		 *		FILES		*
+		 *******************************/
+
+:- pce_begin_class(rdf_file_dialog, table_window,
+		   "Show statistics").
+
+initialise(D) :->
+	send_super(D, initialise, 'Loaded files', new(rdf_file_table)).
+
+:- pce_end_class(rdf_file_dialog).
+
+
+:- pce_begin_class(rdf_file_table, tabular,
 		   "Table with statistical information").
 
 
@@ -93,5 +110,44 @@ show_source(ST, Source:name) :->
 	send(ST, append, Loaded, halign := right),
 	send(ST, next_row).
 
-:- pce_end_class(rdf_statistics_table).
+:- pce_end_class(rdf_file_table).
 
+
+		 /*******************************
+		 *	       CALLS		*
+		 *******************************/
+
+:- pce_begin_class(rdf_call_dialog, table_window,
+		   "Show call statistics").
+
+initialise(D) :->
+	Khaki = (background := khaki1),
+	send_super(D, initialise, 'RDF call statistics', new(T, tabular)),
+	send(T, rules, all),
+	send(T, cell_spacing, -1),
+	send(T, cell_padding, size(5,3)),
+	send(T, append, 'Indexed', bold, center, Khaki, colspan := 3),
+	send(T, append, 'Calls',   bold, center, Khaki,
+	     rowspan := 2, valign := center),
+	send(T, next_row),
+	send(T, append, 'Subject', bold, center, Khaki),
+	send(T, append, 'Object', bold, center, Khaki),
+	send(T, append, 'Predicate', bold, center, Khaki),
+	send(T, next_row),
+	(   rdf_statistics(lookup(rdf(S,P,O), Calls)),
+	    send(T, append, S, bold, center),
+	    send(T, append, P, bold, center),
+	    send(T, append, O, bold, center),
+	    send(T, append, Calls, normal, right),
+	    send(T, next_row),
+	    fail
+	;   true
+	),
+	(   rdf_statistics(searched_nodes(Nodes))
+	->  send(T, append, 'Searched nodes', bold, right, colspan := 3),
+	    send(T, append, Nodes, normal, right),
+	    send(T, next_row)
+	;   true
+	).
+
+:- pce_end_class(rdf_call_dialog).
