@@ -415,6 +415,23 @@ delete_hyper(N, Hyper:hyper) :->
 	;   true
 	).
 
+:- pce_group(debug).
+
+print_cache_status(N) :->
+	get(N, cache, MyCache),
+	format('~p: from parent cache: ~w~n', [N, MyCache]),
+	send(N?caches, for_all,
+	     message(N, print_cache, @arg1?name)).
+
+print_cache(N, Role:name) :->
+	get(N?caches, value, Role, Cache),
+	(   rdf_cache:cache_attributes(Cache, _Generation, Size)
+	->  format('   ~w: ~w: size=~D~n', [Role, Cache, Size])
+	;   rdf_cache:cache_empty(Cache, _Generation, Empty)
+	->  format('   ~w: ~w: empty=~w~n', [Role, Cache, Empty])
+	;   format('   ~w: ~w: <unknown>~n', [Role, Cache])
+	).
+
 :- pce_end_class(rdf_node).
 
 
@@ -440,6 +457,13 @@ new(N, Role:name) :->
 	send(N?window, normalise, C, y),
 	send(C, show_dialog).
 
+unrelate_resource(N) :->
+	"Unlink from parent"::
+	get(N, resource, Subject),
+	get(N?parents?head, resource, Object),
+	rdf_has(Subject, rdfs:subClassOf, Object, P),
+	rdfe_transaction(rdfe_retractall(Subject, P, Object)).
+
 new_class(N) :->
 	"Create subclass of this class"::
 	send(N, new, rdf_class_node).
@@ -452,6 +476,14 @@ new_individual(N) :->
 
 
 :- pce_begin_class(rdf_individual_node, rdf_node).
+
+unrelate_resource(N) :->
+	"Unlink from parent"::
+	get(N, resource, Subject),
+	get(N?parents?head, resource, Object),
+	rdf_has(Subject, rdf:type, Object, P),
+	rdfe_transaction(rdfe_retractall(Subject, P, Object)).
+
 :- pce_end_class.
 
 

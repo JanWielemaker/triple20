@@ -370,9 +370,11 @@ clicked(V) :-
 	;   super::clicked(V)
 	).
 
-menu_item(Gr, Group, Item, Receiver) :-
-	super::menu_item(Gr, Group, Item, Receiver),
-	Item \== hierarchy_location.
+menu_item(Group, Item) :-
+	super::menu_item(Group, Item).
+menu_item(edit, unrelate=unrelate_resource).
+menu_item(edit, delete=delete_resource).
+
 menu_item(Gr, edit, new(Role), Node) :-
 	(   container_with_method(Gr, new, Node),
 	    send(Node, instance_of, rdf_node)
@@ -380,10 +382,9 @@ menu_item(Gr, edit, new(Role), Node) :-
 	    chain_list(Roles, List),
 	    member(Role, List)
 	).
-menu_item(Gr, edit, delete=delete_resource, Node) :-
-	(   container_with_method(Gr, delete_resource, Node)
-	->  true
-	).
+menu_item(Gr, Group, Item, Receiver) :-
+	super::menu_item(Gr, Group, Item, Receiver),
+	Item \== hierarchy_location.
 
 :- end_particle.
 
@@ -391,13 +392,20 @@ menu_item(Gr, edit, delete=delete_resource, Node) :-
 
 %	Drop onto a node in the hierarchy
 
-drop(move_class, Onto, From) :- %fail,
+drop(move_class, Onto, From) :-
 	get(From, triple, rdf(S, P, O)),
 	get(From, resource, S),
 	get(Onto, resource, New),
 	rdf_has(S, rdfs:subClassOf, O, P), !,
 	rdfe_transaction(rdfe_update(S, P, O, object(New)),
 			 move_class).
+drop(change_type, Onto, From) :-
+	get(From, triple, rdf(S, P, O)),
+	get(From, resource, S),
+	get(Onto, resource, New),
+	rdf_has(S, rdf:type, O, P), !,
+	rdfe_transaction(rdfe_update(S, P, O, object(New)),
+			 change_type).
 drop(Command, Onto, From) :-
 	super::drop(Command, Onto, From).
 
