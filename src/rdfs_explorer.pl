@@ -469,10 +469,14 @@ view_label_as(OV, As:name) :->
 
 :- pce_group(tools).
 
-add_missing_labels(_OV) :->
+add_missing_labels(OV) :->
 	"Add labels to objects that have no label"::
 	rdf_equal(rdfs:label, Property),
-	rdf_add_missing_labels(Property).
+	rdf_statistics(triples(T0)),		% dubious (threading)
+	rdf_add_missing_labels(Property),
+	rdf_statistics(triples(T1)),
+	TDiff is T1 - T0,
+	send(OV, report, status, 'Added %s triples', TDiff).
 
 :- pce_group(edit).
 
