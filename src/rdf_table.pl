@@ -230,7 +230,7 @@ do_add_value(Cell, Value:name, Type:{resource,literal}) :->
 	;   Object = Value
 	),
 	get(Cell, triple, rdf(S,P,_)),
-	rdf_add_object(S,P,Object).
+	rdf_add_object_or_anon_instance(S,P,Object).
 
 delete_all_values(Cell) :->
 	"Delete all values for this property"::
@@ -300,7 +300,7 @@ set_value(Cell, Value:name, Type:{resource,literal}) :->
 	;   Object = Value
 	),
 	get(Cell, triple, rdf(S,P,O)),
-	rdf_set_object(S,P,O,Object).
+	rdf_set_object_or_anon_instance(S,P,O,Object).
 
 type(Cell, Type:{resource,literal}) :->
 	"Change between resource and literal"::

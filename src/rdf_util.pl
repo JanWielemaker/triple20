@@ -44,9 +44,13 @@
 
 					% Edit operations
 	    rdf_set_object/4,		% +S, +P, +O, +NewObject
+	    rdf_set_object_or_anon_instance/4,
+					% +S, +P, +O, +NewObject
 	    rdf_set_object/3,		% +S, +P, +Object
 	    rdf_set_rev_object/4,	% +S, +P, +Rev, +Object
 	    rdf_add_object/3,		% +S, +P, +O
+	    rdf_add_object_or_anon_instance/3,
+					% +S, +P, +O
 	    rdf_new_property/2,		% +S, +P
 	    rdf_new_property/3,		% +S, +P, +O
 	    rdf_list_operation/3,	% +Action, +Triple, +Resource
@@ -329,6 +333,30 @@ set_object(Subject, Predicate, '__not_filled', _New) :-
 set_object(Subject, Predicate, Old, New) :-
 	rdfe_update(Subject, Predicate, Old, object(New)).
 
+%	rdf_set_object_or_anon_instance(+Subject, +Predicate, +Old, +New)
+%	
+%	As rdf_set_object/4, but  create  an   anonymous  instance  when
+%	setting a property  that  allows   for  all_values_from(C)  to a
+%	subclass of C.
+
+rdf_set_object_or_anon_instance(Subject, Predicate, Old, New) :-
+	property_domain(Subject, Predicate, Domain),
+	(   owl_satisfies(Domain, New)
+	->  rdfe_transaction(set_object(Subject, Predicate, Old, New),
+			     modify_property_value)
+	;   owl_satisfies(Domain, individual_of(New))
+	->  rdfe_transaction(set_object_anon(Subject, Predicate, Old, New),
+			     modify_property_value)
+	;   throw(error(domain_error(Domain, New), _))
+	).
+
+set_object_anon(Subject, Predicate, Old, Class) :-
+	rdf_bnode(New),
+	rdf_default_file(Subject, File),
+	rdfe_assert(New, rdf:type, Class, File),
+	set_object(Subject, Predicate, Old, New).
+
+
 %	rdf_set_object(+Subject, +Predicate, +New)
 %	
 %	Remove all rdf(Subject, Predicate, _) and add rdf(Subject,
@@ -377,6 +405,27 @@ add_object(Subject, Predicate, Object) :-
 	),
 	rdfe_assert(Subject, Predicate, Object, File).
 
+
+%	rdf_add_object_or_anon_instance(+Subject, +Predicate, +Object)
+%	
+%	See rdf_set_object_or_anon_instance/4
+
+rdf_add_object_or_anon_instance(Subject, Predicate, Object) :-
+	property_domain(Subject, Predicate, Domain),
+	(   owl_satisfies(Domain, Object)
+	->  rdfe_transaction(add_object(Subject, Predicate, Object),
+			     add_property_value)
+	;   owl_satisfies(Domain, individual_of(Object))
+	->  rdfe_transaction(add_object_anon(Subject, Predicate, Object),
+			     modify_property_value)
+	;   throw(error(domain_error(Domain, Object), _))
+	).
+
+add_object_anon(Subject, Predicate, Class) :-
+	rdf_bnode(Object),
+	rdf_default_file(Subject, File),
+	rdfe_assert(Object, rdf:type, Class, File),
+	rdfe_assert(Subject, Predicate, Object, File).
 
 %	rdf_set_rev_object(+Subject, +Predicate, +Reverse, +New)
 %	

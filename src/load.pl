@@ -56,6 +56,7 @@ user:file_search_path(semweb,   library(semweb)).
 		owl,			% OWL inferencing
 		rdf_text,		% basic text representation
 		rules,			% rendering rules
+		anon,			% Nicely show anonymous objects
 		rdfs_explorer		% visualization
 %		rdf_portray
 	      ],

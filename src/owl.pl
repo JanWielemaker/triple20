@@ -393,23 +393,44 @@ owl_description(ID, Restriction) :-
 		 *	   OWL_SATISFIES	*
 		 *******************************/
 
-%	owl_satisfies(+Specification, +Resource)
+%	owl_satisfies(+Specification, ?Resource)
 %	
 %	Test whether Resource satisfies Specification. All resources are
 %	considered to belong  to  rdfs:Resource,   which  is  not really
 %	enforced.
+%	
+%	Domain is one of
+%	
+%	  rdfs:Resource		  Allow for any resource
+%	  class(Class)		  Allow for a subclass of Class
+%	  union_of(Domains)	  
+%	  intersection_of(Domains)
+%	  complement_of(Domain)
+%	  one_of(Resources)	  One of these values
+%	  all_values_from(Class)  Individual of this class
+%	  some_values_from(Class) Not used
+%	  has_value(Value)	  Must have this value
+%	
+%	Resource can be a term individual_of(Class),  in which case this
+%	predicate succeeds if any individual  of   Class  is accepted by
+%	Domain.
 
 					% Short-cut
 owl_satisfies(Domain, Resource) :-
 	rdf_equal(rdfs:'Resource', Domain), !,
 	(   atom(Resource)
 	->  true
-	;   rdf_subject(Resource)
+	;   var(Resource)
+	->  rdf_subject(Resource)
+	;   Resource = individual_of(_)
 	).
 					% Descriptions
 owl_satisfies(class(Domain), Resource) :- !,
 	(   rdf_equal(Domain, rdfs:'Resource')
 	->  true
+	;   Resource = individual_of(Class),
+	    atom(Class)
+	->  fail
 	;   rdfs_subclass_of(Resource, Domain)
 	).
 owl_satisfies(union_of(Domains), Resource) :- !,
@@ -423,7 +444,11 @@ owl_satisfies(one_of(List), Resource) :- !,
 	member(Resource, List).
 					% Restrictions
 owl_satisfies(all_values_from(Domain), Resource) :- !,
-	owl_individual_of(Resource, Domain).
+	(   Resource = individual_of(Class),
+	    atom(Class)
+	->  rdfs_subclass_of(Class, Domain)
+	;   owl_individual_of(Resource, Domain)
+	).
 owl_satisfies(some_values_from(_Domain), _Resource) :- !.
 owl_satisfies(has_value(Value), Resource) :-
 	rdf_equal(Value, Resource).	% TBD: equality

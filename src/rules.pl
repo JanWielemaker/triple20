@@ -554,7 +554,7 @@ drop_files(V, Files) :-
 	      E, report_exception(V, E)).
 
 file_to_url(File, URL) :-
-	atom_concat('file:', File, URL).
+	atom_concat('file://', File, URL).
 
 drop_file_resource(R, URLs) :-
 	forall(member(URL, URLs),
@@ -828,7 +828,7 @@ drop_command(_Me, _Resource, modify) :-
 drop(modify, Gr, V) :-
 	get(V, resource, Resource),
 	get(Gr, triple, rdf(Subject, Predicate, Old)),
-	rdf_set_object(Subject, Predicate, Old, Resource).
+	rdf_set_object_or_anon_instance(Subject, Predicate, Old, Resource).
 
 :- end_rules.
 

@@ -36,6 +36,7 @@
 :- use_module(semweb(rdfs)).
 :- use_module(owl).
 :- use_module(rdf_dialog).
+:- use_module(rdf_rules).
 
 resource(tree,	   image, image('16x16/hierarchy.xpm')).
 resource(search,   image, image('16x16/binocular.xpm')).
@@ -190,7 +191,7 @@ selection(OI, Term:name*) :->
 	get(OI, member, text_item, TI),
 	(   Term == @nil
 	->  send(TI, clear)
-	;   rdfs_label(Term, Label),
+	;   call_rules(OI, label_text(Term, Label)),
 	    send(TI, selection, Label)
 	),
 	send(OI, classify_term).
@@ -278,7 +279,10 @@ classify_term(OI) :->
 	(   get(OI, slot, selection, Term),
 	    Term \== @nil
 	->  get(OI, domain, Domain),
-	    (	owl_satisfies(Domain, Term)
+	    (	(   owl_satisfies(Domain, Term)
+		;   rdfs_individual_of(Term, rdfs:'Class'),
+		    owl_satisfies(Domain, individual_of(Term))
+		)
 	    ->	(   get(OI, allow_abstract, @on)
 		->  Class = ok
 		;   (   fail	% send(O, abstract, Term)
