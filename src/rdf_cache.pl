@@ -28,6 +28,7 @@
 	cache_result/2,			% +Index, -ResultSet
 	cache_attached/2,		% +Index, +Satelite
 	cache_empty/3,			% +Index, +Generation, Bool
+	cache_statistics/3,		% +Index, -Time, -LastModified
 	next_cache/1.			% +Index
 
 :- meta_predicate
@@ -128,8 +129,10 @@ rdf_update_cache(Cache, false) :-
 	cache_attributes(Cache, Generation, _Size),
 	rdf_generation(Generation), !.
 rdf_update_cache(Cache, Modified) :-
+	statistics(cputime, CPU0),
 	compute(Cache, Values),
 	Result =.. [values|Values],
+
 	(   cache_result(Cache, Result)
 	->  RawModified = false
 	;   retract(cache_result(Cache, _))
@@ -138,11 +141,21 @@ rdf_update_cache(Cache, Modified) :-
 	;   assert(cache_result(Cache, Result)),
 	    RawModified = new
 	),
+
 	rdf_generation(Generation),
 	functor(Result, _, Arity),
 	retractall(cache_attributes(Cache, _, _)),
 	assert(cache_attributes(Cache, Generation, Arity)),
 	retractall(cache_empty(Cache, _, _)),
+
+	(   Modified == false
+	->  true
+	;   statistics(cputime, CPU1),
+	    CPU is CPU1 - CPU0,
+	    get_time(Now),
+	    retractall(cache_statistics(Cache, _, _)),
+	    assert(cache_statistics(Cache, CPU, Now))
+	),
 	Modified = RawModified.
 
 %	compute(+Cache, -ResultList)
