@@ -101,6 +101,7 @@ initialise(OV, Domain0:[prolog], Label:[name]) :->
 	send(OV, show_resource, TheRoot, table),
 	listen(OV, rdf_undo(_,_), send(OV, refresh)),
 	listen(OV, rdf_transaction(_), send(OV, refresh)),
+	listen(OV, rdf_reset, send(OV, refresh)),
 	send(OV, refresh),
 	send(OV, set_label).
 
@@ -136,10 +137,8 @@ fill_tool_dialog(OV) :->
 
 	send_list(File, append,
 		  [ menu_item(new_window),
-		    menu_item(open_project,
-			      condition := not(message(OV, has_project))),
-		    menu_item(new_project,
-			      condition := not(message(OV, has_project))),
+		    menu_item(open_project),
+		    menu_item(new_project),
 		    gap,
 		    menu_item(load_ontology),
 		    menu_item(new_file),
@@ -349,6 +348,7 @@ open_project(OV) :->
 	get(@finder, file, open,
 	    tuple('RDF Editor journal', rdfj),
 	    FileName),
+	rdfe_reset,
 	rdfe_open_journal(FileName, append),
 	send(OV, set_label).
 
@@ -357,6 +357,7 @@ new_project(OV) :->
 	get(@finder, file, save,
 	    tuple('RDF Editor journal', rdfj),
 	    FileName),
+	rdfe_reset,
 	rdfe_open_journal(FileName, write),
 	send(OV, set_label).
 
@@ -618,11 +619,13 @@ initialise(AL, Class:[name]) :->
 	;   true
 	),
 	property_cache(Cache),
-	rdf_cache_attach(Cache, AL).
+	rdf_cache_attach(Cache, AL),
+	listen(AL, rdf_reset, send(AL, resource, @nil)).
 
 unlink(AL) :->
 	property_cache(Cache),
 	rdf_cache_detach(Cache, AL),
+	unlisten(AL),
 	send_super(AL, unlink).
 
 property_cache(Cache) :-
@@ -801,8 +804,12 @@ initialise(AL, Instance:[name]) :->
 	(   Instance \== @default
 	->  send(AL, resource, Instance)
 	;   true
-	).
+	),
+	listen(AL, rdf_reset, send(AL, resource, @nil)).
 
+unlink(AL) :->
+	unlisten(AL),
+	send_super(AL, unlink).
 
 attach_cache(AL) :->
 	"Attach to the caching system"::

@@ -50,7 +50,19 @@ initialise(H, Root:[name]) :->
 	send(H, level_gap, 15),
 	send(H, neighbour_gap, 1),
 	new(RootNode, rdf_root_node(TheRoot)),
-	send(H, root, RootNode).
+	send(H, root, RootNode),
+	listen(H, rdf_reset, send(H, clear)).
+
+unlink(H) :->
+	unlisten(H),
+	send_super(H, unlink).
+
+clear(H) :->
+	(   get(H, root, Root)
+	->  send(Root?sons, for_all, message(@arg1, delete_tree)),
+	    send(Root, update)
+	;   true
+	).
 
 expand_root(H) :->
 	"Expand the root node"::
