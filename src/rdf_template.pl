@@ -83,14 +83,18 @@ arm_object(W, Gr:graphical*) :->
 	->  (   Old == Gr
 	    ->	true			% no change
 	    ;	send(W, delete_hypers, arm),
-		send(Old, arm, @off)
+		send(Old, arm, @off),
+		(   Gr \== @nil
+		->  send(Gr, arm, @on),
+		    new(_, hyper(W, Gr, arm, arm_window))
+		;   true
+		)
 	    )
-	;   true
-	),
-	(   Gr \== @nil
-	->  send(Gr, arm, @on),
-	    new(_, hyper(W, Gr, arm, arm_window))
-	;   true
+	;   (   Gr \== @nil
+	    ->  send(Gr, arm, @on),
+		new(_, hyper(W, Gr, arm, arm_window))
+	    ;   true
+	    )
 	).
 
 :- pce_end_class(display).
