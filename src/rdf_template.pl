@@ -1,12 +1,37 @@
-/*  File:    rdf_template.pl
-    Author:  Jan Wielemaker
-    Created: Feb 27 2003
-    Purpose: Define common template functionality
+/*  $Id$
+
+    Part of SWI-Prolog
+
+    Author:        Jan Wielemaker
+    E-mail:        jan@swi.psy.uva.nl
+    WWW:           http://www.swi-prolog.org
+    Copyright (C): 1985-2002, University of Amsterdam
+
+    This program is free software; you can redistribute it and/or
+    modify it under the terms of the GNU General Public License
+    as published by the Free Software Foundation; either version 2
+    of the License, or (at your option) any later version.
+
+    This program is distributed in the hope that it will be useful,
+    but WITHOUT ANY WARRANTY; without even the implied warranty of
+    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+    GNU General Public License for more details.
+
+    You should have received a copy of the GNU Lesser General Public
+    License along with this library; if not, write to the Free Software
+    Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
+
+    As a special exception, if you link this library with other files,
+    compiled with a Free Software compiler, to produce an executable, this
+    library does not by itself cause the resulting executable to be covered
+    by the GNU General Public License. This exception does not however
+    invalidate any other reasons why the executable file might be covered by
+    the GNU General Public License.
 */
 
-
 :- module(rdf_template,
-	  [ call_rules/2,
+	  [ call_rules/2,		% +Object, :Goal
+	    call_outer/1,		% :Goal
 	    container_with_get_method/3, % +Gr, +Method, -Container
 	    container_with_send_method/3
 	  ]).
@@ -105,11 +130,6 @@ arm_object(W, Gr:graphical*) :->
 
 :- pce_begin_class(rdf_container, template,
 		   "Common behaviour for containers").
-
-:- pce_group(namespace).
-
-variable(show_namespace, bool := @on,  get, "Do (not) show namespace").
-
 :- pce_end_class(rdf_container).
 
 
@@ -343,6 +363,19 @@ call_rules(Obj, Goal) :-
 	current_predicate(_, Particle:Goal), !,
 	with_container(Container, Particle::Goal).
 
+%	call_outer(+Goal)
+%	
+%	Called from a ruleset to invoke  rules of the outer environment.
+%	Where  super::Goal  walks   up    the   inheritance   hierarchy,
+%	outer::Goal walks the contained-in hierarchy.
+
+call_outer(Goal) :-
+	current_container(C0),
+	container(C0, C1),
+	container_with_particle(C1, Container, Particle),
+	current_predicate(_, Particle:Goal), !,
+	with_container(Container, Particle::Goal).
+
 with_container(_Container, Goal) :-
 	Goal,
 	true.				% avoid last-call optimisation
@@ -361,19 +394,29 @@ container_with_particle(Obj, Obj, Particle) :-
 	current_particle(Particle),
 	debug(container, '~p has particle ~p', [Obj, Particle]).
 container_with_particle(Obj, Container, Particle) :-
-	(   get(Obj, rdf_container, Container0)
-	->  debug(container, 'Try container of ~p: ~p', [Obj, Container0]),
-	    container_with_particle(Container0, Container, Particle)
+	container(Obj, Container0),
+	container_with_particle(Container0, Container, Particle).
+
+%	container(+Object, -Container)
+%	
+%	Find container (context) in which Object   exists. If the object
+%	is being created, <-create_context  finds   the  receiver of the
+%	XPCE method in which the initialisation   method is executed or,
+%	in other words, the context that is creating us.
+
+container(Obj, Container) :-
+	(   get(Obj, rdf_container, Container)
+	->  debug(container,
+		  'Try container of ~p: ~p', [Obj, Container])
 	;   get(Obj, create_context,
 		message(@arg1, instance_of, visual),
-		Context)
-	->  debug(container, 'Try create context of ~p: ~p~n', [Obj, Context]),
-	    container_with_particle(Context, Container, Particle)
+		Container)
+	->  debug(container,
+		  'Try create context of ~p: ~p~n', [Obj, Container])
 	;   print_message(error, not_contained(Obj)),
 %	    trace,
 	    fail
 	).
-
 
 :- multifile
 	prolog:message/3.

@@ -30,7 +30,7 @@
 */
 
 
-:- module(rdfs_explorer,
+:- module(t20_explorer,
 	  [
 	  ]).
 :- use_module(library(pce)).
@@ -616,10 +616,11 @@ initialise(OS) :->
 	send(OS, ver_shrink, 100),
 	send_list(OS, append,
 		  [ table_window(class,    new(rdfs_class_sheet)),
-		    table_window(instance, new(rdfs_instance_sheet))
+		    table_window(instance, new(rdfs_instance_sheet)),
+		    table_window(triples,  new(rdf_cached_triple_table))
 		  ]).
 
-sheet(OS, Name:{class,instance}, Table:rdf_tabular) :<-
+sheet(OS, Name:name, Table:rdf_tabular) :<-
 	"Get named table"::
 	get(OS, member, Name, Window),
 	get(Window?graphicals, head, Table).
@@ -638,6 +639,12 @@ resource(OS, Resource:name) :->
 	    send(OS, on_top, instance)
 	),
 	send(OS?history, location, Resource).
+
+triples(OS, Cache:int*) :->
+	"Display triple-set from (query-) cache"::
+	send(OS, on_top, triples),
+	get(OS, sheet, triples, TripleSheet),
+	send(TripleSheet, cache, Cache).
 
 button(OS, Dir:{forward,backward}, B:tool_button) :<-
 	"Get button for history navigation"::

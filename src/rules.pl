@@ -34,6 +34,7 @@
 	  ]).
 :- use_module(library(debug)).
 :- use_module(particle).
+:- use_module(rdf_template).		% Get call_outer.  Must move
 :- use_module(semweb(rdfs)).
 :- use_module(semweb(rdf_db)).
 :- use_module(semweb(rdf_edit)).
@@ -363,9 +364,13 @@ parent(R, Parent, rdf_class_node) :-
 	rdf_has(R, rdfs:subClassOf, Parent).
 parent(R, Parent, rdf_property_node) :-
 	rdf_has(R, rdfs:subPropertyOf, Parent).
-parent(R, Parent, rdf_individual_node) :-
+parent(R, Parent, Role) :-
 	rdf_has(R, rdf:type, Parent),
-	\+ rdfs_individual_of(R, rdfs:'Class').
+	\+ rdfs_individual_of(R, rdfs:'Class'),
+	(   rdfs_subclass_of(Parent, rdf:'Property')
+	->  Role = rdf_property_node
+	;   Role = rdf_individual_node
+	).
 parent(R, Parent, rdf_part_node) :-
 	rdf_has(Parent, erc:has_part, R).
 parent('__orphan_classes', Root, rdf_orphan_node) :-
@@ -578,6 +583,10 @@ icon_resource(R, Icon) :-
 child_cache(R, Cache, rdf_property_node) :-
 	rdf_cache(lsorted(V), rdf_has(V, rdfs:subPropertyOf, R), Cache).
 
+menu_item(Group, Item) :-
+	outer::menu_item(Group, Item).
+menu_item(view, triples=view_triples).
+
 :- end_particle.
 
 :- begin_particle(rdf_root_node, rdf_node).
@@ -784,5 +793,19 @@ sub_menu(type).
 icon_resource(_, inferred).
 icon_resource(R, Icon) :-
 	super::icon_resource(R, Icon).
+
+:- end_particle.
+
+
+		 /*******************************
+		 *	      TOOL		*
+		 *******************************/
+
+:- begin_particle(rdfs_explorer, []).
+
+show_triple_cache(Cache) :-
+	get(@particle, self, Tool),
+	get(Tool, member, rdfs_sheet, Sheet),
+	send(Sheet, triples, Cache).
 
 :- end_particle.

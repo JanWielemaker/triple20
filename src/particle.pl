@@ -127,6 +127,7 @@ user:goal_expansion(super::G, S:G) :-
 	    ;	throw(error(ambiguous(super, Supers), _))
 	    )
 	).
+user:goal_expansion(outer::G, call_outer(G)) :- !. % See rdf_template
 user:goal_expansion(::G, particle:particle_self(G)) :-
 	loading_particle(_, _).
 	

@@ -716,6 +716,13 @@ unrelate_resource(N) :->
 
 
 :- pce_begin_class(rdf_property_node, rdf_node).
+
+view_triples(N) :->
+	"View triples on this relation"::
+	get(N, resource, P),
+	rdf_cache(rdf(S,P,O), rdf(S,P,O), Cache),
+	call_rules(N, show_triple_cache(Cache)).
+
 :- pce_end_class.
 
 :- pce_begin_class(rdf_part_node, rdf_node).

@@ -36,7 +36,8 @@
 	    owl_description/2,		% +Resource, -Description
 	    owl_cardinality_on_subject/3, % +Subject, +Predicate, -Card
 	    owl_satisfies/2,		% +Spec, +Resource
-	    owl_individual_of/2		% ?Resource, +Description
+	    owl_individual_of/2,	% ?Resource, +Description
+	    owl_has/3			% +Subject, +Predicate, ?Object
 	  ]).
 :- use_module(library(lists)).
 :- use_module(semweb(rdf_db)).
@@ -424,6 +425,36 @@ intersection_of(List, Resource) :-
 	).
 intersection_of(Nil, _) :-
 	rdf_equal(rdf:nil, Nil).
+
+
+		 /*******************************
+		 *	      PROPERTY		*
+		 *******************************/
+
+%	owl_has(+Subject, +Predicate, ?Object)
+%	
+%	True if the property is stored  or   can  be  inferred using OWL
+%	entailment rules.
+
+owl_has(Subject, Predicate, Object) :-
+	rdf_has(Subject, Predicate, Object).
+owl_has(Subject, Predicate, Object) :-
+	rdfs_individual_of(Predicate, owl:'SymmetricProperty'),
+	owl_has(Object, Predicate, Subject).
+
+
+
+owl_has(Subject, Predicate, Object) :-
+	(   rdfs_individual_of(Predicate, owl:'TransitiveProperty')
+	->  rdf_reachable(Subject, Predicate, Object)
+	;   rdf_has(Subject, Predicate, Object)
+	).
+owl_has(Subject, Predicate, Object) :-
+	(   rdfs_individual_of(Predicate, owl:'TransitiveProperty')
+	->  rdf_reachable(Subject, Predicate, Object)
+	;   rdf_has(Subject, Predicate, Object)
+	).
+
 
 
 

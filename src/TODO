@@ -35,3 +35,13 @@
 
 	+ Warn on resources that end/start with blank space and other
 	  non-canonical stuff (multiple spaces, tabs, newline).
+
+================================================================
+* OWL
+
+	+ Handle owl:intersectionOf and other description facets
+
+================================================================
+* QUERY
+
+	+ Result-set is (as in SeRQL) an RDF graph.

@@ -335,6 +335,13 @@ triple(C, Triple:prolog) :<-
 initialise(T, Triples:[prolog]) :->
 	"Create from triples"::
 	send_super(T, initialise),
+	get(T, layout_manager, Table),
+	get(Table, column, 1, @on, C1),
+	get(Table, column, 2, @on, C2),
+	get(Table, column, 3, @on, C3),
+	new(R, rubber),
+	send(R, minimum, 100),
+	send_list([C1,C2,C3], rubber, R),
 	(   Triples \== @default
 	->  send(T, triples, Triples)
 	;   true
@@ -343,11 +350,11 @@ initialise(T, Triples:[prolog]) :->
 
 display_title(T) :->
 	"Display title row"::
-	send(T, append, 'Subject',
+	send(T, append, subject?label_name,
 	     bold, halign := center, background := khaki1),
-	send(T, append, 'Predicate',
+	send(T, append, predicate?label_name,
 	     bold, halign := center, background := khaki1),
-	send(T, append, 'Object',
+	send(T, append, object?label_name,
 	     bold, halign := center, background := khaki1),
 	send(T, next_row).
 
@@ -369,6 +376,56 @@ triple(T, Subject:name, Predicate:name, Object:prolog) :->
 
 :- pce_end_class(rdf_triple_table).
 
+
+:- pce_begin_class(rdf_cached_triple_table, rdf_triple_table,
+		   "Show table of plain triples from a result-cache").
+
+%	->initialise: Cache:int
+%	
+%	Create a triple table from a cache identifier.  The cache must
+%	return triples of the form rdf(Subject, Predicate, Object).
+
+initialise(T, Cache:[int]) :->
+	send_super(T, initialise),
+	default(Cache, @nil, TheCache),
+	send(T, cache, TheCache).
+
+cache(T, Cache:int*) :->
+	"Change the cache"::
+	(   get(T, cache, Cache)
+	->  true
+	;   send(T, detach_cache),
+	    send(T, clear),
+	    send(T, slot, cache, Cache),
+	    rdf_cache_attach(Cache, T),
+	    send(T, update)
+	).
+
+%	->update
+%	
+%	Update after cache change.  TBD: incremental update!
+
+update(T, _Cache:[int]) :->
+	"Update"::
+	send(T, clear),
+	send(T, display_title),
+	get(T, cache, Cache),
+	(   Cache == @nil
+	->  true
+	;   rdf_cache_result_set(Cache, Triples),
+	    functor(Triples, _, Cardinality),
+	    (   between(1, Cardinality, I),
+		arg(I, Triples, Triple),
+		(   Triple = rdf(S,P,O)
+		->  send(T, triple, S, P, O)
+		;   throw(error(type_error(triple, Triple), _))
+		),
+		fail
+	    ;   true
+	    )
+	).
+
+:- pce_end_class(rdf_cached_triple_table).
 
 
 		 /*******************************
@@ -426,3 +483,4 @@ cell_width(C, End, N, W, T, W0, Width) :-
 	cell_width(C2, End, N, W, T, W1, Width).
 
 :- pce_end_class(rdf_property_manager).
+
