@@ -57,7 +57,6 @@ user:file_search_path(semweb,   library(semweb)).
 		rdf_text,		% basic text representation
 		rules,			% rendering rules
 		rdfs_explorer,		% visualization
-		concur			% concurrency
 %		rdf_portray
 	      ],
 	      [ silent(true)

@@ -36,7 +36,6 @@
 	    current_base_ontology/1,	% -Id
 	    required_base_ontology/1	% -Id
 	  ]).
-:- use_module(concur).
 :- use_module(semweb(rdf_db)).
 :- use_module(semweb(rdf_edit)).
 
@@ -94,16 +93,11 @@ load_base_ontology(Category) :-
 	load_base_ontology(Category, []).
 
 load_base_ontology(Category, Options) :-
-	(   select(concurrent(Concur), Options, Options1)
-	->  true
-	;   Options1 = Options,
-	    Concur = 1
-	),
-	findall(load_base(X, Options1),
+	findall(load_base(X, Options),
 		expand_category(Category, X),
 		Goals0),
 	list_to_set(Goals0, Goals),
-	concurrent(Concur, Goals).
+	maplist(call, Goals).
 
 %	current_base_ontology(-Identifier)
 %	
