@@ -31,6 +31,7 @@
 
 :- module(img_tab, []).
 :- use_module(library(pce)).
+:- use_module(rdf_rules).
 :- use_module(library(scaledbitmap)).
 :- use_module(library(url_image)).
 
@@ -59,8 +60,11 @@ resource(IW, Resource:name*) :->
 	;   send(IW, clear),
 	    (   Resource == @nil
 	    ->  true
-	    ;	send(IW, display, scaled_bitmap(url_image(Resource))),
+	    ;	call_rules(IW, image(Resource, Img))
+	    ->	send(Img, name, image),
+		send(IW, display, Img),
 		send(IW, resize)
+	    ;	true
 	    ),
 	    send(IW, slot, resource, Resource)
 	).
@@ -73,7 +77,7 @@ value(IW, Resource:name*) :->
 
 resize(IW) :->
 	"Scale and center the image"::
-	(   get(IW, member, scaled_bitmap, BM)
+	(   get(IW, member, image, BM)
 	->  get(IW, visible, Visible),
 	    send(BM, size, Visible?size),
 	    send(BM, center, Visible?center)

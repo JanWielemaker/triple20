@@ -519,6 +519,25 @@ drop_resource_command(C, R, change_type) :-
 	rdfs_individual_of(C, rdfs:'Class'),
 	\+ rdfs_individual_of(R, rdfs:'Class').
 
+%	drop_files(+V, +ListOfFiles)
+%	
+%	Deal with dropping files from the explorer
+
+drop_files(V, Files) :-
+	maplist(file_to_url, Files, URLs),
+	debug(drop, '~p: Dropping files: ~p~n', [V, Files]),
+	get(V, resource, R),
+	catch(rdfe_transaction(inner::drop_file_resource(R, URLs),
+			       individuals_from(Files)),
+	      E, report_exception(V, E)).
+
+file_to_url(File, URL) :-
+	atom_concat('file:', File, URL).
+
+drop_file_resource(R, URLs) :-
+	forall(member(URL, URLs),
+	       drop_resource(change_type, R, URL)).
+
 :- end_rules.
 
 :- begin_rules(rdf_click, default).
@@ -532,6 +551,8 @@ clicked(V) :-
 
 :- begin_rules(rdf_tab, default).
 
+:- pce_autoload(image_window, img_tab).
+
 %	resource_tab(-Name, -Window)
 %	
 %	Create the windows that appear as tabs in the right-hand window
@@ -544,6 +565,8 @@ resource_tab(instance, Window) :-
 	new(Window, table_window(class, new(rdf_instance_sheet))).
 resource_tab(triples, Window) :-
 	new(Window, table_window(class, new(rdf_cached_triple_table))).
+resource_tab(image, Window) :-
+	new(Window, image_window).
 
 %	default_resource_tab(+Resource, -Tab)
 %	
@@ -556,6 +579,18 @@ default_resource_tab(_, instance).
 	
 :- end_rules.
 
+:- begin_rules(image_window, default).
+
+image(Resource, Img) :-
+	file_name_extension(_, Ext, Resource),
+	image_extension(Ext),
+	new(Img, scaled_bitmap(url_image(Resource))).
+
+image_extension(jpeg).
+image_extension(jpg).
+image_extension(gif).
+
+:- end_rules.
 
 
 		 /*******************************

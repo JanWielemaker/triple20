@@ -92,6 +92,23 @@ arm(W, For:[name|code], Target:graphical) :<-
 :- pce_end_class(rdf_arm).
 
 
+:- pce_begin_class(drop_files, template,
+		   "Drop files from file browser (explorer)").
+
+drop_files(Window, Files:chain, DisplayAt:point) :->
+	object(DisplayAt, point(X, Y)),
+	get(Window, display_position, point(WX, WY)),
+	new(At, point(X-WX, Y-WY)),
+	get(Window, find, At,
+	    message(@arg1, has_send_method, drop_files), Gr),
+	(   Gr \== Window
+	->  send(Gr, drop_files, Files)
+	;   send(Window, flash, area(X-2, Y-2, 5, 5))
+	).
+
+:- pce_end_class(drop_files).
+
+
 :- pce_extend_class(display).
 
 try_arm(W, Gr:graphical) :->
@@ -230,6 +247,11 @@ on_left_click(V) :->
 	send(@display, busy_cursor),
 	call_cleanup(call_rules(V, clicked(V)),
 		     send(@display, busy_cursor, @nil)).
+
+drop_files(V, Files:chain) :->
+	"Accept files from explorer"::
+	chain_list(Files, List),
+	call_rules(V, drop_files(V, List)).
 
 :- pce_group(rdf).
 
