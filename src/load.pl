@@ -69,11 +69,15 @@ user:file_search_path(semweb,   library(semweb)).
 		rdf_text,		% basic text representation
 		rules,			% rendering rules
 		anon,			% Nicely show anonymous objects
-		rdfs_explorer		% visualization
+		rdfs_explorer,		% visualization
 %		rdf_portray
 	      ],
 	      [ silent(true)
 	      ]).
+:- ( exists_directory(plugins) ->           %added plugins directory BJW
+      expand_file_name('plugins/*.pl', Files),
+      load_files(Files, [])
+   ; true).
 
 :- pce_image_directory(triple20(icons)).
 
