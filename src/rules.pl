@@ -382,6 +382,16 @@ child_cache(R, Cache, rdf_part_node) :-	% TBD: move outside
 	rdf_has(R, rdf:type, Class),
 	rdfs_subclass_of(Class, Domain),
 	rdf_cache(lsorted(V), rdf_has(R, erc:has_part, V), Cache).
+child_cache(R, Cache, rdf_class_node) :-
+	rdfs_individual_of(R, skos:'Concept'),
+	rdf_cache(lsorted(V), skos_narrower(R, V), Cache).
+
+skos_narrower(Class, Narrow) :-
+	rdf_has(Narrow, skos:broader, Class).
+skos_narrower(Class, Narrow) :-
+	rdf_has(Narrow, rdfs:subClassOf, Class).
+skos_narrower(Class, Narrow) :-
+	rdf_has(Class, skos:narrower, Narrow).
 
 %	setting predicate that can be overruled
 
@@ -415,6 +425,9 @@ parent(R, Parent, rdf_class_node) :-
 	->  owl_subclass_of(R, Parent)
 	;   rdf_has(R, rdfs:subClassOf, Parent)
 	).
+parent(R, Parent, rdf_class_node) :-
+	rdfs_individual_of(R, skos:'Concept'),
+	skos_narrower(Parent, R).
 parent(R, Parent, Role) :-
 	rdf_has(R, rdf:type, Type),
 	\+ rdfs_individual_of(R, rdfs:'Class'),
