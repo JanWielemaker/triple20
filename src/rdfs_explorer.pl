@@ -698,7 +698,7 @@ value(OS, Object:any*, Sheet:[name]) :->
 	     message(OS, window_value, @arg1, Object)),
 	send(OS?history, location, vector(Object, TabName)).
 	
-window_value(_OS, Window:window, Value:object) :->
+window_value(_OS, Window:window, Value:any) :->
 	"Try to send a value to a window"::
 	get(Window, container, tab, Tab),
 	(   get(Window, send_method, value, tuple(_, Method)),
