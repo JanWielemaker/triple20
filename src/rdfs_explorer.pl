@@ -139,7 +139,8 @@ fill_tool_dialog(OV) :->
 	send_list(D, append,
 		  [ new(File,  popup(file)),
 		    new(View,  popup(view)),
-		    new(Tools, popup(tools))
+		    new(Tools, popup(tools)),
+		    new(Help,  popup(help))
 		  ]),
 
 	send_list(File, append,
@@ -173,6 +174,11 @@ fill_tool_dialog(OV) :->
 
 	send_list(Tools, append,
 		  [ add_missing_labels
+		  ]),
+
+	send_list(Help, append,
+		  [ help,
+		    about
 		  ]),
 
 	send(Label, show_current, @on),
@@ -444,6 +450,73 @@ redo(OV) :->
 	->  true
 	;   send(OV, report, warning, 'No further redo')
 	).
+
+:- pce_group(help).
+
+help(_) :->
+	"Show HTML file"::
+	absolute_file_name(triple20('doc/triple20.html'),
+			   [ access(read),
+			     file_errors(fail)
+			   ],
+			   Path),
+	atom_concat(Path, 'file:', URI),
+	www_open_url(URI).
+
+%	->about
+%	
+%	Should move to a library or (even better) be changed to use the
+%	text-rendering library.  This code is compied from the XPCE manual
+
+about(M) :->
+	"Print about and licence info"::
+	new(D, dialog('About XPCE')),
+	send(D, transient_for, M),
+	about(List),
+	checklist(add_about(D), List),
+	send(D, append, button(ok, message(D, destroy))),
+	send(D, open_centered).
+
+about([ 'Triple20 version %s'+[@prolog?rdf_version]-boldhuge,
+	'Copyright 2003, University of Amsterdam',
+	'XPCE comes with ABSOLUTELY NO WARRANTY.',
+	'This is free software (LGPL), and you are welcome to',
+	'redistribute it under certain conditions.',
+	url('http://www.swi-prolog.org/packages/Triple20/'),
+	'Jan Wielemaker\nBob Wielinga\nGuus Schreiber'-italic,
+	'SWI\nUniversity of Amsterdam\nRoetersstraat 15\n1018 WB  Amsterdam\nThe Netherlands'
+      ]).
+
+add_about(D, X-Font) :- !,
+	add_about(X, Font, D).
+add_about(D, X) :-
+	add_about(X, normal, D).
+
+add_about(url(Url), Font, D) :- !,
+	send(D, append, new(T, text(Url, center, Font))),
+	send(T, underline, @on),
+	send(T, colour, blue),
+	send(T, recogniser,
+	     click_gesture(left, '', single,
+			   message(@prolog, goto_url, T?string?value))),
+	send(T, cursor, hand2),
+	send(T, alignment, center).
+add_about(Fmt+Args, Font, D) :- !,
+	Term =.. [string, Fmt | Args],
+	send(D, append, new(T, text(Term, center, Font))),
+	send(T, alignment, center).
+add_about(Text, Font, D) :-
+	send(D, append, new(T, text(Text, center, Font))),
+	send(T, alignment, center).
+
+goto_url(Url) :-
+	send(@display, busy_cursor),
+	(   catch(www_open_url(Url), _, fail)
+	->  true
+	;   send(@display, inform, 'Failed to open URL')
+	),
+	send(@display, busy_cursor, @nil).
+
 
 :- pce_end_class(rdfs_explorer).
 

@@ -70,20 +70,12 @@ user:file_search_path(semweb,   library(semweb)).
 user:file_search_path(snapshot, user_profile(Dir)) :-
 	rdf_snapshot_directory(Dir).
 
+
 		 /*******************************
-		 *	  DEBUGGING STUFF	*
+		 *	      VERSION		*
 		 *******************************/
 
-%:- rdf_debug(1).		% Print messages
-
-dbg :-
-%	debug(render),
-	guitracer.
-
-%:- nav.
-%:- dbg.
-
-:- catch(['~/.xpcerc'], _, true).
+rdf_version('0.1, October 2003').
 
 
 		 /*******************************
