@@ -145,10 +145,12 @@ drag(DD, Ev:event) :->
 	        (   send(Window, has_get_method, arm)
 		->  get(Ev, window, Owner),
 		    (	unfocussed(Owner,
-				   get(Window, arm,
-				       message(@receiver, preview_drop,
-					       Dropping),
-				       Target))
+			   get(Window, arm,
+			       and(message(@receiver, has_send_method,
+					   preview_drop),
+				   message(@receiver, preview_drop,
+					   Dropping)),
+			       Target))
 		    ->  send(DD, target, Source, Ev, Target)
 		    ;	send(DD, target, Source, @nil, @nil)
 		    )
@@ -334,6 +336,19 @@ copy_text(T) :->
 	"Copy text"::
 	get(T, literal, Text),
 	send(@display, copy, Text).
+
+:- pce_group(drag_and_drop).
+
+preview_drop(T, Visual:visual*) :->
+	(   Visual == @nil
+	->  send(T, report, status, '')
+	;   send(Visual, has_get_method, resource),
+	    call_rules(T, drop_command(T, Visual, Cmd)),
+	    get(Visual, resource, Resource),
+	    rdfs_ns_label(Resource, RL),
+	    send(T, report, status,
+		 'Drop %s onto literal: %s', RL, Cmd?label_name)
+	).
 
 drop(T, Visual:visual) :->
 	call_rules(T, drop(T, Visual)).
