@@ -270,7 +270,7 @@ get_text(XML, -, Text) :-
 	is_xml(XML),
 	new_memory_file(MF),
 	open_memory_file(MF, write, Out),
-	xml_write(Out, XML, []),
+	xml_write(Out, XML, [header(false)]),
 	close(Out),
 	memory_file_to_atom(MF, Text),
 	free_memory_file(MF).
