@@ -111,7 +111,7 @@ show_source(ST, Source:name) :->
 	get(LM, current, point(_, Y)),
 	get(LM, row, Y, @on, Row),
 	send(Row, valign, center),
-	send(ST, append, Source),
+	send(ST, append, rdf_file_text(Source)),
 	rdf_statistics(triples_by_file(Source, Triples)),
 	send(ST, append, Triples, halign := right),
 	rdf_db:rdf_source(Source, _, Loaded, _MD5),
@@ -122,6 +122,41 @@ show_source(ST, Source:name) :->
 	send(ST, next_row).
 
 :- pce_end_class(rdf_file_table).
+
+
+:- pce_begin_class(rdf_file_text, text,
+		   "Represent a filename").
+
+initialise(T, Name:name) :->
+	send_super(T, initialise, Name).
+
+:- pce_global(@rdf_file_text_recogniser,
+	      make_rdf_file_text_recogniser).
+
+make_rdf_file_text_recogniser(G) :-
+	new(G, popup_gesture(new(P, popup(actions, message(@arg2, @arg1))))),
+	send_list(P, append,
+		  [ save,
+		    remove
+		  ]).
+
+event(T, Ev:event) :->
+	(   send_super(T, event, Ev)
+	->  true
+	;   send(@rdf_file_text_recogniser, event, Ev)
+	).
+
+save(T) :->
+	"Save data back to a file"::
+	get(T?string, value, Name),
+	rdf_save(Name, [db(Name)]).
+	
+remove(T) :->
+	"Remove all associated triples"::
+	get(T?string, value, DB),
+	rdfe_transaction(rdfe_retractall(_,_,_,DB), remove_db(DB)).
+
+:- pce_end_class(rdf_file_text).
 
 
 :- pce_begin_class(rdf_file_access_menu, menu,
