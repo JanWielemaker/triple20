@@ -332,6 +332,7 @@ update_can_expand(N) :->
 
 :- pce_group(expand).
 
+
 collapsed(N, V:bool*) :->
 	(   V == @on
 	->  send(N?sons, for_all, message(@arg1, delete_tree))
@@ -356,21 +357,33 @@ expand(N) :->
 	send(N?caches?members, for_all,
 	     message(N, expand_role, @arg1?name, @arg1?value)).
 
-expand_role(N, Role:name, Cache:int) :->
+expand_role(N, Role:name, Cache:int, Prefix:[name]) :->
 	"Expand a cache"::
-	rdf_cache_cardinality(Cache, SetSize),
-	(   SetSize < 15
-	->  forall(rdf_cache_result(Cache, I, Value),
-		   send(N, add_child_from_cache, Value, Role, Cache))
-	;   rdf_cache_result(Cache, I, Value),
-	    (	I == 11
-	    ->	!,
-		send(N, son, rdf_more_node(Role, Cache, 11))
-	    ;	send(N, add_child_from_cache, Value, Role, Cache),
-		fail
-	    )
+	rdf_cache_result_set(Cache, Set),
+	functor(Set, _, SetSize),
+	(   Prefix \== @default,
+	    bfind_prefix(Cache, Prefix, Offset)
+	->  true
+	;   Offset = 0
+	),
+	Display is SetSize - Offset,
+	Start is Offset + 1,
+	(   Display < 15
+	->  End = SetSize
+	;   End is Start + 9,
+	    More is End + 1
+	),
+	forall(result_set_element(Set, Start, End, Value),
+	       send(N, add_child_from_cache, Value, Role, Cache)),
+	(   nonvar(More)
+	->  send(N, son, rdf_more_node(Role, Cache, More))
 	;   true
 	).
+
+result_set_element(Set, From, To, E) :-
+	between(From, To, I),
+	arg(I, Set, E).
+
 
 add_child(N, Resource:name, Role:name, Before:[node], Son:rdf_node) :<-
 	"Create node for resource in role"::
@@ -390,16 +403,13 @@ show_more(N, MoreNode:rdf_more_node, Role:name, Count:int) :->
 	"Show next Count nodes on Role"::
 	get(N?caches, value, Role, Cache),
 	get(MoreNode, here, Here),
-	End is Here + Count,
-	(   rdf_cache_result(Cache, I, Value),
-	    I >= Here,
-	    send(N, add_child_from_cache, Value, Role, Cache, MoreNode),
-	    I >= End, !
-	;   true
-	),
-	rdf_cache_cardinality(Cache, Cardinality),
+	End is Here + Count - 1,
+	rdf_cache_result_set(Cache, Set),
+	functor(Set, _, Cardinality),
+	forall(result_set_element(Set, Here, End, Value),
+	       send(N, add_child_from_cache, Value, Role, Cache, MoreNode)),
 	(   End < Cardinality
-	->  send(MoreNode, here, End)
+	->  send(MoreNode, here, End + 1)
 	;   send(MoreNode, destroy)
 	).
 	
@@ -409,9 +419,8 @@ show_more(N, MoreNode:rdf_more_node, Role:name, Count:int) :->
 The module rdf_cache monitors changes in  the background and informs the
 main loop to update visualisation due  to   a  changed cache result. The
 task of this group of methods is to   update  the tree with as little as
-possible effort.  There are still two pitfalls:
+possible effort.  There are still pitfalls:
 
-	* If the cache has grown too big it must add a `more' node
 	* Elements added at the end a cache that is not the last will
 	  be added as last child.
 - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
@@ -826,7 +835,8 @@ bfind_prefix(Cache, Prefix, Offset) :-
 	rdf_cache_result_set(Cache, Set),
 	functor(Set, _, Size),
 	Here is Size//2,
-	bfind_prefix(0, Here, Size, Set, Prefix, Offset).
+	bfind_prefix(0, Here, Size, Set, Prefix, Index),
+	Offset is Index - 1.
 
 bfind_prefix(Low, Here, High, Set, Prefix, Offset) :-
 %	format('Low=~w, Here=~w, High=~w~n', [Low, Here, High]),
