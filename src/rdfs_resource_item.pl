@@ -304,12 +304,9 @@ completions(OI, From:char_array, Labels:chain) :<-
 	send(Labels, sort, unique := @on),
 	send(Display, busy_cursor, @nil).
 
-complete_label_in_domain(Prefix, Domain, FullLabel) :-
-	downcase_atom(Prefix, Lwr),
-	rdf_has(Resource, rdfs:label, literal(Label)),
-	sub_atom(Label, 0, _, _, Lwr),
-	owl_satisfies(Domain, Resource),
-	rdfs_label(Resource, FullLabel).
+complete_label_in_domain(Prefix, Domain, Label) :-
+	rdf_has(Resource, rdfs:label, literal(prefix(Prefix), Label)),
+	owl_satisfies(Domain, Resource).
 
 :- pce_end_class(rdfs_resource_item).
 

@@ -11,10 +11,12 @@
 	  [ property_domain/3,		% +Subject, +Property, -Domain
 	    property_type/3,		% +Subject, +Property, -Type
 	    sort_by_label/2,		% +Resources, -Sorted
-	    rdf_default_file/2		% +Resources, -File
+	    rdf_default_file/2,		% +Resources, -File
+	    rdf_set_object/4		% +S, +P, +O, +NewObject
 	  ]).
 :- use_module(semweb(rdf_db)).
 :- use_module(semweb(rdfs)).
+:- use_module(semweb(rdf_edit)).
 :- use_module(owl).
 
 %	property_domain(+Subject, +Property, -Domain)
@@ -92,3 +94,19 @@ rdf_default_file(Resource, File) :-
 rdf_default_file(Resource, File) :-
 	rdf(Resource, _, _, File:_), !.
 rdf_default_file(_, user).
+
+
+%	rdf_set_object(+Subject, +Predicate, +Old, +New)
+%	
+%	Set object aspect of a triple
+
+rdf_set_object(Subject, Predicate, Old, New) :-
+	rdfe_transaction(set_object(Subject, Predicate, Old, New),
+			 modify_property_value).
+
+set_object(Subject, Predicate, '__not_filled', _New) :-
+	rdf_default_file(Subject, File),
+	rdfe_update(Subject, Predicate, '__not_filled', source(File)),
+	fail.				% next clause
+set_object(Subject, Predicate, Old, New) :-
+	rdfe_update(Subject, Predicate, Old, object(New)).

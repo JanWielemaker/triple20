@@ -15,6 +15,7 @@
 :- use_module(rdf_text).
 :- use_module(rdf_label).
 :- use_module(rdf_cache).
+:- use_module(rdf_util).
 
 
 owl_description_attribute(X) :- rdf_equal(owl:oneOf, X).
@@ -504,9 +505,7 @@ drop_command(_Me, _Resource, modify) :-
 drop(modify, Gr, V) :-
 	get(V, resource, Resource),
 	get(Gr, triple, rdf(Subject, Predicate, Old)),
-	rdfe_transaction(rdfe_update(Subject, Predicate, Old,
-				     object(Resource)),
-			 move_property).
+	rdf_set_object(Subject, Predicate, Old, Resource).
 
 :- end_particle.
 
@@ -529,9 +528,7 @@ drop(add, Gr, V) :-
 drop(modify, _Gr, V) :-
 	get(V, resource, Resource),
 	get(@particle, triple, rdf(Subject, Predicate, Old)),
-	rdfe_transaction(rdfe_update(Subject, Predicate, Old,
-				     object(Resource)),
-			 modify_range).
+	rdf_set_object(Subject, Predicate, Old, Resource).
 
 :- end_particle.
 
@@ -541,9 +538,7 @@ drop(modify, _Gr, V) :-
 drop(modify, _Gr, V) :-
 	get(V, resource, Resource),
 	get(@particle, triple, rdf(Subject, Predicate, Old)),
-	rdfe_transaction(rdfe_update(Subject, Predicate, Old,
-				     object(Resource)),
-			 modify_domain).
+	rdf_set_object(Subject, Predicate, Old, Resource).
 
 :- end_particle.
 
