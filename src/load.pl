@@ -71,7 +71,7 @@ load(C, Category) :-				% load the whole world
 	findall(rdfe_load(X), rdf_file(Category, X), Goals),
 	concurrent(C, Goals).
 
-% :- rdf_debug(1).		% Print messages
+:- rdf_debug(1).		% Print messages
 
 world :-
 	load(_).

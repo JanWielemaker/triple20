@@ -7,6 +7,7 @@
 :- module(rdf_rules,
 	  [
 	  ]).
+:- use_module(library(debug)).
 :- use_module(particle).
 :- use_module(semweb(rdfs)).
 :- use_module(semweb(rdf_db)).
@@ -141,7 +142,8 @@ menu_item(Gr, Group, Item, Receiver) :-
 	::menu_item(Group, Item),
 	item_method(Item, _Label, Method),
 	(   container_with_method(Gr, Method, Receiver)
-	->  true
+	->  debug(menu, '~p: mapping ~w to ~p->~w',
+		  [Gr, _Label, Receiver, Method])
 	).
 
 %	menu_item(Group, Item)

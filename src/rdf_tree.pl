@@ -13,6 +13,7 @@
 :- use_module(particle).
 :- use_module(rdf_template).
 :- use_module(rdf_cache).
+:- use_module(library(debug)).
 
 :- pce_autoload(identifier_item, library(pce_identifier_item)).
 
@@ -136,6 +137,8 @@ arm(_, _:bool) :->
 
 variable(resource,   name,                get,
 	 "Represented resource").
+variable(cache,  int*, get,
+	 "(Parent) cache that produced me").
 variable(caches, sheet := new(sheet), get,
 	 "Cached relations").
 
@@ -200,12 +203,12 @@ expand_role(N, Role:name, Cache:int) :->
 	rdf_cache_cardinality(Cache, SetSize),
 	(   SetSize < 15
 	->  forall(rdf_cache_result(Cache, I, Value),
-		   send(N, add_child, Value, Role))
+		   send(N, add_child_from_cache, Value, Role, Cache))
 	;   rdf_cache_result(Cache, I, Value),
 	    (	I == 11
 	    ->	!,
-		send(N, son, rdf_more_node(Role, SetSize, 11))
-	    ;	send(N, add_child, Value, Role),
+		send(N, son, rdf_more_node(Cache, Role, 11))
+	    ;	send(N, add_child_from_cache, Value, Role, Cache),
 		fail
 	    )
 	;   true
@@ -221,6 +224,11 @@ add_child(N, Resource:name, Role:name, Before:[node]) :->
 	"Create node for resource in Role"::
 	get(N, add_child, Resource, Role, Before, _Son).
 	
+add_child_from_cache(N, Resource:name, Role:name, Cache:int, Before:[node]) :->
+	"Create node for resource in Role"::
+	get(N, add_child, Resource, Role, Before, Son),
+	send(Son, slot, cache, Cache).
+	
 show_more(N, MoreNode:rdf_more_node, Role:name, Count:int) :->
 	"Show next Count nodes on Role"::
 	get(N?caches, value, Role, Cache),
@@ -228,7 +236,7 @@ show_more(N, MoreNode:rdf_more_node, Role:name, Count:int) :->
 	End is Here + Count,
 	(   rdf_cache_result(Cache, I, Value),
 	    I >= Here,
-	    send(N, add_child, Value, Role, MoreNode),
+	    send(N, add_child_from_cache, Value, Role, Cache, MoreNode),
 	    I >= End, !
 	;   true
 	),
@@ -241,6 +249,7 @@ show_more(N, MoreNode:rdf_more_node, Role:name, Count:int) :->
 :- pce_group(changes).
 
 cache_updated(Cache) :-
+	debug(rdf_cache, 'Check cache ~w', [Cache]),
 	rdf_cache_attached(Cache, Node),
 	send(Node, update, Cache).
 
@@ -250,31 +259,77 @@ cache_updated(Cache) :-
 update(N, Cache:[int]) :->
 	(   get(N, sons, Sons),
 	    \+ send(Sons, empty)
-	->  format('~p: must update nodes for ~w~n', [N, Cache])
+	->  get(N, caches, Caches),
+	    (   Cache == @default
+	    ->	send(Caches, for_all,
+		     message(N, update_role, @arg1?name, @arg1?value))
+	    ;	get(Caches?members, find, @arg1?value == Cache, Att),
+		get(Att, name, Role),
+		send(N, update_role, Role, Cache)
+	    )
 	;   send(N, update_can_expand)
 	).
 
 update_role(N, Role:name, Cache:int) :->
 	"Update results for a cache"::
+	debug(update, '~p: Updating role ~w for cache ~w', [Role, Cache]),
 	get(N, sons, Sons),
-	get(Sons, find_all, @arg1?class_name == Role, Existing),
-	chain_list(Existing, ExList),
-	(   get(Sons, find, and(message(@arg1, instance_of, rdf_more_node),
-				@arg1?role == Role), MoreNode)
-	->  format('~p: Updated with displayed more-node ~p~n', [N, MoreNode])
-	;   (   rdf_cache_cardinality(Cache, SetSize),
-	        SetSize < 15
-	    ->	findall(R, rdf_cache_result(Cache, _, R), Set),
-		update(Set, ExList, N, Role)
-	    ;	format('~p: too many solutions~n', [])
+	get(Sons, find_all, @arg1?cache == Cache, Existing),
+	(   rdf_cache_cardinality(Cache, 0)
+	->  send(Existing, for_all,			% lost last one
+		 message(@arg1, delete_tree)),
+	    send(N, update_can_expand)
+	;   (   get(Existing, find,
+		    message(@arg1, instance_of, rdf_more_node),
+		    MoreNode)
+	    ->  send(Existing, delete, MoreNode),
+		get(MoreNode, here, Here),
+		send(MoreNode, update)
+	    ;   true
+	    ),
+
+	    (   rdf_cache_result(Cache, I, R),
+		(   nonvar(Here), I > Here
+		->  !
+		;   get(Existing, nth1, I, Node),
+		    get(Node, resource, R)
+		->  fail			% next one
+		;   get(Existing, find, @arg1?resource == R, Node)
+		->  get(Existing, index, Node, I2),
+		    assume(I2>I),
+		    delete_nodes(I, I2, Existing),
+		    fail
+		;   insert_node(I, R, Role, Existing, Cache, N),
+		    fail
+		)
+	    ;   true
 	    )
-	).
-	
+	),
+	free(Existing).
+	    
+delete_nodes(I, I, _) :- !.
+delete_nodes(I, To, Existing) :-
+	get(Existing, nth1, I, Node),
+	send(Existing, delete, Node),
+	send(Node, delete_tree),
+	I2 is I + 1,
+	delete_nodes(I2, To, Existing).
 
-
-
-
-
+insert_node(I, R, Role, Existing, Cache, Parent) :-
+	get(Existing, nth1, I, Next), !, 		% inserted
+	get(Parent, add_child, R, Role, Next, NewNode),
+	send(NewNode, slot, cache, Cache),
+	send(Existing, insert_before, NewNode, Next).
+insert_node(_, R, Role, Existing, Cache, Parent) :-
+	get(Existing, tail, Last), !,
+	get(Parent, add_child, R, Role, NewNode),
+	send(NewNode, slot, cache, Cache),
+	send(NewNode, move_after, Last),
+	send(Existing, append, NewNode).
+insert_node(_, R, Role, Existing, Cache, Parent) :-
+	get(Parent, add_child, R, Role, NewNode),
+	send(NewNode, slot, cache, Cache),
+	send(Existing, append, NewNode).
 
 :- pce_group(event).
 
@@ -377,19 +432,32 @@ variable(role,	   name,  get, "Role to expand further").
 variable(here,	   int,	  get, "Current location").
 variable(size,	   int,	  get, "Total set-size").
 variable(resource, name*, get, "Represented resource (@nil)").
+variable(cache,    int*,  get, "Cache I belong to").
 
-initialise(N, Role:name, Size:int, Here:int) :->
+initialise(N, Role:name, Cache:int, Here:int) :->
 	"Create `more' button"::
+	rdf_cache_cardinality(Cache, Size),
 	send_super(N, initialise, new(D, figure)),
 	send(N, slot, role, Role),
 	send(N, slot, size, Size),
 	send(N, slot, here, Here),
+	send(N, slot, cache, Cache),
 	send(D, pen, 1),
 	send(D, border, 2),
 	send(D, format, new(Fmt, format(vertical, 1, @on))),
 	send(Fmt, adjustment, vector(center)),
 	send(N, update_more),
 	send(N, collapsed, @nil).
+
+update(N) :->
+	"Update for changed cardinality of the cache"::
+	get(N, cache, Cache),
+	rdf_cache_cardinality(Cache, Size),
+	(   get(N, size, Size)
+	->  true
+	;   send(N, slot, size, Size),
+	    send(N, update_more)
+	).
 
 update_more(N) :->
 	"Update	displayed buttons"::

@@ -15,6 +15,7 @@
 	    rdf_cache_detach/2,		% +Cache, -Term
 	    rdf_cache_attached/2	% ?Cache, ?Term
 	  ]).
+:- use_module(library(debug)).
 :- use_module(semweb(rdf_db)).
 :- use_module(semweb(rdfs)).
 :- use_module(library(broadcast)).
