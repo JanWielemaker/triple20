@@ -727,7 +727,17 @@ initialise(OS) :->
 	    send(OS, append, Window),
 	    fail
 	;   true
-	).
+	),
+	send(OS, fill_popup).
+
+fill_popup(OS) :->
+	Tab = @arg1,
+	send(OS, label_popup, new(P, popup)),
+	send_list(P, append,
+		  [ menu_item(window,
+			      message(Tab, untab))
+		  ]).
+
 
 sheet(OS, Name:name, Table:rdf_tabular) :<-
 	"Get named table"::
@@ -751,20 +761,23 @@ value(OS, Object:any*, Sheet:[name]) :->
 	
 window_value(_OS, Window:window, Value:any) :->
 	"Try to send a value to a window"::
-	get(Window, container, tab, Tab),
+	debug(tab, 'Sending ~p to ~p', [Value, Window]),
 	(   get(Window, send_method, value, tuple(_, Method)),
 	    get(Method, argument_type, 1, Type),
 	    send(Type, validate, Value)
-	->  send(Tab, active, @on),
-	    (	send(Window, value, Value)
-	    ->	true
-	    ;	debug(error, '~p->value failed', [Window])
+	->  (   get(Window, container, tab, Tab)
+	    ->	send(Tab, active, @on)
+	    ;	true
+	    ),
+	    send(Window, value, Value)
+	;   (   get(Window, container, tab, Tab)
+	    ->	send(Tab, active, @off)
+	    ;	true
 	    )
-	;   send(Tab, active, @off)	% was @off BJW
 	).
 
 resource(OS, Resource:name*) :->
-	"Show the indicated object"::
+	"Display the indicated object"::
 	send(OS, value, Resource).
 
 %	->triples: Cache:int*
