@@ -427,7 +427,13 @@ child_cache(R, Cache, rdf_property_node) :-
 :- begin_particle(rdf_root_node, rdf_node).
 
 child_cache(R, Cache, Role) :-
-	super::child_cache(R, Cache, Role).
+	rdf_equal(R, rdfs:'Resource'),
+	(   rdf_cache(lsorted(V), rdf_has(V, rdfs:subClassOf, R), Cache),
+	    Role = rdf_class_node
+	;   \+ rdfs_subclass_of(R, rdfs:'Class'),
+	    rdf_cache(lsorted(V), rdf_has(V, rdf:type, R), Cache),
+	    Role = rdf_individual_node
+	).
 child_cache(_, Cache, rdf_orphan_node) :-
 	rdf_cache(X, orphan_resource(X), Cache).
 

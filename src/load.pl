@@ -77,11 +77,12 @@ go :-
 %	
 %		<file>.rdfj		Specify a journal file
 %		--reset			Ignore existing journal
-%		--nobase		Do not load any files
-%		--world			Load everything we know
+%		--rdfs			Load RDFS
+%		--owl			Load OWL
 %		--aat			Load AAT
 %		--wn			Load Wordnet
 %		--ulan			Load ULAN
+%		--world			Load everything we know
 %		<file>.{rdf,rdfs,owl}	Load this file
 
 go(Argv) :-
@@ -106,19 +107,18 @@ go(Argv) :-
 	),
 	(   JournalLoaded == true
 	->  true
-	;   rdfe_transaction(parse_argv1(Argv2))
+	;   rdfe_transaction(parse_argv(Argv2))
 	),
 	new(X, rdfs_explorer),
 	send(X, open).
 
-parse_argv1(Argv) :-
-	select('--nobase', Argv, Argv1),
-	parse_argv(Argv1).
-parse_argv1(Argv) :-
-	load_base_ontology(owl),
-	parse_argv(Argv).
-
 parse_argv([]).
+parse_argv(['--rdfs'|T]) :-
+	load_base_ontology(rdfs),
+	parse_argv(T).
+parse_argv(['--owl'|T]) :-
+	load_base_ontology(owl),
+	parse_argv(T).
 parse_argv(['--world'|T]) :-
 	load_base_ontology(world),
 	parse_argv(T).

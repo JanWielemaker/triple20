@@ -305,7 +305,7 @@ update(N, Cache:[int]) :->
 
 update_role(N, Role:name, Cache:int) :->
 	"Update results for a cache"::
-	debug(update, '~p: Updating role ~w for cache ~w', [Role, Cache]),
+	debug(update, '~p: Updating role ~w for cache ~w', [N, Role, Cache]),
 	get(N, sons, Sons),
 	get(Sons, find_all, @arg1?cache == Cache, Existing),
 	(   rdf_cache_cardinality(Cache, 0)
