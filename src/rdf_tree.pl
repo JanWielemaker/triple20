@@ -448,12 +448,17 @@ update_role(N, Role:name, Cache:int) :->
 	    ->  send(Existing, delete, MoreNode),
 		get(MoreNode, here, Here),
 		send(MoreNode, update)
-	    ;   true
+	    ;   get(Existing, size, Now),
+		Max is Now + 10
 	    ),
 
 	    (   rdf_cache_result(Cache, I, R),
 		(   nonvar(Here), I > Here
 		->  !
+		;   nonvar(Max), I >= Max
+		->  send(Existing, for_all,
+			 message(@arg1, delete_tree)),
+		    send(N, son, rdf_more_node(Role, Cache, Max))
 		;   get(Existing, head, Node),
 		    get(Node, resource, R)
 		->  send(Existing, delete_head),
@@ -725,7 +730,9 @@ update_more(N) :->
 	get(N, size, Size),
 	get(N, here, Here),
 	Left is Size - Here,
-	(   Left < 10
+	(   Left < 1
+	->  send(N, destroy)
+	;   Left < 10
 	->  send(D, display, more_button(Left))
 	;   Left < 100
 	->  send(D, display, more_button(10)),
