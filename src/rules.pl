@@ -652,13 +652,21 @@ menu_item(Group, Item) :-
 menu_item(edit, add_value).
 menu_item(edit, delete_all_values).
 
-drop_command(_Me, _Resource, add) :-
+drop_resource_command(_Me, Resource, modify) :-
+	rdfs_individual_of(Resource, rdf:'Property').
+drop_resource_command(_Me, _Resource, add) :-
 	true.				% must validate restrictions!
 
 drop(add, Gr, V) :-
 	get(V, resource, Resource),	
 	get(Gr, triple, rdf(Subject, Predicate, _)),
 	rdf_add_object(Subject, Predicate, Resource).
+drop(modify, Gr, V) :-
+	get(V, resource, NewP),	
+	get(Gr, triple, rdf(S, P, _)),
+	P \== NewP,
+	rdfe_transaction(forall(rdf(S,P,O),
+				rdfe_update(S, P, O, predicate(NewP)))).
 
 :- end_particle.
 

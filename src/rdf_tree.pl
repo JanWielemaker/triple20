@@ -123,7 +123,11 @@ display_path([H-Role|_], OT, Node) :-
 display_path([H-Role|T], OT, Node) :-
 	display_path(T, OT, Parent),
 	get(Parent, add_child, H, Role, Node),
-	send_class(Parent, node, collapsed(@off)).
+	(   get(Parent, collapsed, @off)	% TBD: move to rdf_node
+	->  true
+	;   send(Parent, slot, expanded, partial),
+	    send_class(Parent, node, collapsed(@off))
+	).
 
 %	->show_all_parents: Resource
 %	
@@ -279,6 +283,8 @@ variable(cache, int*, get,
 	 "(Parent) cache that produced me").
 variable(caches, sheet := new(sheet), get,
 	 "Cached relations").
+variable(expanded, {full,partial} := full, get,
+	 "Expansion state").
 
 initialise(N, Resource:name) :->
 	send(N, slot, resource, Resource),
@@ -331,6 +337,7 @@ collapsed(N, V:bool*) :->
 	(   V == @on
 	->  send(N?sons, for_all, message(@arg1, delete_tree))
 	;   send(@display, busy_cursor),
+	    send(N, slot, expanded, full),
 	    call_cleanup(send(N, expand),
 			 send(@display, busy_cursor, @nil))
 	),
@@ -413,6 +420,8 @@ possible effort.  There are still two pitfalls:
 update(N, Cache:[int]) :->
 	(   get(N, hypered, editor, _)
 	->  true
+	;   get(N, expanded, partial)
+	->  true			% must verify childs still exist?
 	;   get(N, collapsed, @on)
 	->  send(N, update_can_expand)
 	;   get(N, caches, Caches),

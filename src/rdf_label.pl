@@ -160,16 +160,49 @@ margin(T, Width:int*, How:[{wrap,wrap_fixed_width,clip}]) :->
 :- pce_end_class(rdf_composite_label).
 
 
-:- pce_begin_class(rdf_individual_label, rdf_composite_label,
-		   "Typed individual").
+:- pce_begin_class(rdf_icon_label, rdf_composite_label,
+		   "Display as icon with text").
+
+initialise(L, R:name) :->
+	send_super(L, initialise, R),
+	send(@resource_texts, append, R, L).
+
+unlink(L) :->
+	get(L, resource, R),
+	send(@resource_texts, delete, R, L),
+	send_super(L, unlink).
 
 update(L) :->
-	get(L, resource, Resource),
-	call_rules(L, icon(Resource, Icon)),
-	send(L, icon, Icon),
-	send(L, append, rdf_resource_text(Resource)).
+	send(L, clear, destroy),
+	send(L, display_icons),
+	send(L, display_resource).
 
+:- pce_end_class(rdf_icon_label).
+
+
+
+:- pce_begin_class(rdf_individual_label, rdf_icon_label,
+		   "Typed individual").
 :- pce_end_class(rdf_individual_label).
+
+
+:- pce_begin_class(rdf_property_label, rdf_icon_label,
+		   "Label for RDFS property declaration").
+
+:- pce_end_class(rdf_property_label).
+
+
+:- pce_begin_class(rdfs_class_label, rdf_icon_label,
+		   "Represent an RDFS class").
+
+:- pce_end_class(rdfs_class_label).
+
+
+:- pce_begin_class(rdfs_metaclass_label, rdf_icon_label,
+		   "Represent an RDFS class").
+
+:- pce_end_class(rdfs_metaclass_label).
+
 
 :- pce_begin_class(rdf_not_filled_label, rdf_individual_label,
 		   "Show __not_filled").
@@ -252,41 +285,6 @@ delete_member(L, Part:graphical) :->
 	rdf_list_operation(delete, Triple, Resource).
 
 :- pce_end_class(rdf_list_label).
-
-
-		 /*******************************
-		 *	      RDFS		*
-		 *******************************/
-
-:- pce_begin_class(rdf_property_label, rdf_composite_label,
-		   "Label for RDFS property declaration").
-
-update(L) :->
-	send(L, display_icons),
-	send(L, display_resource).
-
-:- pce_end_class(rdf_property_label).
-
-
-:- pce_begin_class(rdfs_class_label, rdf_composite_label,
-		   "Represent an RDFS class").
-
-update(L) :->
-	send(L, display_icons),
-	send(L, display_resource).
-
-:- pce_end_class(rdfs_class_label).
-
-
-:- pce_begin_class(rdfs_metaclass_label, rdfs_class_label,
-		   "Represent an RDFS class").
-
-update(L) :->
-	"Simple RDFS classes"::
-	send(L, display_icons),
-	send(L, display_resource).
-
-:- pce_end_class(rdfs_metaclass_label).
 
 
 		 /*******************************
@@ -437,6 +435,7 @@ update(L) :->
 		   "Represent a WordNet class").
 
 update(L) :->
+	send(L, clear),
 	get(L, resource, Resource),
 	call_rules(L, icon(Resource, Icon)),
 	send(L, icon, Icon),
