@@ -645,14 +645,8 @@ display_type(AL) :->
 
 display_comment(AL) :->
 	"Display the comment field"::
-	get(AL, resource, I),
-	(   rdf_has(I, rdfs:comment, literal(Comment))
-	->  send(AL, append, 'Comment', bold, right),
-	    send(AL, append, rdf_literal_text(Comment)),
-	    send(AL, next_row)
-	;   true
-	).
-
+	rdf_equal(rdfs:comment, Property),
+	send(AL, append_property, Property).
 
 display_predicates_title(AL) :->
 	new(D, device),

@@ -7,6 +7,7 @@
 :- module(rdf_text, []).
 :- use_module(library(pce)).
 :- use_module(library(debug)).
+:- use_module(library(pce_util)).
 :- use_module(owl).
 :- use_module(semweb(rdf_edit)).
 :- use_module(semweb(rdfs)).
@@ -126,21 +127,27 @@ text_changes(_).
 :- pce_begin_class(rdf_literal_text, editable_text,
 		   "Text object for literal values").
 
+variable(subject,   name*, get, "Resource I belong to").
+variable(predicate, name*, get, "Resource I belong to").
 variable(literal,   name*, get, "Represented object (=value)").
 
-initialise(LT, Value:prolog) :->
+initialise(LT, Value:prolog, Subject:[name]*, Predicate:[name]*) :->
 	(   Value = literal(Text)
 	->  true
 	;   Text = Value
 	),
 	send_super(LT, initialise, Text),
 	send(LT, margin, 400, wrap),
+	default(Subject, @nil, S),
+	default(Predicate, @nil, P),
+	send(LT, slot, subject, S),
+	send(LT, slot, predicate, P),
 	send(LT, slot, literal, Text).
 
-refresh(LT) :->
+update(LT) :->
 	"Update represented text"::
-	get(LT, subject, Subject),
-	get(LT, predicate, Predicate),
+	get(LT, subject, Subject), Subject \== @nil,
+	get(LT, predicate, Predicate), Predicate \== @nil,
 	(   rdf(Subject, Predicate, literal(Text))
 	->  send(LT, literal, Text),
 	    send(LT, string, Text)
@@ -165,21 +172,12 @@ obtain_focus(T) :->
 	    send(T, background, colour(white))
 	).
 
-:- pce_global(@rdf_literal_text_popup,
-	      make_literal_text_popup).
 :- pce_global(@rdf_literal_text_recogniser,
 	      new(popup_gesture(@receiver?popup))).
 
-make_literal_text_popup(P) :-
-	new(P, popup),
-	send_list(P, append,
-		  [ menu_item(delete,
-			      message(@arg1, delete))
-		  ]).
 
-
-popup(_T, Popup:popup) :<-
-	Popup = @rdf_literal_text_popup.
+popup(T, Popup:popup) :<-
+	call_rules(T, popup(Popup)).
 
 event(T, Ev:event) :->
 	(   send_super(T, event, Ev)
@@ -200,6 +198,13 @@ forward(T) :->
 	get(T, literal, OldText),
 	(   OldText == NewText
 	->  true
+	;   get(T, subject, Subject),
+	    get(T, predicate, Predicate),
+	    Subject \== @nil,
+	    Predicate \== @nil
+	->  rdfe_transaction(rdfe_update(Subject, Predicate,
+					 literal(OldText),
+					 object(literal(NewText))))
 	;   get(T, contained_in, Dev),
 	    send(Dev, has_send_method, rdf_modified)
 	->  send(Dev, rdf_modified, T, literal(OldText), literal(NewText))
