@@ -37,8 +37,13 @@
 :- [load].
 
 win_setup :-
+	current_prolog_flag(windows, true), !,
 	get(new(D, win_setup_dialog), confirm_centered, _),
 	send(D, destroy).
+win_setup :-
+	format(user_error,
+	       '~nERROR: This setup file is only for Windows users.  Check the\n\
+	          ERROR: documentation on the doc directory for other systems.\n', []).
 	
 :- pce_begin_class(win_setup_dialog, dialog).
 
@@ -62,7 +67,12 @@ register(D) :->
 	get(D, member, extensions, M),
 	get_chain(M, selection, Exts),
 	checklist(win_register, Exts),
-	send(D, return, done).
+	send(D, return, done),
+	concat_atom(Exts, ', ', Atom),
+	send(@display, inform,
+	     'Registered files with the following extensions to\n\
+	      start Triple20: %s',
+	      Atom).
 
 cancel(D) :->
 	send(D, return, cancel).
