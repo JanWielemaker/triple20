@@ -1,5 +1,7 @@
 Mar 30, 2005
 
+  * Added loading Prolog plugins from the commandline
+
   * Show subclasses of literal using `doc.xpm'.
 
 Mar 29, 2005

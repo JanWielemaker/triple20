@@ -146,7 +146,8 @@ triple20(Argv) :-
 triple20(Argv) :-
 	debug(cache),
 	check_prolog_version,
-	debug_options(Argv, Argv0),
+	debug_options(Argv, Argv0a),
+	load_plugins(Argv0a, Argv0),
 	(   select(OSJournal, Argv0, Argv1),
 	    file_name_extension(_, rdfj, OSJournal)
 	->  prolog_to_os_filename(Journal, OSJournal),
@@ -165,7 +166,7 @@ triple20(Argv) :-
 	    ;	true
 	    ),
 	    rdfe_open_journal(Journal, Mode)
-	;   Argv2 = Argv
+	;   Argv2 = Argv0
 	),
 	(   select('--nobase', Argv2, Argv3)
 	->  NoBase = true
@@ -223,6 +224,15 @@ debug_options([H|T0], T) :-
 	debug_options(T0, T).
 debug_options([H|T0], [H|T]) :-
 	debug_options(T0, T).
+
+
+load_plugins([], []).
+load_plugins([File|T0], T) :-
+	file_name_extension(_, pl, File), !,
+	load_files([File]),
+	load_plugins(T0, T).
+load_plugins([H|T0], [H|T]) :-
+	load_plugins(T0, T).
 
 
 usage :-
@@ -289,6 +299,7 @@ prolog:message(rdf(usage)) -->
 	  '    --base              List known base ontologies', nl,
 	  '    --base=Base         Load base ontology', nl,
 	  '  Files:', nl,
+	  '    file.pl             Load Triple20 (Prolog) plugin', nl,
 	  '    file.rdf            Load RDF file', nl,
 	  '    file.rdfs           Load RDFS file', nl,
 	  '    file.owl            Load OWL file', nl,
