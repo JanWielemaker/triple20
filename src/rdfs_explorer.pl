@@ -1016,23 +1016,7 @@ display_comment(AL) :->
 	ignore(send(AL, append_property, Property)).
 
 display_predicates_title(AL) :->
-	new(D, device),
-	send(D, format, new(F, format(vertical, 1, @on))),
-	send(F, adjustment, vector(center)),
-	send(D, display, text('Predicates', left, bold)),
-	send(D, display, new(BM1, bitmap(resource(new_icon)))),
-	send(BM1, recogniser,
-	     click_gesture(left, '', single,
-			   message(AL, add_predicate, @receiver))),
-	send(BM1, help_message, tag, 'Add property'),
-	(   has_standard_predicates(AL)
-	->  send(D, display, new(BM2, bitmap(resource(new_multiple)))),
-	    send(BM2, recogniser,
-		 click_gesture(left, '', single,
-			       message(AL, add_standard_predicates))),
-	    send(BM2, help_message, tag, 'Add standard properties')
-	;   true
-	),
+	new(D, rdf_predicate_row(AL)),
 	send(AL, append, D,
 	     halign := center, colspan := 2, background := khaki1),
 	send(AL, next_row).
@@ -1170,3 +1154,54 @@ has_standard_predicates(AL) :-
 
 :- pce_end_class(rdfs_instance_sheet).
 
+
+:- pce_begin_class(rdf_predicate_row, device,
+		   "Display predicate title").
+
+initialise(D, AL:rdfs_instance_sheet) :->
+	send_super(D, initialise),
+	send(D, format, new(F, format(vertical, 1, @on))),
+	send(F, adjustment, vector(center)),
+	send(D, display, text('Predicates', left, bold)),
+	send(D, display, new(BM1, bitmap(resource(new_icon)))),
+	send(BM1, recogniser,
+	     click_gesture(left, '', single,
+			   message(AL, add_predicate, @receiver))),
+	send(BM1, help_message, tag, 'Add property'),
+	(   has_standard_predicates(AL)
+	->  send(D, display, new(BM2, bitmap(resource(new_multiple)))),
+	    send(BM2, recogniser,
+		 click_gesture(left, '', single,
+			       message(AL, add_standard_predicates))),
+	    send(BM2, help_message, tag, 'Add standard properties')
+	;   true
+	).
+
+
+preview_drop(D, V:any) :->
+	"Drop a property"::
+	send(V, has_get_method, resource),
+	get(V, resource, R),
+	rdfs_individual_of(R, rdf:'Property'),
+	rdfs_ns_label(R, Label),
+	send(D, report, status, 'Drop %s: add property', Label).
+
+drop(D, V:any) :->
+	"Drop a property"::
+	send(V, has_get_method, resource),
+	get(V, resource, Predicate),
+	rdfs_individual_of(Predicate, rdf:'Property'),
+	get(D?device, resource, Subject),
+	rdf_new_property(Subject, Predicate).
+
+event(D, Ev:event) :->
+	(   send_super(D, event, Ev)
+	->  true
+	;   send(@arm_recogniser, event, Ev)
+	).
+
+arm(D, Arm:bool) :->
+	get(D, member, text, T),
+	send(T, underline, Arm).
+
+:- pce_end_class.
