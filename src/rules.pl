@@ -222,9 +222,6 @@ standard_predicate(Resource, Pred) :-
 :- end_particle.
 
 
-
-
-
 		 /*******************************
 		 *	      HIERARCHY		*
 		 *******************************/

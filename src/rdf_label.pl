@@ -306,8 +306,4 @@ update(L) :->
 	;   send(L?graphicals?tail, free)
 	).
 
-rdf_modified(L, _Obj:graphical, Old:prolog, New:prolog) :->
-	get(L, resource, Resource),
-	rdfe_transaction(rdfe_update(Resource, wns:wordForm, Old, object(New))).
-
 :- pce_end_class(wn_class_label).

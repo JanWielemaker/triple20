@@ -291,9 +291,6 @@ forward(T) :->
 					 literal(OldText),
 					 object(literal(NewText))),
 			     modify_literal)
-	;   get(T, contained_in, Dev),
-	    send(Dev, has_send_method, rdf_modified)
-	->  send(Dev, rdf_modified, T, literal(OldText), literal(NewText))
 	;   debug(edit, '~p: Container cannot handle edit', [T])
 	).
 

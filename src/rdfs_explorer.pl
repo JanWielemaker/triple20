@@ -967,21 +967,6 @@ triple_from_part(AL, Part:graphical, Triple:prolog) :<-
 	Triple = rdf(S, P, O).
 
 
-rdf_modified(AL, Part:graphical, From:prolog, To:prolog) :->
-	"Part requested modification"::
-	get(AL, resource, R),
-	get(Part, layout_interface, Cell),
-	get(Cell, column, Column),
-	get(Cell, row, Row),
-	(   Column == 2			% value side
-	->  get(AL, property_on_row, Row, PropertyItem),
-	    get(PropertyItem, resource, Property),
-	    rdfe_transaction(rdfe_update(R, Property, From, object(To)),
-			     modify_property)
-	;   tbd				% edited other column?
-	).
-
-
 add_predicate(AL, From:graphical) :->
 	"Add another attribute"::
 	(   setof(Pred, missing_subject_predicate(AL, Pred), Preds0),
