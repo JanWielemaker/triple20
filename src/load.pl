@@ -36,8 +36,6 @@ rdf_file(base(dc),	 'dc.rdfs').
 rdf_file(base(vra),	 'vra.owl').
 rdf_file(base(painting), 'subject.owl').
 rdf_file(base(painting), 'painting.owl').
-rdf_file(base(tool),	 'tool.owl').
-rdf_file(base(tool),	 'tool.rdf').
 
 rdf_file(aat,		 'aatmeta.rdfs').
 rdf_file(aat,		 'aat.rdfs').
@@ -63,7 +61,6 @@ load(C, Category) :-				% load the whole world
 % :- rdf_debug(1).		% Print messages
 :- load(base(rdfs)).
 :- load(base(owl)).
-:- load(base(tool)).
 
 world :-
 	load(_).

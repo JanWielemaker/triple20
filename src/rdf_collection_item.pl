@@ -10,8 +10,8 @@
 :- use_module(library(broadcast)).
 :- use_module(semweb(rdf_db)).
 :- use_module(library(pce_graphical_browser)).
-:- use_module(library(rdf_render)).
 :- use_module(library(rdf_template)).
+:- use_module(particle).
 	  
 :- pce_begin_class(rdf_list_browser, graphical_browser,
 		   "Browse a collection as a list").
@@ -19,6 +19,7 @@
 
 variable(resource, name*,      get, "Resource describing the list").
 variable(auto_fit, int* := 5,  get, "AUtomatically re-fit after ->update").
+variable(rules,    name := rdf_list_rules, both, "Rules for plugins").
 
 initialise(LB, Collection:[name]*) :->
 	send_super(LB, initialise),
@@ -54,8 +55,10 @@ append_list(LB, Collection:name) :->
 	->  true
 	;   rdf_equal(rdf:first, First),
 	    rdf_has(Collection, First, Element),
-	    rdf_render_object_with(rdf(Collection, First, Element),
-				   LB, Class),
+	    get(LB, rules, RuleSet),
+	    RuleSet:collection_item_class(rdf(Collection, First, Element),
+					  LB,
+					  Class),
 	    NewTerm =.. [Class, Collection, First, Element, LB],
 	    new(Gr, NewTerm),
 	    send(LB, append, Gr),
@@ -77,6 +80,16 @@ fit(LB, MaxSize:[int]) :->
 	).
 
 :- pce_end_class(rdf_list_browser).
+
+
+:- begin_particle(rdf_list_rules, []).
+
+collection_item_class(rdf(_S, _P, literal(_)), _LB,
+		      rdf_literal_text).
+collection_item_class(_, _, rdf_object_text).
+
+:- end_particle.
+
 
 
 		 /*******************************

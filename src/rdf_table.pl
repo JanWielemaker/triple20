@@ -11,8 +11,8 @@
 :- use_module(semweb(rdfs)).
 :- use_module(owl).
 :- use_module(semweb(rdf_edit)).
-:- use_module(rdf_render).
 :- use_module(library(rdf_template)).
+:- use_module(particle).
 
 :- pce_autoload(rdfs_resource_item,	 library(rdfs_resource_item)).
 :- pce_autoload(rdf_literal_item,	 library(rdf_literal_item)).
@@ -28,8 +28,8 @@
 		   "Display table with RDF information").
 :- use_class_template(rdf_container).
 
-variable(editable,	 bool := @off, get, "Can we modify the table?").
-
+variable(editable, bool := @off,	    get,  "Can we modify the table?").
+variable(rules,	   name := rdf_table_rules, both, "Plugin rules").
 
 initialise(AL) :->
 	send_super(AL, initialise),
@@ -58,9 +58,10 @@ append_resource(AL, Range:name) :->
 	    
 append_value(AL, Subject:name, Predicate:name, Object:prolog) :->
 	"Append object-part of the given triple triple"::
-	rdf_render_object_with(rdf(Subject, Predicate, Object), AL, Class),
-	NewTerm =.. [Class, Subject, Predicate, Object, AL],
-	new(ObjGraphical, NewTerm),
+	get(AL, rules, RuleSet),
+	RuleSet:object_visual(rdf(Subject, Predicate, Object),
+			      AL, 
+			      ObjGraphical),
 	send(AL, append, ObjGraphical).
 
 
@@ -540,6 +541,27 @@ triple(T, Subject:name, Predicate:name, Object:prolog) :->
 	send(T, next_row).
 
 :- pce_end_class(rdf_triple_table).
+
+
+		 /*******************************
+		 *	      RULES		*
+		 *******************************/
+
+:- begin_particle(rdf_table_rules, []).
+
+object_visual(rdf(S,P,O), Table, ObjGraphical) :-
+	object_visual_class(rdf(S,P,O), Class),
+	NewTerm =.. [Class, S, P, O, Table],
+	new(ObjGraphical, NewTerm).
+
+object_visual_class(rdf(_S,_P,literal(_O)), rdf_literal_text) :- !.
+object_visual_class(rdf(_S,_P,O), rdf_object_list_browser) :-
+	rdfs_individual_of(O, rdf:'List').
+object_visual_class(rdf(_S,_P,_O), rdf_object_text).
+
+:- end_particle.
+
+
 
 
 		 /*******************************
