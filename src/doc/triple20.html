@@ -424,13 +424,23 @@ extension as restrictions described above.
 <LI><I>Subclass</I><BR>
 The hierarchy displays, in addition to <CODE>rdfs:subClassOf</CODE>, the 
 reverse of <CODE>owl:intersectionOf</CODE>.
+
+<P>
+<LI><I>Inferred properties</I><BR>
+The property table shows additional properties inferred prefixed by the <IMG SRC="think.gif"> 
+icon. To suppress this feature, switch the dialect to RDFS.
 </UL>
 
-<P>OWL reasoning incorporates restrictions and descriptions, but does 
-not do <CODE>owl:sameAs</CODE>, <CODE>owl:equivalentClass</CODE>,
-<CODE>owl:equivalentProperty</CODE>, property types (symetric, 
-transitive) or reasoning about attribute values based on membership of a 
-description.
+<P>OWL reasoning uses a subset of OWL/Full, inferring properties that 
+can be inferred fairly quickly. Supported reasoning includes:
+<CODE>owl:sameAs</CODE> and the property attributes <CODE>owl:inverseOf</CODE>,
+<CODE>owl:SymmetricProperty</CODE> and <CODE>owl:TransitiveProperty</CODE>. 
+It also derives the value of a property if one of the types of a 
+resource defines <CODE>owl:hasValue</CODE>.
+
+<P>Triple20 deduces the class extensions of restrictions and 
+descriptions. If property values are to be considered it uses the above 
+described features to infer property values.
 
 <H2><A NAME="sec:4">4 Projects and files</A></H2>
 
