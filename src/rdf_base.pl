@@ -68,6 +68,8 @@ rdf_db:ns(ic,	   'http://www.swi.psy.uva.nl/mia/iconclass#').
 rdf_db:ns(ghs,	   'http://www.swi.psy.uva.nl/mia/ghs#').
 rdf_db:ns(vin,     'http://www.w3.org/2001/sw/WebOnt/guide-src/wine#').
 rdf_db:ns(cyc,     'http://www.cyc.com/cyc#').
+rdf_db:ns(cyc03,   'http://www.cyc.com/2003/04/01/cyc#').
+rdf_db:ns(sumo,	   'http://reliant.teknowledge.com/DAML/SUMO.daml#').
 rdf_db:ns(erc,	   'http://www.swi.psy.uva.nl/mia/cml/erc#').
 
 %	load_base_ontology(+Identifier)
