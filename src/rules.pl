@@ -322,7 +322,7 @@ child_cache(R, Cache, Class) :-
 		Class = owl_restriction_node
 	    )
 	).
-child_cache(R, Cache, rdf_individual_node) :-
+child_cache(R, Cache, rdf_list_node) :-
 	rdfs_individual_of(R, rdf:'List'), !,
 	rdf_cache(lsorted(V), rdfs_member(V, R), Cache).
 child_cache(R, Cache, rdf_part_node) :-		% erc:Class has_part relations
@@ -722,10 +722,14 @@ clicked(V) :-
 		 *	      LISTS		*
 		 *******************************/
 
-:- begin_particle(rdf_list_label, rdf_resource_menu).
+:- begin_particle(rdf_list_label,
+		  [ rdf_resource_menu,
+		    rdf_icon_rules
+		  ]).
+		    
 
 menu_item(Group, Item) :-
-	super::menu_item(Group, Item).
+	rdf_resource_menu:menu_item(Group, Item).
 menu_item(edit, delete=delete_member(@arg1)). % @arg1 = popup object
 
 drop_command(_Me, _Resource, append).
