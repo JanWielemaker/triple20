@@ -564,7 +564,7 @@ owl_has_direct(S, P, O) :-
 	),
 	rdf_has(O, P2, S).		% TBD: must call owl_has_direct/3
 owl_has_direct(S, P, O) :-
-	rdfs_individual_of(P, owl:'SymetricProperty'),
+	rdfs_individual_of(P, owl:'SymmetricProperty'),
 	rdf(O, P, S).
 owl_has_direct(S, P, O) :-
 	owl_use_has_value(S, P, O).

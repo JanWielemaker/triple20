@@ -1,6 +1,8 @@
 Dec 01, 2003
 
-  * Added View/OWL/Super properties
+  * FIXED: Handle symmetric properties (Marijn Manders) 
+
+  * ADDED: View/OWL/Super properties
 
 SNAPSHOT 0.3
 ============
