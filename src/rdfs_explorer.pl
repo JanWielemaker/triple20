@@ -593,7 +593,8 @@ scroll_vertical(TW,
 :- pce_begin_class(rdfs_class_sheet, rdf_tabular,
 		   "Show attributes of a class").
 
-variable(resource,	name*,		get, "Displayed class").
+variable(resource,	  name*,	get, "Displayed class").
+variable(show_properties, {all,self},	get, "Which properties to show").
 
 initialise(AL, Class:[name]) :->
 	"Create from ontology and class"::
@@ -644,6 +645,15 @@ resource(AL, Resource:name*) :->
 	    send(AL, update)
 	).
 
+show_properties(AL, Show:{all,self}) :->
+	(   get(AL, show_properties, Show)
+	->  true
+	;   send(AL, slot, show_properties, Show),
+	    send(@display, busy_cursor),
+	    send(AL, update),
+	    send(@display, busy_cursor, @nil)
+	).
+
 update(AL, _Cache:[int]) :->
 	"Display properties of Class"::
 	send(AL, clear),
@@ -663,12 +673,34 @@ display_title(AL, Class:name) :->
 	send(AL, display_comment),
 	send(AL, display_type),
 	send(AL, append_owl_properties, Class),
-	send(AL, append, 'Properties', bold, center,
-	     colspan := 3, background := khaki1),
+	send(AL, display_predicates_title),
 	send(AL, next_row),
 	send(AL, append, 'Name',     bold, center),
 	send(AL, append, 'Domain',   bold, center),
 	send(AL, append, 'Range',    bold, center),
+	send(AL, next_row).
+
+display_predicates_title(AL) :->
+	new(D, device),
+	send(D, format, new(F, format(vertical, 1, @on))),
+	send(F, adjustment, vector(center)),
+	send(D, display, text('Properties', center, bold)),
+	(   get(AL, show_properties, all)
+	->  send(D, display, text('[all]')),
+	    send(D, display, new(Self, text(self))),
+	    send(Self, underline, @on),
+	    send(Self, recogniser,
+		 click_gesture(left, '', single,
+			       message(AL, show_properties, self)))
+	;   send(D, display, text('[self]')),
+	    send(D, display, new(Self, text(all))),
+	    send(Self, underline, @on),
+	    send(Self, recogniser,
+		 click_gesture(left, '', single,
+			       message(AL, show_properties, all)))
+	),
+	send(AL, append, D,
+	     halign := center, colspan := 3, background := khaki1),
 	send(AL, next_row).
 
 display_type(AL) :->
@@ -710,13 +742,18 @@ append_continuation_value(AL, V:prolog, Pred:[name]) :->
 
 append_slots_of(AL, Class:name) :->
 	"Append normal properties"::
-	findall(Name, rdfs_class_property(Class, Name), Names0),
-	list_to_set(Names0, Names),
-	forall(member(Name, Names),
-	       send(AL, append_slot, Name, Class)).
+	(   call_rules(AL, class_predicate(Class, Property)),
+	    (	get(AL, show_properties, all)
+	    ->	true
+	    ;	rdf_has(Property, rdfs:domain, Class)
+	    ->	true
+	    ),
+	    send(AL, append_class_property, Property, Class),
+	    fail
+	;   true
+	).
 
-
-append_slot(AL, Slot:name, Class:[name]) :->
+append_class_property(AL, Slot:name, Class:[name]) :->
 	"Display append a slot"::
 	send(AL, append, rdf_predicate_cell(Slot)),
 	(   Class == @default

@@ -275,6 +275,16 @@ visible_predicate(Resource, Predicate) :-
 	sort_by_label(Ps, Predicates),
 	member(Predicate, Predicates).
 
+%	class_predicate(+Class, -Predicates)
+%	
+%	Return, on backtracking, proterties that are applicable to Class
+%	and must be displayed on the sheet for this class.
+
+class_predicate(Class, Predicate) :-
+	findall(P, rdfs_class_property(Class, P), Ps),
+	sort_by_label(Ps, Predicates),
+	member(Predicate, Predicates).
+
 :- end_particle.
 
 
@@ -364,7 +374,12 @@ drop(Gr, V) :-
 	;   ::drop_command(Gr, V, Cmd)
 	->  true
 	),
-	rdfe_transaction(::drop(Cmd, Gr, V), Cmd).
+	catch(rdfe_transaction(::drop(Cmd, Gr, V), Cmd),
+	      E, report_exception(Gr, E)).
+
+report_exception(Gr, E) :-
+	message_to_string(E, Message),
+	send(Gr, report, error, Message).
 
 drop(Command, Gr, V) :-
 	send(Gr, has_get_method, resource),
@@ -606,8 +621,7 @@ drop_command(_Me, _Resource, add) :-
 drop(add, Gr, V) :-
 	get(V, resource, Resource),	
 	get(Gr, triple, rdf(Subject, Predicate, _)),
-	rdfe_transaction(rdfe_assert(Subject, Predicate, Resource),
-			 add_property).
+	rdf_add_object(Subject, Predicate, Resource).
 
 :- end_particle.
 

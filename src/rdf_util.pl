@@ -34,7 +34,8 @@
 	    property_type/3,		% +Subject, +Property, -Type
 	    sort_by_label/2,		% +Resources, -Sorted
 	    rdf_default_file/2,		% +Resources, -File
-	    rdf_set_object/4		% +S, +P, +O, +NewObject
+	    rdf_set_object/4,		% +S, +P, +O, +NewObject
+	    rdf_add_object/3		% +S, +P, +O
 	  ]).
 :- use_module(semweb(rdf_db)).
 :- use_module(semweb(rdfs)).
@@ -66,9 +67,6 @@ property_restriction(Subject, Property, R) :-
 	
 adjust_restriction(cardinality(_,_), _) :- !,
 	fail.
-adjust_restriction(all_values_from(Class), class(Root)) :-
-	rdfs_subclass_of(Class, rdfs:'Class'), !,
-	rdf_equal(Root, rdfs:'Resource').
 adjust_restriction(R, R).
 
 
@@ -138,11 +136,16 @@ rdf_default_file(_, user).
 
 %	rdf_set_object(+Subject, +Predicate, +Old, +New)
 %	
-%	Set object aspect of a triple
+%	Modify object aspect of a triple.   This code also checks checks
+%	the domain, but does not yet check the cardinality.
 
 rdf_set_object(Subject, Predicate, Old, New) :-
-	rdfe_transaction(set_object(Subject, Predicate, Old, New),
-			 modify_property_value).
+	property_domain(Subject, Predicate, Domain),
+	(   owl_satisfies(Domain, New)
+	->  rdfe_transaction(set_object(Subject, Predicate, Old, New),
+			     modify_property_value)
+	;   throw(error(domain_error(Domain, New), _))
+	).
 
 set_object(Subject, Predicate, '__not_filled', _New) :-
 	rdf_default_file(Subject, File),
@@ -150,3 +153,22 @@ set_object(Subject, Predicate, '__not_filled', _New) :-
 	fail.				% next clause
 set_object(Subject, Predicate, Old, New) :-
 	rdfe_update(Subject, Predicate, Old, object(New)).
+
+
+%	rdf_add_object(Subject, Predicate, Object)
+%	
+%	Guarded adding of a new triple. Must validate cardinality
+%	constraints too.
+
+rdf_add_object(Subject, Predicate, Object) :-
+	property_domain(Subject, Predicate, Domain),
+	(   owl_satisfies(Domain, Object)
+	->  rdfe_transaction(add_object(Subject, Predicate, Object),
+			     modify_property_value)
+	;   throw(error(domain_error(Domain, Object), _))
+	).
+
+add_object(Subject, Predicate, Object) :-
+	rdf_default_file(Subject, File),
+	rdfe_transaction(rdfe_assert(Subject, Predicate, Object, File),
+			 add_property).
