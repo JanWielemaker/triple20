@@ -89,7 +89,6 @@ user:goal_expansion(owl_same_as(X0, Y0),
 	rdf_global_id(X0, X),
 	rdf_global_id(Y0, Y).
 
-
 		 /*******************************
 		 *	       FACTS		*
 		 *******************************/
@@ -349,7 +348,13 @@ owl_satisfies_cardinality(Resource, _, _) :-
 owl_description(ID, Restriction) :-
 	(   rdf_has(ID, rdf:type, owl:'Restriction')
 	->  owl_restriction(ID, Restriction)
-	;   rdf_has(ID, rdf:type, rdfs:'Class')
+/*         owl_restriction(ID, restriction(P, F)), % unfolding problem BJW
+	    F=.. [Facet, RClass],
+	    owl_description(RClass, ClassDescription),
+	    F1 =.. [Facet, ClassDescription],
+	    Restriction = restriction(P, F1)
+*/
+	;   rdf_has(ID, rdf:type, owl:'Class') % was rdfs:'Class' BJW
 	->  (   (   rdf_has(ID, owl:unionOf, Set)
 		->  Restriction = union_of(SubDescriptions)
 		;   rdf_has(ID, owl:intersectionOf, Set)
@@ -687,6 +692,14 @@ owl_use_has_value(S, P, O) :-
 
 owl_subclass_of(Class, R) :-
 	rdf_has(Class, rdfs:subClassOf, R).
+owl_subclass_of(Class, R) :-		% added BJW
+	rdf_has(Class, owl:equivalentClass, E),
+	owl_subclass_of(E,R).
+owl_subclass_of(Class, R) :-
+	rdf_has(Class, rdfs:subClassOf, D),
+	\+ rdf_has(D, rdfs:label, _),	% anonymous class
+	rdf_has(D, owl:intersectionOf, List),
+	rdfs_member(R, List).
 owl_subclass_of(Class, R) :-
 	(   nonvar(R)
 	->  rdf_has(List, rdf:first, R),
