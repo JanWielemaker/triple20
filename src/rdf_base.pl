@@ -110,7 +110,7 @@ requires(world,	   ic).
 %	required_base_ontology(-Base)
 %	
 %	Deduce the required base ontologies from expressions used in the
-%	document.  This is heuristic.
+%	document.  This is heuristic and far from complete.
 
 required_base_ontology(rdfs) :-
 	(   rdf(_, rdfs:subClassOf, _)
