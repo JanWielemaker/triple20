@@ -29,6 +29,8 @@
     the GNU General Public License.
 */
 
+:- use_module(library(pce_identifier_item)).
+:- use_module(library(pce_tick_box)).
 
 /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 
@@ -48,10 +50,10 @@ win_setup :-
 :- pce_begin_class(win_setup_dialog, dialog).
 
 initialise(D) :->
-	send_super(D, initialise, 'Register file-types'),
+	send_super(D, initialise, 'Triple20 setup'),
 	send(D, append,
 	     label(help,
-		   'Select file-types to associate to this application')),
+		   'Select file-types to associate to Triple20')),
 	send(D, append, new(M, menu(extensions, toggle))),
 	send_list(M, append,
 		  [ rdfj,
@@ -60,19 +62,51 @@ initialise(D) :->
 		    owl
 		  ]),
 	send(M, selection, rdfj),
+	send(D, append, new(TB, tick_box(add_to_start_menu, @on))),
+	send(TB, auto_value_align, @off),
+	send(D, append, new(GI, identifier_item(group, 'SWI'))),
+	send(TB, message, message(GI, active, @arg1)),
 	send(D, append, button(register)),
 	send(D, append, button(cancel)).
 
 register(D) :->
+	send(D, register_extensions),
+	send(D, add_start_menu),
+	send(D, done).
+
+register_extensions(D) :->
+	"Register the file extensions"::
 	get(D, member, extensions, M),
 	get_chain(M, selection, Exts),
-	checklist(win_register, Exts),
-	send(D, return, done),
-	concat_atom(Exts, ', ', Atom),
-	send(@display, inform,
-	     'Registered files with the following extensions to\n\
-	      start Triple20: %s',
-	      Atom).
+	checklist(win_register, Exts).
+
+add_start_menu(D) :->
+	(   get(D, member, group, GrpItem),
+	    get(GrpItem, active, @on)
+	->  get(GrpItem, selection, Group),
+	    icon_file(IconFile),
+	    current_prolog_flag(executable, Exe),
+	    load_file(LoadFile),
+	    prolog_to_os_filename(IconFile, OsIconFile),
+	    sformat(CmdLine, '"~w" -s "~w" -L16m -G32m -T32m -g go',
+		    [Exe, LoadFile]),
+	    absolute_file_name(ontology_root(.),
+			       [ file_type(directory),
+				 access(read)
+			       ],
+			       Dir),
+	    progman_make_group(Group),
+	    progman_make_item(Group, 'Triple20',
+			      CmdLine,
+			      Dir,
+			      OsIconFile)
+	;   true
+	).
+
+done(D) :->
+	send(@display, inform, 'Installation complete'),
+	send(D, return, done).
+
 
 cancel(D) :->
 	send(D, return, cancel).
@@ -86,14 +120,10 @@ cancel(D) :->
 %		plwin.exe -s load.pl -g winmain -- <file.ext>
 
 win_register(Ext, Name) :-
-	absolute_file_name(image('32x32/triple20.ico'), IconFile),
+	icon_file(IconFile),
 	atom_concat(IconFile, ',0', Icon),
 	current_prolog_flag(executable, Exe),
-	absolute_file_name(triple20(load),
-			   [ file_type(prolog),
-			     access(read)
-			   ],
-			   LoadFile),
+	load_file(LoadFile),
 	sformat(Command, '"~w" -s "~w" -L16m -G32m -T32m -g winmain -- "%1"',
 		[Exe, LoadFile]),
 	shell_register_file_type(Ext, 'triple20.type', Name, Command, Icon).
@@ -102,4 +132,15 @@ win_register(Ext) :-
 	rdf_file_extension(Ext, Name),
 	win_register(Ext, Name).
 
-:- win_setup, halt.
+icon_file(IconFile) :-
+	absolute_file_name(image('32x32/triple20.ico'), IconFile).
+load_file(LoadFile) :-
+	absolute_file_name(triple20(load),
+			   [ file_type(prolog),
+			     access(read)
+			   ],
+			   LoadFile).
+
+
+:- win_setup,
+   true.
