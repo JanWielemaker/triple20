@@ -215,7 +215,8 @@ requires \const{rdfs}.
 
     \menuitem{File/New file}{}
 Create a new file and add it to the pool.  After creating this file
-resources can be associated to it.  See also \menuref{New subclass}.
+resources can be associated to it.  See also \menuref{New subclass}
+and \secref{files} for a discussion on file management.
 
     \menuitem{File/Merge files}{}
 Move the triples associated with a file to another file.   The command
@@ -359,18 +360,40 @@ description.
 
 \section{Projects and files}			\label{sec:project}
 
-\subsection{Files}
+\subsection{Files}				\label{sec:files}
 
 Triples in \emph{rdf_db} are actually quadruples. The last part
 registers the origin of the triple, so the tool can load ontologies from
 multiple files, present the joined view and still save the modified
-triples to a specific file.  If a new class or instance is created
-using the \menuref{New subclass}, \menuref{New individual}, etc.\
-context menu in the hierarchy the system allows to specify the file
-using the file of the parent as default. If properties are added to a
-subject these are added in the same file as the \const{rdf:type}
-property of the subject or ---if this property is not present--- to the
-file of the first property found.
+triples to a specific file.  As Triple20 provides an integrated view
+and editing capabilities on all triples loaded from all sources it 
+requires some machinery and defaults to define the source assigned
+to newly created triples.  The \menuref{File/Statistics} menu gives
+access to an overview of the loaded files and allows to inspect and
+edit properties thereof.  Defined properties are:
+
+\begin{description}
+    \item [ro]
+The source is read only. Any transaction that modifies this source is
+rolled back and an error message is displayed. Sources are initially
+flagges as \const{ro} if they are loaded as a \emph{base ontology}
+or they are loaded from a read-only file.
+
+    \item [rw]
+The source is editable.  This implies triples can deleted, updated
+and added.  If no source is flagged \const{all}, new triples are
+added to the same source as already existing triples on the same
+subject.  New subjects are ---by default--- added to the same source
+as their \emph{context}, but this may be overruled by the user.
+
+    \item [fallback]
+If there is no context, this source is used for new triples.  At most
+one of the sources has the \const{fallback} or \const{all} property.
+Enabling \const{fallback} or \const{all} enables \const{rw}.
+
+    \item [all]
+All new	triples are added to this source.
+\end{description}
 
 The menu \menuref{File/Merge files} allow the user to move all triples
 associated to some file to another file.  This can be used to merge

@@ -268,7 +268,9 @@ requires <CODE>rdfs</CODE>.
 <P>
 <DT><A NAME="menu:File/Newfile"><STRONG>File/New file</STRONG></A><DD>
 Create a new file and add it to the pool. After creating this file 
-resources can be associated to it. See also <A HREF="#menu:Newsubclass">New subclass</A>.
+resources can be associated to it. See also <A HREF="#menu:Newsubclass">New subclass</A> 
+and <A HREF="#sec:files">section 4.1</A> for a discussion on file 
+management.
 
 <P>
 <DT><A NAME="menu:File/Mergefiles"><STRONG>File/Merge files</STRONG></A><DD>
@@ -436,16 +438,45 @@ description.
 
 <H3><A NAME="sec:4.1">4.1 Files</A></H3>
 
+<A NAME="sec:files"></A>
+
 <P>Triples in <EM>rdf_db</EM> are actually quadruples. The last part 
 registers the origin of the triple, so the tool can load ontologies from 
 multiple files, present the joined view and still save the modified 
-triples to a specific file. If a new class or instance is created using 
-the <A HREF="#menu:Newsubclass">New subclass</A>, <A HREF="#menu:Newindividual">New individual</A>, 
-etc. context menu in the hierarchy the system allows to specify the file 
-using the file of the parent as default. If properties are added to a 
-subject these are added in the same file as the <CODE>rdf:type</CODE> 
-property of the subject or ---if this property is not present--- to the 
-file of the first property found.
+triples to a specific file. As Triple20 provides an integrated view and 
+editing capabilities on all triples loaded from all sources it requires 
+some machinery and defaults to define the source assigned to newly 
+created triples. The <A HREF="#menu:File/Statistics">File/Statistics</A> 
+menu gives access to an overview of the loaded files and allows to 
+inspect and edit properties thereof. Defined properties are:
+
+<DL>
+
+<P>
+<DT><B>ro</B><DD>
+The source is read only. Any transaction that modifies this source is 
+rolled back and an error message is displayed. Sources are initially 
+flagges as <CODE>ro</CODE> if they are loaded as a <EM>base ontology</EM> 
+or they are loaded from a read-only file.
+
+<P>
+<DT><B>rw</B><DD>
+The source is editable. This implies triples can deleted, updated and 
+added. If no source is flagged <CODE>all</CODE>, new triples are added 
+to the same source as already existing triples on the same subject. New 
+subjects are ---by default--- added to the same source as their <EM>context</EM>, 
+but this may be overruled by the user.
+
+<P>
+<DT><B>fallback</B><DD>
+If there is no context, this source is used for new triples. At most one 
+of the sources has the <CODE>fallback</CODE> or <CODE>all</CODE> 
+property. Enabling <CODE>fallback</CODE> or <CODE>all</CODE> enables <CODE>rw</CODE>.
+
+<P>
+<DT><B>all</B><DD>
+All new triples are added to this source.
+</DL>
 
 <P>The menu <A HREF="#menu:File/Mergefiles">File/Merge files</A> allow 
 the user to move all triples associated to some file to another file. 
@@ -622,17 +653,16 @@ modify the visualization rule-set and extend the tool.
 <DT>file_search_path/2<DD>
 <A HREF="#idx:filesearchpath2:1">5.2</A>
 <DT><A HREF="#menu:File/Statistics">File/Statistics</A><DD>
-<A HREF="#sec:2.3">2.3</A>
+<A HREF="#sec:2.3">2.3</A> <A HREF="#sec:4.1">4.1</A>
 <DT><STRONG>H</STRONG><DD>
 <DT><A HREF="#menu:Help/About">Help/About</A><DD>
 <DT><A HREF="#menu:Help/Help">Help/Help</A><DD>
 <DT><A HREF="#menu:Hierarchylocation">Hierarchy location</A><DD>
 <DT><STRONG>N</STRONG><DD>
 <DT><A HREF="#menu:Newindividual">New individual</A><DD>
-<A HREF="#sec:4.1">4.1</A>
 <DT><A HREF="#menu:Newproperty">New property</A><DD>
 <DT><A HREF="#menu:Newsubclass">New subclass</A><DD>
-<A HREF="#sec:2.2">2.2</A> <A HREF="#sec:2.2">2.2</A> <A HREF="#sec:2.3">2.3</A> <A HREF="#sec:4.1">4.1</A>
+<A HREF="#sec:2.2">2.2</A> <A HREF="#sec:2.2">2.2</A> <A HREF="#sec:2.3">2.3</A>
 <DT><STRONG>O</STRONG><DD>
 <DT>OWL/Class extension<DD>
 <A HREF="#sec:3">3</A>
