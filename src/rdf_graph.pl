@@ -289,17 +289,12 @@ update_content(O) :->
 	send(O, slot, req_update_content, @off),
 	send(O, clear, destroy),
 	get(O, resource, Resource),
+	get(O, mode, Mode),
+	send(O, append, rdf_object_mode_button(Mode)),
+	send(O, append_resource, Resource),
 	(   get(O, mode, label)
-	->  send(O, append, new(I, bitmap(resource(expand)))),
-	    send(I, recogniser, click_gesture(left, '', single,
-					      message(O, mode, sheet))),
-	    send(O, append_resource, Resource),
-	    RelOnly = @on
-	;   send(O, append, new(I, bitmap(resource(collapse)))),
-	    send(I, recogniser, click_gesture(left, '', single,
-					      message(O, mode, label))),
-	    send(O, append_resource, Resource),
-	    RelOnly = @off
+	->  RelOnly = @on
+	;   RelOnly = @off
 	),
 	get(O, sheet_attributes, Attrs),
 	send(Attrs, for_all,
@@ -554,6 +549,36 @@ expand_slot_values(Obj, P:name, Where:point) :->
 	).
 
 :- pce_end_class(rdf_object).
+
+
+:- pce_begin_class(rdf_object_mode_button, bitmap,
+		   "Switch object modes").
+
+initialise(B, Mode:{label,sheet}) :->
+	(   Mode == label
+	->  Resource = expand
+	;   Resource = collapse
+	),
+	send_super(B, initialise, resource(Resource)).
+
+:- pce_global(@rdf_object_mode_button_recogniser,
+	      new(click_gesture(left, '', single, message(@receiver, execute)))).
+
+event(B, Ev:event) :->
+	(   send_super(B, event, Ev)
+	->  true
+	;   send(@rdf_object_mode_button_recogniser, event, Ev)
+	).
+
+execute(B) :->
+	get(B, device, Obj),
+	(   get(Obj, mode, label)
+	->  send(Obj, mode, sheet),
+	    send(Obj, expose)
+	;   send(Obj, mode, label)
+	).
+
+:- pce_end_class(rdf_object_mode_button).
 
 
 :- pce_begin_class(layout_graphical, graphical).
