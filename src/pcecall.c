@@ -4,6 +4,7 @@
 #ifdef WIN32
 
 #include <windows.h>
+#include <packages/xpce/src/h/interface.h>
 
 #else /*WIN32*/
 
@@ -116,6 +117,7 @@ call_wnd_proc(HWND hwnd, UINT message, UINT wParam, LONG lParam)
 
       call_prolog_goal(g);
       PL_free(g);
+      pceRedraw(FALSE);
 
       return 0;
     }
