@@ -149,6 +149,20 @@ Delete the triple causing the node to appear in this location of the
 hierarchy. All other relations are unaffected. See also
 \textsf{View/Show all parents}.
 
+    \menuitem{New subclass}{hierarchy}
+Create a new resource and make it a subclass of the current node. The
+create dialog prompts for the file, namespace and label for the new
+resource. The meta class (\const{rdf:type}, default associated file and
+default namespace are the same as the super class.
+
+    \menuitem{New individual}{hierarchy}
+Create an individual of the class represented by the current node.  See
+also \textsf{New subclass}.
+
+    \menuitem{New property}{hierarchy}
+Create an individual of the property class represented by the current
+node. See also \textsf{New subclass}.
+
     \menuitem{View/rdf source}{}
 Open the RDF description defining the resource. The current
 implementation na\"\i{}vely opens the first if triples for the resource

@@ -195,11 +195,25 @@ container_with_method(Gr, Method, Container) :-
 	container_with_method(Container0, Method, Container).
 
 item_method(Item=Method, Label, Method) :- !,
-	Item =.. List,
-	concat_atom(List, '_', Label).
+	(   item_label(Item, Label)
+	->  true
+	;   Item =.. List,
+	    concat_atom(List, '_', Label)
+	).
 item_method(Item,        Label, Item) :-
-	Item =.. List,
-	concat_atom(List, '_', Label).
+	(   item_label(Item, Label)
+	->  true
+	;   Item =.. List,
+	    concat_atom(List, '_', Label)
+	).
+
+%	item_label(+Item, -Label)
+%	
+%	Items that need a dedicated label.
+
+item_label(new(rdf_class_node), new_subclass).
+item_label(new(rdf_individual_node), new_individual).
+item_label(new(rdf_property_node), new_property).
 
 item_member(Method, Label, Items) :-
 	member(Item, Items),
