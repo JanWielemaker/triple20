@@ -247,12 +247,12 @@ cardinality_on_subject(Subject, Predicate, cardinality(Min, Max)) :-
 owl_satisfies_restriction(Resource, Restriction) :-
 	rdf_has(Restriction, owl:onProperty, Property),
 	(   rdf_has(Restriction, owl:hasValue, Value)
-	->  rdf_has(Resource, Property, Value)
+	->  owl_has(Resource, Property, Value)
 	;   rdf_has(Restriction, owl:allValuesFrom, Class)
-	->  setof(V, rdf_has(Resource, Property, V), Vs),
+	->  setof(V, owl_has(Resource, Property, V), Vs),
 	    all_individual_of(Vs, Class)
 	;   rdf_has(Restriction, owl:someValuesFrom, Class)
-	->  rdf_has(Resource, Property, Value),
+	->  owl_has(Resource, Property, Value),
 	    owl_individual_of(Value, Class)
 	;   rdf_subject(Resource)
 	),
@@ -281,7 +281,7 @@ owl_satisfies_cardinality(Resource, Property, Restriction) :-
 owl_satisfies_cardinality(Resource, Property, Restriction) :-
 	rdf_has(Restriction, owl:minCardinality, literal(MinAtom)),
 	atom_number(MinAtom, Min), !,
-	findall(V, rdf_has(Resource, Property, V), Vs0),
+	findall(V, owl_has(Resource, Property, V), Vs0),
 	sort(Vs0, Vs),			% remove duplicates
 	length(Vs, Count),
 	Count >= Min,
@@ -293,7 +293,7 @@ owl_satisfies_cardinality(Resource, Property, Restriction) :-
 owl_satisfies_cardinality(Resource, Property, Restriction) :-
 	rdf_has(Restriction, owl:maxCardinality, literal(MaxAtom)),
 	atom_number(MaxAtom, Max), !,
-	findall(V, rdf_has(Resource, Property, V), Vs0),
+	findall(V, owl_has(Resource, Property, V), Vs0),
 	sort(Vs0, Vs),			% remove duplicates
 	length(Vs, Count),
 	Count =< Max.
@@ -455,24 +455,6 @@ intersection_of(Nil, _) :-
 
 owl_has(Subject, Predicate, Object) :-
 	rdf_has(Subject, Predicate, Object).
-owl_has(Subject, Predicate, Object) :-
-	rdfs_individual_of(Predicate, owl:'SymmetricProperty'),
-	owl_has(Object, Predicate, Subject).
-
-
-
-owl_has(Subject, Predicate, Object) :-
-	(   rdfs_individual_of(Predicate, owl:'TransitiveProperty')
-	->  rdf_reachable(Subject, Predicate, Object)
-	;   rdf_has(Subject, Predicate, Object)
-	).
-owl_has(Subject, Predicate, Object) :-
-	(   rdfs_individual_of(Predicate, owl:'TransitiveProperty')
-	->  rdf_reachable(Subject, Predicate, Object)
-	;   rdf_has(Subject, Predicate, Object)
-	).
-
-
 
 
 		 /*******************************
