@@ -30,7 +30,7 @@ define_event(Name, Parent) :-
 	).
 
 :- pce_global(@arm_recogniser,
-	      new(handler(arm, message(@event?window, arm_object,
+	      new(handler(arm, message(@event?window, try_arm,
 				       @event?receiver)))).
 :- initialization
    define_event(arm, user).
@@ -64,6 +64,13 @@ arm(W, For:[name], Target:graphical) :<-
 	    fail
 	).
 	
+try_arm(W, Gr:graphical) :->
+	(   get(@event, attribute, arm_for, For)
+	->  send(Gr, has_send_method, For)
+	;   true
+	),
+	send(W, arm_object, Gr).
+
 arm_object(W, Gr:graphical*) :->
 	(   get(W, hypered, arm, Old)
 	->  send(W, delete_hypers, arm),
@@ -243,14 +250,16 @@ rdf_container(Gr, Container:object) :<-
 :- pce_extend_class(layout_interface).
 
 rdf_container(O, Container:layout_manager) :<-
-	get(O, layout_manager, Container).
+	get(O, layout_manager, Container),
+	Container \== @nil.
 
 :- pce_end_class.
 
 :- pce_extend_class(layout_manager).
 
 rdf_container(O, Container:device) :<-
-	get(O, device, Container).
+	get(O, device, Container),
+	Container \== @nil.
 
 :- pce_end_class.
 

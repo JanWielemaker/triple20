@@ -103,20 +103,47 @@ initialise(DD, Button:name) :->
 	send_super(DD, initialise, Button, get_source := @arg1?resource),
 	send(DD, cursor, @default).
 
-%drag(DD, Ev:event) :->
-%	(   send(DD, activate)
-%	->  get(DD, source, Source),
-%	    (   get(Ev, inside_sub_window, Frame),
-%	        get(Ev, inside_sub_window, Frame, Window),
-%		format('Inside window ~p~n', [Window]),
-%		send(Window, has_get_method, arm),
-%		format('Dropping in ~p~n', [Window]),
-%		get(Window, arm, drop, Target)
-%	    ->  send(DD, target, Source, Ev, Target)
-%	    ;	send(DD, target, Source, @nil, @nil)
-%	    )
-%	;   true
-%	).
+drag(DD, Ev:event) :->
+	(   send(DD, activate)
+	->  get(DD, source, Source),
+	    (   get(Ev, inside_sub_window, Frame),
+	        get(Ev, inside_sub_window, Frame, Window)
+	    ->  debug(arm, 'Drag in ~p', [Window]),
+	        (   send(Window, has_get_method, arm)
+		->  (   unfocussed(Window, get(Window, arm, drop, Target))
+		    ->  send(DD, target, Source, Ev, Target)
+		    ;	send(DD, target, Source, @nil, @nil)
+		    )
+		;   send_super(DD, drag, Ev)
+		)
+	    ;	send(DD, target, Source, @nil, @nil)
+	    )
+	;   true
+	).
+
+
+%	unfocussed(+Window, :Goal)
+%
+%	Removes the Window<-focus, executes Goal and restores the focus.
+%	This is needed to avoid the `arm' event following the path of
+%	the focus. An alternative (better) way might be to add an option
+%	to event->post to ignore event-focus settings or allow for an
+%	attribute to the event that will cause it to bypass focussing.
+
+unfocussed(W, G) :-
+	get(W, focus, F),
+	get(W, focus_recogniser, R),
+	get(W, focus_cursor, C),
+	get(W, focus_button, B),
+	(   F == @nil,
+	    R == @nil
+	->  G
+	;   send(C, lock_object, @on),
+	    send(W, focus, @nil, @nil),
+	    call_cleanup(G,
+			 (   send(W, focus, F, R, C, B),
+			     send(C, lock_object, @off)))
+	).
 
 :- pce_end_class(rdf_drop_gesture).
 

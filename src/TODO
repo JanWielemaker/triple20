@@ -7,6 +7,13 @@
 	+ Obligatory slots: add to create-node
 
 ================================================================
+* Bugs:
+
+	+ Undo: Action/undo/Action --> only redo lights up
+
+
+================================================================
 * rdf_db
 	- Automatically re-hash with bigger tables.
 	- Add explicit re-hash?
+

@@ -403,6 +403,7 @@ redo(OV) :->
 
 :- pce_begin_class(rdfs_sheet, tabbed_window,
 		   "Visualise a resource as instance or class").
+:- use_class_template(rdf_arm).
 
 variable(show_namespace, bool := @on, get, "Show namespaces").
 variable(history,	 history,     get, "Location history").
@@ -534,20 +535,12 @@ update(AL, _Cache:[int]) :->
 
 display_title(AL, Class:name) :->
 	"Display the title row"::
-	rdf_has(Class, rdf:type, Meta),
 	send(AL, append, 'Class', bold, right),
 	send(AL, append, rdf_resource_text(Class), colspan := 2),
 	send(AL, next_row),
-	send(AL, append, 'Meta Class', bold, right),
-	send(AL, append_resource, Meta, rdf_object_cell, colspan := 2),
-	send(AL, next_row),
+	send(AL, display_comment),
+	send(AL, display_type),
 	send(AL, append_owl_properties, Class),
-	(   rdf_has(Class, rdfs:comment, literal(Comment))
-	->  send(AL, append, 'Comment', bold, right),
-	    send(AL, append, rdf_literal_text(Comment), colspan := 2),
-	    send(AL, next_row)
-	;   true
-	),
 	send(AL, append, 'Properties', bold, center,
 	     colspan := 3, background := khaki1),
 	send(AL, next_row),
@@ -556,6 +549,16 @@ display_title(AL, Class:name) :->
 	send(AL, append, 'Range',    bold, center),
 	send(AL, next_row).
 
+display_type(AL) :->
+	"Display class(es) I belong to"::
+	rdf_equal(rdf:type, Property),
+	ignore(send(AL, append_property, Property)).
+
+display_comment(AL) :->
+	"Display the comment field"::
+	rdf_equal(rdfs:comment, Property),
+	ignore(send(AL, append_property, Property)).
+
 append_owl_properties(AL, Class:name) :->
 	(   owl_property(P),
 	    rdf_has(Class, P, _Set, _Prop)
@@ -563,16 +566,7 @@ append_owl_properties(AL, Class:name) :->
 		 colspan := 3, background := khaki1),
 	    send(AL, next_row),
 	    (   owl_property(P2),
-		setof(Value, rdf_has(Class, P2, Value, Prop), Values),
-		send(AL, append_resource, Prop, rdf_predicate_cell),
-		Values = [First|Rest],
-		send(AL, append_resource, First, rdf_object_cell, colspan := 2),
-		send(AL, next_row),
-		(   member(Next, Rest),
-		    send(AL, append_continuation_value, Next),
-		    fail
-		;   true
-		),
+		send(AL, append_property, P2),
 		fail
 	    ;   true
 	    )
@@ -586,10 +580,10 @@ owl_property(P) :- rdf_equal(owl:unionOf, P).
 owl_property(P) :- rdf_equal(owl:complementOf, P).
 
 
-append_continuation_value(AL, V:prolog) :->
+append_continuation_value(AL, V:prolog, Pred:[name]) :->
 	"Append value in the 2nd column"::
 	send(AL, append, new(graphical)),
-	send(AL, append_resource, V, rdf_object_cell, colspan := 2),
+	send(AL, append, rdf_object_cell(V, Pred), colspan := 2),
 	send(AL, next_row).
 
 append_slots_of(AL, Class:name) :->
@@ -602,7 +596,7 @@ append_slots_of(AL, Class:name) :->
 
 append_slot(AL, Slot:name, Class:[name]) :->
 	"Display append a slot"::
-	send(AL, append_resource, Slot, rdf_predicate_cell),
+	send(AL, append, rdf_predicate_cell(Slot)),
 	(   Class == @default
 	->  get(AL, class, TheClass)
 	;   TheClass = Class
@@ -613,16 +607,53 @@ append_slot(AL, Slot:name, Class:[name]) :->
 	;   (   rdfs_subproperty_of(DomainProperty, rdfs:domain),
 	        rdf(Slot, DomainProperty, Base),
 	        Base \== TheClass
-	    ->  send(AL, append_resource, Base, rdf_object_cell)
+	    ->  send(AL, append, rdf_object_cell(Base, Slot))
 	    ;	send(AL, append, '<self>', italic)
 	    ),
 	    (   rdfs_subproperty_of(RangeProperty, rdfs:range),
 		rdf(Slot, RangeProperty, Range)
-	    ->	send(AL, append_resource, Range, rdf_object_cell)
+	    ->	send(AL, append, rdf_object_cell(Range, Slot))
 	    ;	send(AL, append, '-')
 	    )
 	),
 	send(AL, next_row).
+
+
+:- pce_group(object_property).
+
+append_property(AL, Property:name) :->
+	"Append slot and its values"::
+	get(AL, resource, R),
+	bagof(Value, rdf(R, Property, Value), [V1|Values]),
+	send(AL, append, rdf_predicate_cell(Property)),
+	send(AL, append, rdf_object_cell(V1, Property), colspan := 2),
+	send(AL, next_row),
+	forall(member(V, Values),
+	       send(AL, append_continuation_value, V, Property)).
+
+
+append_continuation_value(AL, V:prolog, Pred:[name]) :->
+	"Append value in the 2nd column"::
+	send(AL, append, new(graphical)),
+	send(AL, append, rdf_object_cell(V, Pred), colspan := 2),
+	send(AL, next_row).
+
+
+%	<-triple_from_part: graphical --> rdf(S,P,O)
+%	
+%	Compute the triple of which graphical is a part.
+
+triple_from_part(AL, Part:graphical, Triple:prolog) :<-
+	"Find triple in which Part participates"::
+	get(Part, layout_interface, Cell),
+	get(AL, resource, S),
+	(   send(Cell, instance_of, rdf_object_cell)
+	->  get(Cell, predicate, P),
+	    P \== @nil,
+	    get(Cell?image, resource, O)
+	;   tbd
+	),
+	Triple = rdf(S, P, O).
 
 :- pce_end_class(rdfs_class_sheet).
 
@@ -720,11 +751,11 @@ append_slots(AL) :->
 	get(AL, resource, I),
 	(   bagof(Value, rdf(I, Property, Value), [V1|Values]),
 	    \+ reserved_instance_slot(Property),
-	    send(AL, append_resource, Property, rdf_predicate_cell),
-	    send(AL, append_resource, V1, rdf_object_cell),
+	    send(AL, append, rdf_predicate_cell(Property)),
+	    send(AL, append, rdf_object_cell(V1, Property)),
 	    send(AL, next_row),
 	    forall(member(V, Values),
-		   send(AL, append_continuation_value, V)),
+		   send(AL, append_continuation_value, V, Property)),
 	    fail
 	;   true
 	).
@@ -741,20 +772,21 @@ append_property(AL, Property:name) :->
 	"Append slot and its values"::
 	get(AL, resource, R),
 	bagof(Value, rdf(R, Property, Value), [V1|Values]),
-	send(AL, append_resource, Property, rdf_predicate_cell),
-	send(AL, append_resource, V1, rdf_object_cell),
+	send(AL, append, rdf_predicate_cell(Property)),
+	send(AL, append, rdf_object_cell(V1, Property)),
 	send(AL, next_row),
 	forall(member(V, Values),
-	       send(AL, append_continuation_value, V)).
+	       send(AL, append_continuation_value, V, Property)).
 
 
-append_continuation_value(AL, V:prolog) :->
+append_continuation_value(AL, V:prolog, Property:[name]) :->
 	"Append value in the 2nd column"::
 	send(AL, append, new(graphical)),
-	send(AL, append_resource, V, rdf_object_cell),
+	send(AL, append, rdf_object_cell(V, Property)),
 	send(AL, next_row).
 
 :- pce_group(edit).
+
 
 %	<-triple_from_part: graphical --> rdf(S,P,O)
 %	
@@ -762,17 +794,15 @@ append_continuation_value(AL, V:prolog) :->
 
 triple_from_part(AL, Part:graphical, Triple:prolog) :<-
 	"Find triple in which Part participates"::
-	get(Part, layout_interface, Cell), Cell \== @nil,
-	get(Cell, column, Column),
-	get(Cell, row, Row),
-	get(AL, resource, R),
-	(   Column == 2			% value side
-	->  get(AL, property_on_row, Row, PropertyItem),
-	    get(PropertyItem, resource, Property),
-	    get(Part, resource, Object),
-	    Triple = rdf(R, Property, Object)
-	;   tbd				% edited other column?
-	).
+	get(Part, layout_interface, Cell),
+	get(AL, resource, S),
+	(   send(Cell, instance_of, rdf_object_cell)
+	->  get(Cell, predicate, P),
+	    get(Cell?image, resource, O)
+	;   tbd
+	),
+	Triple = rdf(S, P, O).
+
 
 rdf_modified(AL, Part:graphical, From:prolog, To:prolog) :->
 	"Part requested modification"::
@@ -787,16 +817,6 @@ rdf_modified(AL, Part:graphical, From:prolog, To:prolog) :->
 	;   tbd				% edited other column?
 	).
 
-property_on_row(AL, Row:int, PropertyItem:graphical) :<-
-	"Find property visualiser at Row"::
-	get(AL, layout_manager, Table),
-	get(Table, cell, 1, Row, Cell),
-	get(Cell, image, Gr),
-	(   get(Gr, class_name, graphical)
-	->  Row2 is Row - 1,
-	    get(AL, property_on_row, Row2, PropertyItem)
-	;   PropertyItem = Gr
-	).
 
 add_predicate(AL, From:button) :->
 	"Add another attribute"::

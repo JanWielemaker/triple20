@@ -57,20 +57,19 @@ clear(AL) :->
 	"Delete all rows"::
 	send(AL, delete_rows).
 
-:- pce_group(append).
-
-append_resource(AL, Resource:prolog, Role:name, ColSpan:colspan=[int]) :->
-	"Append a general resource"::
-	get(AL, append_resource, Resource, Role, ColSpan, _Label).
-
-append_resource(AL, Resource:prolog, Role:name, ColSpan:colspan=[int],
-		Label:graphical) :<-
-	"Append a general resource"::
-	call_rules(AL, label(Resource, Label)),
-	CellTerm =.. [Role, Label],
-	send(AL, append, CellTerm, colspan := ColSpan).
-
 :- pce_group(edit).
+
+
+property_on_row(AL, Row:int, PropertyItem:graphical) :<-
+	"Find property visualiser at Row"::
+	get(AL, layout_manager, Table),
+	get(Table, cell, 1, Row, Cell),
+	get(Cell, image, Gr),
+	(   get(Gr, class_name, graphical)
+	->  Row2 is Row - 1,
+	    get(AL, property_on_row, Row2, PropertyItem)
+	;   PropertyItem = Gr
+	).
 
 %	->prompt_value
 %	
@@ -151,13 +150,30 @@ adjust_restriction(R, R).
 :- pce_end_class(rdf_tabular).
 
 
-:- pce_begin_class(rdf_subject_cell, table_cell).
+:- pce_begin_class(rdf_resource_cell, table_cell).
+
+initialise(C, R:prolog) :->
+	call_rules(C, label(R, Label)),
+	send_super(C, initialise, Label).
+
 :- pce_end_class.
 
-:- pce_begin_class(rdf_predicate_cell, table_cell).
+:- pce_begin_class(rdf_subject_cell, rdf_resource_cell).
 :- pce_end_class.
 
-:- pce_begin_class(rdf_object_cell, table_cell).
+:- pce_begin_class(rdf_predicate_cell, rdf_resource_cell).
+:- pce_end_class.
+
+:- pce_begin_class(rdf_object_cell, rdf_resource_cell).
+
+variable(predicate, name*, get, "Related predicate").
+
+initialise(C, R:prolog, P:[name]) :->
+	send_super(C, initialise, R),
+	(   P \== @default
+	->  send(C, slot, predicate, P)
+	;   true
+	).
 
 modify(Cell) :->
 	format('Request to modify ~p~n', [Cell]).
@@ -202,9 +218,9 @@ triples(T, Triples:prolog) :->
 
 triple(T, Subject:name, Predicate:name, Object:prolog) :->
 	"Append a row with a triple"::
-	send(T, append_resource, Subject, rdf_subject_cell),
-	send(T, append_resource, Predicate, rdf_predicate_cell),
-	send(T, append_resource, Object, rdf_object_cell),
+	send(T, append, rdf_subject_cell(Subject)),
+	send(T, append, rdf_predicate_cell(Predicate)),
+	send(T, append, rdf_object_cell(Object, Predicate)),
 	send(T, next_row).
 
 :- pce_end_class(rdf_triple_table).

@@ -265,17 +265,15 @@ possible effort.  There are still two pitfalls:
 update(N, Cache:[int]) :->
 	(   get(N, hypered, editor, _)
 	->  true
-	;   get(N, sons, Sons),
-	    \+ send(Sons, empty)
-	->  get(N, caches, Caches),
+	;   get(N, caches, Caches),
 	    (   Cache == @default
 	    ->	send(Caches, for_all,
 		     message(N, update_role, @arg1?name, @arg1?value))
 	    ;	get(Caches?members, find, @arg1?value == Cache, Att),
 		get(Att, name, Role),
 		send(N, update_role, Role, Cache)
-	    )
-	;   send(N, update_can_expand)
+	    ),
+	    send(N, update_can_expand)
 	).
 
 update_role(N, Role:name, Cache:int) :->
@@ -285,8 +283,7 @@ update_role(N, Role:name, Cache:int) :->
 	get(Sons, find_all, @arg1?cache == Cache, Existing),
 	(   rdf_cache_cardinality(Cache, 0)
 	->  send(Existing, for_all,			% lost last one
-		 message(@arg1, delete_tree)),
-	    send(N, update_can_expand)
+		 message(@arg1, delete_tree))
 	;   (   get(Existing, find,
 		    message(@arg1, instance_of, rdf_more_node),
 		    MoreNode)
