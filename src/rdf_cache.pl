@@ -58,7 +58,8 @@ rdf_cache2(Var, Goal, Index) :-
 		assert(next_cache(2))
 	    ),
 	    assert(cache_directory(Key, I)),
-	    assert(cache_goal(I, Var, Goal))
+	    assert(cache_goal(I, Var, Goal)),
+	    rdf_cache_create_update_thread
 	),
 	Index = I.
 	    
@@ -277,5 +278,3 @@ updated(Cache) :-
 	;   true
 	).
 
-:- initialization
-   rdf_cache_create_update_thread.

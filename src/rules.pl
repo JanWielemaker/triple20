@@ -355,7 +355,10 @@ parent(R, Parent, rdf_class_node) :-
 parent(R, Parent, rdf_property_node) :-
 	rdf_has(R, rdfs:subPropertyOf, Parent).
 parent(R, Parent, rdf_individual_node) :-
-	rdf_has(R, rdf:type, Parent).
+	rdf_has(R, rdf:type, Parent),
+	\+ rdfs_individual_of(R, rdfs:'Class').
+parent(R, Parent, rdf_part_node) :-
+	rdf_has(Parent, erc:has_part, R).
 parent('__orphan_classes', Root, rdf_orphan_node) :-
 	rdf_equal(Root, rdfs:'Resource').
 parent('__orphan_resources', Root, rdf_orphan_node) :-

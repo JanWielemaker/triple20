@@ -11,7 +11,10 @@ directory in your $PATH.
 file_search_path(triple20, '.').
 file_search_path(triple20, 'd:/oz/mia/jan/semweb'). % BJW VAIO settings
 file_search_path(triple20, '/staff/jan/src/Triple20/src').
-:- [triple20(load)].
+:- load_files([ triple20(load)
+	      ],
+	      [ silent(true)
+	      ]).
 
 main :-
 	current_prolog_flag(argv, Argv),

@@ -99,14 +99,8 @@ go :-
 %	Main entry.  Options:
 %	
 %		<file>.rdfj		Specify a journal file
-%		--reset			Ignore existing journal
-%		--rdfs			Load RDFS
-%		--owl			Load OWL
-%		--aat			Load AAT
-%		--wn			Load Wordnet
-%		--wnrdfs		Load Wordnet as RDFS classes
-%		--ulan			Load ULAN
-%		--world			Load everything we know
+%		--base			List base ontologies
+%		--base=Base		Load base ontology
 %		<file>.{rdf,rdfs,owl}	Load this file
 
 go(Argv) :-
@@ -153,26 +147,16 @@ go(Argv) :-
 	send(X, open).
 
 parse_argv([]).
-parse_argv(['--rdfs'|T]) :-
-	load_base_ontology(rdfs),
-	parse_argv(T).
-parse_argv(['--owl'|T]) :-
-	load_base_ontology(owl),
-	parse_argv(T).
-parse_argv(['--world'|T]) :-
-	load_base_ontology(world),
-	parse_argv(T).
-parse_argv(['--aat'|T]) :-
-	load_base_ontology(aat),
-	parse_argv(T).
-parse_argv(['--wn'|T]) :-
-	load_base_ontology(wn),
-	parse_argv(T).
-parse_argv(['--wnrdfs'|T]) :-
-	load_base_ontology(wnrdfs),
-	parse_argv(T).
-parse_argv(['--ulan'|T]) :-
-	load_base_ontology(ulan),
+parse_argv(['--base'|_]) :- !,
+	(   current_base_ontology(Base),
+	    writeln(Base),
+	    fail
+	;   true
+	),
+	halt(0).
+parse_argv([Cmd|T]) :-
+	atom_concat('--base=', Base, Cmd), !,
+	load_base_ontology(Base),
 	parse_argv(T).
 parse_argv([File|T]) :-
 	file_name_extension(_, Ext, File),
@@ -213,11 +197,8 @@ prolog:message(rdf(usage)) -->
 	  '    --help              Print usage', nl,
 	  '    --reset             Overwrite journal instead of append', nl,
 	  '    --nobase            Do NOT load rdfs.rdfs and owl.owl', nl,
-	  '    --world             Load the whole world', nl,
-	  '    --aat               Load AAT', nl,
-	  '    --wn                Load WordNet', nl,
-	  '    --wnrdfs            Load WordNet as RDFS Classes', nl,
-	  '    --ulan              Load ULAN', nl, nl,
+	  '    --base              List known base ontologies', nl,
+	  '    --base=Base         Load base ontology', nl,
 	  '  Files:', nl,
 	  '    file.rdf            Load RDF file', nl,
 	  '    file.rdfs           Load RDFS file', nl,

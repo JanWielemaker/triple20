@@ -141,24 +141,22 @@ display_path([H-Role|T], OT, Node) :-
 show_all_parents(OT, Resource:name) :->
 	"Show all paths from the root to Resource"::
 	get(OT?root, resource, Root),
-	(   bagof(P, call_rules(OT, parent(Resource, P, Role)), Ps)
-	->  (   member(Parent, Ps),
-	        (   path(Parent, Root, OT, Path)
-		->  display_path(Path, OT, ParentNode),
-		    (	get(ParentNode?sons, find,
-			    and(@arg1?class_name == Role,
-				@arg1?resource == Resource),
-			    Node)
-		    ->	true
-		    ;	get(ParentNode, add_child, Resource, Role, Node)
-		    ),
-		    send_class(ParentNode, node, collapsed(@off)),
-		    send(Node, selected, @on)
-		;   true
+	(   bagof(P, call_rules(OT, parent(Resource, P, Role)), Ps),
+	    member(Parent, Ps),
+	    (   path(Parent, Root, OT, Path)
+	    ->  display_path(Path, OT, ParentNode),
+		(   get(ParentNode?sons, find,
+			and(@arg1?class_name == Role,
+			    @arg1?resource == Resource),
+			Node)
+		->	true
+		;   get(ParentNode, add_child, Resource, Role, Node)
 		),
-		fail
+		send_class(ParentNode, node, collapsed(@off)),
+		send(Node, selected, @on)
 	    ;   true
-	    )
+	    ),
+	    fail
 	;   true
 	).
 
