@@ -295,32 +295,93 @@ update(L) :->
 :- pce_begin_class(owl_description_label, owl_class_label,
 		   "Represent an OWL class").
 
+variable(predicate, name*, get, "Represented predicate").
 class_variable(opaque, bool, @off).
+
+initialise(L, R:name) :->
+	send_super(L, initialise, R),
+	send(@resource_texts, append, R, L).
+
+unlink(L) :->
+	get(L, resource, R),
+	send(@resource_texts, delete, R, L),
+	send_super(L, unlink).
 
 update(L) :->
 	"OWL Specialised labels"::
+	send(L, clear),
+	send(L, slot, predicate, @nil),
 	get(L, resource, Resource),
 	call_rules(L, icon(Resource, Icon)),
 	send(L, icon, Icon),
 	(   send(L, is_anonymous)
-	->  (   rdf_has(Resource, owl:oneOf, List)
+	->  (   rdf_has(Resource, owl:oneOf, List, P)
 	    ->  send(L, print, 'oneOf'),
 		send(L, append_resource, List)
-	    ;   rdf_has(Resource, owl:complementOf, Class)
+	    ;   rdf_has(Resource, owl:complementOf, Class, P)
 	    ->  send(L, print, 'complementOf('),
 		send(L, append_resource, Class),
 		send(L, print, ')')
-	    ;   rdf_has(Resource, owl:unionOf, List)
+	    ;   rdf_has(Resource, owl:unionOf, List, P)
 	    ->  send(L, print, 'unionOf'),
 		send(L, append_resource, List)
-	    ;   rdf_has(Resource, owl:intersectionOf, List)
+	    ;   rdf_has(Resource, owl:intersectionOf, List, P)
 	    ->  send(L, print, 'intersectionOf'),
 		send(L, append_resource, List)
 	    ;   send_super(L, update)
+	    ),
+	    (	atom(P)
+	    ->	send(L, slot, predicate, P)
+	    ;	true
 	    )
 	;   send(L, append, rdf_resource_text(Resource)),
 	    send(L, opaque, @on)
 	).
+
+:- pce_group(edit).
+
+triple_from_part(L, Part:graphical, Triple:prolog) :<-
+	"Find the triple representing the description"::
+	send(@pce, write_ln, 'Triple from:', L, Part),
+	get(L, predicate, Predicate),
+	Predicate \== @nil,
+	get(Part, container, @arg1?device == L, Member),
+	send(Member, has_get_method, resource),
+	get(Member, resource, Object),
+	get(L, resource, Subject),
+	Triple = rdf(Subject, Predicate, Object).
+
+%	->owl_description_type: Type=name
+%	
+%	Set the type of the OWL description.  Type is the full owl
+%	predicate name for the attribute.
+
+owl_description_type(L, Type:name) :->
+	rdfe_transaction(owl_description_type(L, Type),
+			 owl_description_type(Type)).
+
+owl_description_type(L, Type) :-
+	get(L, resource, Subject),
+	get(L, predicate, Predicate),
+	(   Predicate == Type
+	->  send(L, report, status, 'No change')
+	;   Predicate \== @nil,
+	    rdf(Subject, Predicate, Object)
+	->  rdfe_update(Subject, Predicate, Object, predicate(Type)),
+	    (	rdf_has(Type, rdfs:range, rdf:'List')
+	    ->	(   rdfs_individual_of(Object, rdf:'List')
+		->  true
+		;   rdf_equal(rdf:nil, Nil),
+		    rdfe_update(Subject, Type, Object, object(Nil))
+		)
+	    ;	(   rdfs_individual_of(Object, rdf:'List')
+		->  rdfe_update(Subject, Type, Object, object('__not_filled'))
+		;   true
+		)
+	    )
+	;   rdf_new_property(Subject, Type)
+	).
+
 
 :- pce_end_class(owl_description_label).
 

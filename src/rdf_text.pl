@@ -185,6 +185,16 @@ unfocussed(W, G) :-
 %	@resource_texts
 %	
 %	This object defines a table Resource --> resource text objects.
+%	
+%	NOTE: it is a bit more general and can be used by any simple
+%	visualiser that may wish to change its visualisation if some
+%	property of the principle resource is changed.  The required
+%	methods are:
+%	
+%		register: send(@resource_texts, append, Resource, Obj)
+%		un-	: send(@resource_texts, delete, Resource, Obj)
+%	
+%	The Obj must implement ->update.
 
 :- pce_global(@resource_texts, new(chain_table)).
 

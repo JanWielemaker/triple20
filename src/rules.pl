@@ -657,6 +657,10 @@ clicked(V) :-
 :- end_particle.
 
 
+		 /*******************************
+		 *	      LISTS		*
+		 *******************************/
+
 :- begin_particle(rdf_list_label, rdf_resource_menu).
 
 menu_item(Group, Item) :-
@@ -676,3 +680,26 @@ drop(Action, Gr, V) :-
 :- end_particle.
 
 
+		 /*******************************
+		 *	     OWL STUFF		*
+		 *******************************/
+
+
+:- begin_particle(owl_description_label, rdf_resource_menu).
+
+menu_item(Group, Item) :-
+	super::menu_item(Group, Item).
+menu_item(type, oneOf=owl_description_type(P)) :-
+	rdf_equal(P, owl:oneOf).
+menu_item(type, complementOf=owl_description_type(P)) :-
+	rdf_equal(P, owl:complementOf).
+menu_item(type, unionOf=owl_description_type(P)) :-
+	rdf_equal(P, owl:unionOf).
+menu_item(type, intersectionOf=owl_description_type(P)) :-
+	rdf_equal(P, owl:intersectionOf).
+
+sub_menu(Popup) :-
+	super::sub_menu(Popup).
+sub_menu(type).
+
+:- end_particle.
