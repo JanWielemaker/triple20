@@ -46,14 +46,19 @@ files and installation of the toolkit.
 <LI><A HREF="#sec:2.1">2.1 Drag till you Drop</A>
 <LI><A HREF="#sec:2.2">2.2 Context menus</A>
 <LI><A HREF="#sec:2.3">2.3 Icons and Labels</A>
+<LI><A HREF="#sec:2.4">2.4 Undo and redo</A>
+<LI><A HREF="#sec:2.5">2.5 View consistency</A>
 </UL>
 <LI><A HREF="#sec:3"><B>3 Projects and files</B></A>
-<LI><A HREF="#sec:4"><B>4 Namespaces</B></A>
-<LI><A HREF="#sec:5"><B>5 Project files and snapshots</B></A>
-<LI><A HREF="#sec:6"><B>6 Downloading and Installation</B></A>
 <UL>
-<LI><A HREF="#sec:6.1">6.1 Finishing in MS-Windows</A>
-<LI><A HREF="#sec:6.2">6.2 Finishing in Unix</A>
+<LI><A HREF="#sec:3.1">3.1 Files</A>
+<LI><A HREF="#sec:3.2">3.2 Namespaces</A>
+<LI><A HREF="#sec:3.3">3.3 Project files and snapshots</A>
+</UL>
+<LI><A HREF="#sec:4"><B>4 Downloading and Installation</B></A>
+<UL>
+<LI><A HREF="#sec:4.1">4.1 Finishing in MS-Windows</A>
+<LI><A HREF="#sec:4.2">4.2 Finishing in Unix</A>
 </UL>
 </UL>
 
@@ -103,8 +108,8 @@ three ways. <EM>Label only</EM> only displays the label. The label is
 either the first value for the <CODE>rdfs:label</CODE> property, a 
 subproperty thereof or the last part of the resource name. <EM>Namespace 
 and label</EM> displays the namespace identifier (see <A HREF="#sec:namespaces">section 
-4</A>) before the label. This is the default. <EM>Resource</EM> displays 
-the namespace identifiers in front of the local resource name.
+3.2</A>) before the label. This is the default. <EM>Resource</EM> 
+displays the namespace identifiers in front of the local resource name.
 
 <P>In most situations the label is preceded by a small icon. The icons 
 depend on the classification of the resource. In the hierarchy view, 
@@ -112,9 +117,48 @@ labels may have two icons. In this case the first icon represents the
 relation to the parent and the second represents the type 
 classification.
 
+<H3><A NAME="sec:2.4">2.4 Undo and redo</A></H3>
+
+<P>Triple20 provides unlimited undo and redo using toolbar buttons.
+
+<H3><A NAME="sec:2.5">2.5 View consistency</A></H3>
+
+<P>Triple20 uses the <EM>Model-View-Controller</EM> design. Edit 
+operations only modify the triple database. The GUI monitors the changes 
+to the triple database and updates the display. Unfortunately the view 
+has a very indirect relation to the triples. Generally labels register 
+themselves to be updated whenever a property of the represented resource 
+is changed, added or deleted. Complicates relations such as expressed in 
+the hierarchy and table use a registered <EM>query</EM> which is 
+re-evaluated on every change in the background. If the result changes 
+the background thread triggers the UI to update.
+
+<P>This deals with most changes, but sometimes the system will miss the 
+proper update. When in doubt collapse and re-expand the hierarchy and/or 
+switch the table to another resource and back to force proper update. 
+Please report inconsistencies you think can be avoided.
+
 <H2><A NAME="sec:3">3 Projects and files</A></H2>
 
-<H2><A NAME="sec:4">4 Namespaces</A></H2>
+<H3><A NAME="sec:3.1">3.1 Files</A></H3>
+
+<P>Triples in <EM>rdf_db</EM> are actually quadruples. The last part 
+registers the origin of the triple, so the tool can load ontologies from 
+multiple files, present the joined view and still save the modified 
+triples to a specific file. If a new class or instance is created using 
+the <B>New ...</B> context menu in the hierachy the system allows to 
+specify the file using the file of the parent as default. If properties 
+are added to a subject these are added in the same file as the <CODE>rdf:type</CODE> 
+property of the subject or ---if this property is not present--- to the 
+file of the first property found.
+
+<P>The menu <B>File/Merge files</B> allow the user to move all triples 
+associated to some file to another file. This can be used to merge 
+ontologies.
+
+<P>The <B>File/Save file</B> submenus allow for saving modified files.
+
+<H3><A NAME="sec:3.2">3.2 Namespaces</A></H3>
 
 <A NAME="sec:namespaces"></A>
 
@@ -124,7 +168,7 @@ If possible it will use the abbreviated form in the UI. Namespaces can
 be added through the <B>File/Namespaces</B> menu option. Registered 
 namespaces are stored in the project file.
 
-<H2><A NAME="sec:5">5 Project files and snapshots</A></H2>
+<H3><A NAME="sec:3.3">3.3 Project files and snapshots</A></H3>
 
 <P>A <EM>project file</EM> <CODE>.rdfj</CODE> is a <EM>journal</EM> of 
 executed edit operations. This approach has several advantages over the 
@@ -159,7 +203,7 @@ first try to locate the snapshot from the MD5 digest and name, loading
 exactly the same file. If this fails Triple20 tries to locate the 
 ontology file itself.
 
-<H2><A NAME="sec:6">6 Downloading and Installation</A></H2>
+<H2><A NAME="sec:4">4 Downloading and Installation</A></H2>
 
 <P>The current snapshot of the Triple20 toolkit can be downloaded from
 <A HREF="http://www.swi-prolog.org/cvs.html">SWI-Prolog CVS server</A>. 
@@ -202,7 +246,7 @@ public ontologies: WordNet, OpenCyc
 
 <A NAME="tab:dirs"></A>
 
-<H3><A NAME="sec:6.1">6.1 Finishing in MS-Windows</A></H3>
+<H3><A NAME="sec:4.1">4.1 Finishing in MS-Windows</A></H3>
 
 <P>After installing Prolog, double click <CODE>src/setup.pl</CODE> to 
 register
@@ -213,7 +257,7 @@ lauch Triple20 and load the file.
 <P>To make Triple20 accessible from the Windows desktop, create a
 <EM>shortcut</EM> from the desktop to <CODE>src/triple20.pl</CODE>.
 
-<H3><A NAME="sec:6.2">6.2 Finishing in Unix</A></H3>
+<H3><A NAME="sec:4.2">4.2 Finishing in Unix</A></H3>
 
 <P>Edit <CODE>triple20.pl</CODE>, adjust <CODE>#!</CODE> path to point 
 to the SWI-Prolog executable and <A NAME="idx:filesearchpath2:1"></A><B>file_search_path/2</B> 
@@ -232,7 +276,7 @@ Using
 <P>
 <DT><STRONG>F</STRONG><DD>
 <DT>file_search_path/2<DD>
-<A HREF="#idx:filesearchpath2:1">6.2</A>
+<A HREF="#idx:filesearchpath2:1">4.2</A>
 </DL>
 
 </BODY></HTML>

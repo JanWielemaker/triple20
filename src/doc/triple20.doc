@@ -42,7 +42,10 @@ and installation of the toolkit.
 \section{Introduction}
 
 Triple20 is a toolkit for visualization and editing of data in the
-\pllib{rdf_db} \emph{triple store}.
+\pllib{rdf_db} \emph{triple store}.  
+
+
+
 
 
 \section{The Triple20 User Interface}
@@ -95,9 +98,51 @@ relation to the parent and the second represents the type
 classification.
 
 
+\subsection{Undo and redo}
+
+Triple20 provides unlimited undo and redo using toolbar buttons.
+
+
+\subsection{View consistency}
+
+Triple20 uses the \emph{Model-View-Controller} design. Edit operations
+only modify the triple database.  The GUI monitors the changes to the
+triple database and updates the display.  Unfortunately the view has
+a very indirect relation to the triples.  Generally labels register
+themselves to be updated whenever a property of the represented
+resource is changed, added or deleted.  Complicates relations such
+as expressed in the hierarchy and table use a registered \emph{query}
+which is re-evaluated on every change in the background.  If the result
+changes the background thread triggers the UI to update.
+
+This deals with most changes, but sometimes the system will miss the
+proper update. When in doubt collapse and re-expand the hierarchy and/or
+switch the table to another resource and back to force proper update.
+Please report inconsistencies you think can be avoided.
+
+
 \section{Projects and files}
 
-\section{Namespaces}				\label{sec:namespaces}
+\subsection{Files}
+
+Triples in \emph{rdf_db} are actually quadruples. The last part
+registers the origin of the triple, so the tool can load ontologies from
+multiple files, present the joined view and still save the modified
+triples to a specific file.  If a new class or instance is created
+using the \textsf{New ...} context menu in the hierachy the system
+allows to specify the file using the file of the parent as default.
+If properties are added to a subject these are added in the same
+file as the \const{rdf:type} property of the subject or ---if this
+property is not present--- to the file of the first property found.
+
+The menu \textsf{File/Merge files} allow the user to move all triples
+associated to some file to another file.  This can be used to merge
+ontologies.
+
+The \textsf{File/Save file} submenus allow for saving modified files.
+
+
+\subsection{Namespaces}				\label{sec:namespaces}
 
 Triple20 has an internal table of well-known namespaces and their common
 abbreviation.  This table is in the file \file{rdf_base.pl}.  If possible
@@ -106,7 +151,7 @@ the \textsf{File/Namespaces} menu option.  Registered namespaces are stored
 in the project file.
 
 
-\section{Project files and snapshots}
+\subsection{Project files and snapshots}
 
 A \emph{project file} \fileext{rdfj} is a \jargon{journal} of executed
 edit operations.  This approach has several advantages over the normal
