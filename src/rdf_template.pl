@@ -331,7 +331,7 @@ rdf_container(N, Container:visual) :<-
 		 *	       RULES		*
 		 *******************************/
 
-:- pce_global(@particle, new(var(visual, particle, @nil))).
+:- pce_global(@particle, new(?(@prolog, current_container))).
 
 %	call_rules(+Obj, +Goal)
 %	
@@ -341,10 +341,20 @@ rdf_container(N, Container:visual) :<-
 call_rules(Obj, Goal) :-
 	container_with_particle(Obj, Container, Particle),
 	current_predicate(_, Particle:Goal), !,
-	get(@particle, '_value', Old),
-	send(@particle, assign, Container),
-	call_cleanup(Particle::Goal,
-		     send(@particle, assign, Old)).
+	with_container(Container, Particle::Goal).
+
+with_container(_Container, Goal) :-
+	Goal,
+	true.				% avoid last-call optimisation
+
+current_container(Cont) :-
+	(   prolog_current_frame(Frame),
+	    prolog_frame_attribute(Frame, parent_goal,
+				   rdf_template:with_container(Cont, _))
+	->  true
+	;   throw(error(existence_error(container, current), _))
+	).
+
 
 container_with_particle(Obj, Obj, Particle) :-
 	get(Obj, rdf_particle, Particle),
