@@ -339,6 +339,13 @@ insert_node(R, Role, Existing, Cache, Parent) :-
 	get(Parent, add_child, R, Role, Next, NewNode),
 	send(NewNode, slot, cache, Cache).
 insert_node(R, Role, _, Cache, Parent) :-
+	get(Parent?sons, find,
+	    and(message(@arg1, instance_of, rdf_more_node),
+		@arg1?role == Role),
+	    MoreNode), !,			% insert before MoreNode
+	get(Parent, add_child, R, Role, MoreNode, NewNode),
+	send(NewNode, slot, cache, Cache).
+insert_node(R, Role, _, Cache, Parent) :-
 	get(Parent, add_child, R, Role, NewNode),
 	send(NewNode, slot, cache, Cache).
 
@@ -415,23 +422,29 @@ delete_hyper(N, Hyper:hyper) :->
 
 :- pce_group(edit).
 
-new_class(N) :->
-	"Create subclass of this class"::
+new(N, Role:name) :->
+	"Create a child in specified Role"::
 	send_class(N, node, collapsed(@off)),
 	get(N, resource, Resource),
-	send(N, son, new(C, rdf_create_node(Resource, class))),
+	new(C, rdf_create_node(Resource, Role)),
+	(   get(N?sons, find,
+		and(message(@arg1, instance_of, rdf_more_node),
+		    @arg1?role == Role),
+		MoreNode)
+	->  send(N, son, C, MoreNode)	% insert before the more-node
+	;   send(N, son, C)
+	),
 	new(_, hyper(N, C, editor, node)),
 	send(N?window, compute),
 	send(C, get_focus).
 
+new_class(N) :->
+	"Create subclass of this class"::
+	send(N, new, rdf_class_node).
+
 new_individual(N) :->
 	"Create indivisual of this class"::
-	send_class(N, node, collapsed(@off)),
-	get(N, resource, Resource),
-	send(N, son, new(C, rdf_create_node(Resource, individual))),
-	new(_, hyper(N, C, editor, node)),
-	send(N?window, compute),
-	send(C, get_focus).
+	send(N, new, rdf_individual_node).
 
 :- pce_end_class.
 
@@ -561,17 +574,13 @@ initialise(B, More:int) :->
 
 variable(cache,	int*, get, "Associated cache (left @nil)").
 
-initialise(N, Parent:name, What:{class,individual}) :->
-	send_super(N, initialise, new(D, rdf_create_dialog(Parent, What))),
+initialise(N, Parent:name, Role:name) :->
+	send_super(N, initialise, new(D, rdf_create_dialog(Parent, Role))),
 	send(D, pen, 1),
 	send(N, collapsed, @nil).
 
-resource_created(N, Resource:name, Mode:{class,individual}) :->
+resource_created(N, Resource:name, Role:name) :->
 	get(N, parents, chain(Parent)),
-	(   Mode == class
-	->  Role = rdf_class_node
-	;   Role = rdf_individual_node
-	),
 	send(Parent, add_child, Resource, Role, N).
 
 get_focus(N) :->
@@ -585,13 +594,13 @@ delete_item(N, _D:graphical) :->
 :- pce_begin_class(rdf_create_dialog, dialog,
 		   "Create instance or class").
 
-variable(mode,     {class,individual}, get, "Mode of operation").
-variable(resource, name,	       get, "Context Class").
+variable(role,     name, get, "Role of the new individual").
+variable(resource, name, get, "Context Class").
 
-initialise(D, Parent:name, What:{class,individual}) :->
-	send(D, slot, mode, What),
+initialise(D, Parent:name, Role:name) :->
+	send(D, slot, role, Role),
 	send(D, slot, resource, Parent),
-	send_super(D, initialise, string('Create %s', What?label_name)),
+	send_super(D, initialise, string('Create %s', Role?label_name)),
 	rdf_global_id(NS:_, Parent),
 	send(D, append, new(rdf_ns_menu(NS))),
 	send(D, append, new(rdf_id_item), right),
@@ -618,15 +627,15 @@ create_resource(N) :->
 	send(IDI, clear),
 	(   get(N, contained_in, Container),
 	    send(Container, has_send_method, resource_created)
-	->  get(N, mode, Mode),
-	    send(Container, resource_created, Resource, Mode)
+	->  get(N, role, Role),
+	    send(Container, resource_created, Resource, Role)
 	;   true
 	).
 
 do_create_resource(N, Resource:name, Label:name) :->
 	"Create a new resource"::
 	get(N, resource, Super),
-	(   get(N, mode, class)
+	(   get(N, role, rdf_class_node)
 	->  rdfe_assert(Resource, rdf:type, rdfs:'Class'),
 	    rdfe_assert(Resource, rdfs:subClassOf, Super)
 	;   rdfe_assert(Resource, rdf:type, Super)

@@ -13,6 +13,7 @@
 :- use_module(semweb(rdf_edit)).
 :- use_module(library(rdf_template)).
 :- use_module(particle).
+:- use_module(rdf_cache).
 
 :- pce_autoload(rdfs_resource_item,	 library(rdfs_resource_item)).
 :- pce_autoload(rdf_literal_item,	 library(rdf_literal_item)).
@@ -27,22 +28,29 @@
 		   "Display table with RDF information").
 :- use_class_template(rdf_container).
 
-variable(editable, bool := @off,	    get,  "Can we modify the table?").
-variable(rules,	   name := rdf_table_rules, both, "Plugin rules").
+variable(editable, bool := @off,    get, "Can we modify the table?").
+variable(cache,	   int*,	    get, "Cached result").
 
 initialise(AL) :->
 	send_super(AL, initialise),
 	send(AL, layout_manager, new(T, rdf_property_manager)),
 	send(T, rules, all),
-	send(T, cell_spacing, -1),
-	listen(AL, rdf_transaction(_), send(AL, refresh)).
+	send(T, cell_spacing, -1).
 
 unlink(AL) :->
-	unlisten(AL),
+	send(AL, detach_cache),
 	send_super(AL, unlink).
 
-refresh(_AL) :->
-	"Virtual: update visualisation"::
+detach_cache(AL) :->
+	"Detach from the caching system"::
+	(   get(AL, cache, Cache), Cache \== @nil
+	->  rdf_cache_detach(Cache, AL),
+	    send(AL, slot, cache, @nil)
+	;   true
+	).
+
+update(_AL, _Cache:[int]) :->
+	"Called after update of the cache"::
 	true.
 
 clear(AL) :->

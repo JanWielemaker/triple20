@@ -477,19 +477,53 @@ variable(resource,	name*,		get, "Displayed class").
 initialise(AL, Class:[name]) :->
 	"Create from ontology and class"::
 	send_super(AL, initialise),
-	(   Class \= @default
-	->  send(AL, selection, Class)
+	(   Class \== @default
+	->  send(AL, resource, Class)
+	;   true
+	),
+	property_cache(Cache),
+	rdf_cache_attach(Cache, AL).
+
+unlink(AL) :->
+	property_cache(Cache),
+	rdf_cache_detach(Cache, AL),
+	send_super(AL, unlink).
+
+property_cache(Cache) :-
+	rdf_cache(X, property(X), Cache).
+
+property(property(P,D,R)) :-
+	rdfs_individual_of(P, rdf:'Property'),
+	rdf_has(P, rdfs:domain, D),
+	rdf_has(P, rdfs:range, R).
+
+attach_cache(AL) :->
+	"Attach to the caching system"::
+	(   get(AL, resource, Resource),
+	    Resource \== @nil
+	->  rdf_cache(X, class_property(Resource, X), Cache),
+	    send(AL, slot, cache, Cache),
+	    rdf_cache_attach(Cache, AL),
+	    rdf_cache_cardinality(Cache, _Card) 	% force cache to update
 	;   true
 	).
 
-refresh(AL) :->
-	get(AL, resource, Class),
-	send(AL, resource, Class).
+class_property(Class, P=O) :-
+	rdf(Class, P, O).
 
-resource(AL, Class:name*) :->
+resource(AL, Resource:name*) :->
+	(   get(AL, resource, Resource)
+	->  true
+	;   send(AL, detach_cache),
+	    send(AL, slot, resource, Resource),
+	    send(AL, attach_cache),
+	    send(AL, update)
+	).
+
+update(AL, _Cache:[int]) :->
 	"Display properties of Class"::
 	send(AL, clear),
-	send(AL, slot, resource, Class),
+	get(AL, resource, Class),
 	(   Class == @nil
 	->  true
 	;   send(AL, display_title, Class),
@@ -600,7 +634,6 @@ append_slot(AL, Slot:name, Class:[name]) :->
 		   "Show attributes of an instance").
 
 variable(resource,	name*,		get, "Displayed Instance").
-variable(cache,		int*,		get, "Cached result").
 
 initialise(AL, Instance:[name]) :->
 	"Create from instance"::
@@ -609,11 +642,6 @@ initialise(AL, Instance:[name]) :->
 	->  send(AL, resource, Instance)
 	;   true
 	).
-
-
-unlink(AL) :->
-	send(AL, detach_cache),
-	send_super(AL, unlink).
 
 
 attach_cache(AL) :->
@@ -627,16 +655,6 @@ attach_cache(AL) :->
 	;   true
 	).
 
-
-detach_cache(AL) :->
-	"Detach from the caching system"::
-	(   get(AL, cache, Cache), Cache \== @nil
-	->  rdf_cache_detach(Cache, AL),
-	    send(AL, slot, cache, @nil)
-	;   true
-	).
-
-
 resource(AL, Resource:name*) :->
 	(   get(AL, resource, Resource)
 	->  true
@@ -648,9 +666,12 @@ resource(AL, Resource:name*) :->
 
 update(AL, _Cache:[int]) :->
 	send(AL, clear),
-	send(AL, display_title),
-	send(AL, display_predicates_title),
-	send(AL, append_slots).
+	(   get(AL, resource, @nil)
+	->  true
+	;   send(AL, display_title),
+	    send(AL, display_predicates_title),
+	    send(AL, append_slots)
+	).
 
 display_title(AL) :->
 	"Display common information"::

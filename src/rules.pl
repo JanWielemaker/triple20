@@ -118,21 +118,29 @@ popup(Gr, Popup) :-
 	(   bagof(Item, ::menu_item(Gr, _Group, Item, Receiver), Items),
 	    send(Popup, append, gap),
 	    forall(item_member(Method, Label, Items),
-		   send(Popup, append,
-			menu_item(Label,
-				  message(Receiver, Method)))),
+		   append_item(Popup, Label, Receiver, Method)),
 	    fail
 	;   true
 	).
 
-container_with_method(Gr, Method, Gr) :-
+append_item(Popup, Label, Receiver, Method) :-
+	Method =.. List,
+	Message =.. [message, Receiver | List],
+	send(Popup, append, menu_item(Label, Message)).
+
+container_with_method(Gr, Message, Gr) :-
+	functor(Message, Method, _),
 	send(Gr, has_send_method, Method).
 container_with_method(Gr, Method, Container) :-
 	get(Gr, contained_in, Container0),
 	container_with_method(Container0, Method, Container).
 
-item_method(Item=Method, Item, Method) :- !.
-item_method(Item,        Item, Item).
+item_method(Item=Method, Label, Method) :- !,
+	Item =.. List,
+	concat_atom(List, '_', Label).
+item_method(Item,        Label, Item) :-
+	Item =.. List,
+	concat_atom(List, '_', Label).
 
 item_member(Method, Label, Items) :-
 	member(Item, Items),
@@ -244,12 +252,20 @@ root_property(Class, P) :-
 
 :- begin_particle(rdf_node, display).
 
-menu_item(Group, Item) :-
-	super::menu_item(Group, Item),
+menu_item(Gr, Group, Item, Receiver) :-
+	super::menu_item(Gr, Group, Item, Receiver),
 	Item \== hierarchy_location.
-menu_item(edit, new_class).
-menu_item(edit, new_individual).
-menu_item(edit, delete=delete_resource).
+menu_item(Gr, edit, new(Role), Node) :-
+	(   container_with_method(Gr, new, Node),
+	    send(Node, instance_of, rdf_node)
+	->  get(Node?caches, attribute_names, Roles),
+	    chain_list(Roles, List),
+	    member(Role, List)
+	).
+menu_item(Gr, edit, delete=delete_resource, Node) :-
+	(   container_with_method(Gr, delete_resource, Node)
+	->  true
+	).
 
 :- end_particle.
 
