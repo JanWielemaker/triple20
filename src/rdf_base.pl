@@ -77,7 +77,9 @@ rdf_db:ns(galen,   'http://example.org/factkb#').
 rdf_db:ns(fam,     'http://swi.psy.uva.nl/family#').
 rdf_db:ns(swrl,	   'http://www.w3.org/2003/11/swrl#').
 rdf_db:ns(mesh,    'http://www.nlm.nih.gov/mesh/2004#').
-rdf_db:ns(galen,    'http://example.org/factkb#').
+rdf_db:ns(galen,   'http://example.org/factkb#').
+rdf_db:ns(skos,    'http://www.w3.org/2004/02/skos/core#').
+rdf_db:ns(gcl,     'http://www.govtalk.gov.uk/schemasstandards/gcl#').
 
 %	load_base_ontology(+Identifier)
 
@@ -123,6 +125,7 @@ rdf_file(owlfull,        ontology('owlfull.owl')).
 rdf_file(dc,	 	 ontology('dc.rdfs')).
 rdf_file(dc,	 	 ontology('eor.rdfs')).
 rdf_file(vra,	 	 ontology('vra.owl')).
+rdf_file(skos,		 ontology('skos-core.rdfs')).
 rdf_file(painting, 	 ontology('subject.owl')).
 rdf_file(painting,	 ontology('painting.owl')).
 
@@ -199,6 +202,10 @@ required_base_ontology(rdfs) :-
 	(   rdf(_, rdfs:subClassOf, _)
 	;   rdf(_, rdf:first, _)
 	;   rdf(_, rdf:rest, _)
+	) -> true.
+required_base_ontology(skos) :-
+	(   rdf(_, skos:'preferred-label', _)
+	;   rdf(_, _, skos:'Concept')
 	) -> true.
 
 
