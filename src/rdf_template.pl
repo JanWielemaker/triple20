@@ -37,10 +37,7 @@ define_event(Name, Parent) :-
    define_event(arm, user).
 
 event(W, Ev:event) :->
-	(   get(W, focus, Gr),
-	    Gr \== @nil
-	->  true
-	;   send(Ev, is_a, loc_move),
+	(   send(Ev, is_a, loc_move),
 	    get(W, arm, _Target)
 	->  true
 	;   send(Ev, is_a, area_exit)
