@@ -173,12 +173,19 @@ fill_tool_dialog(OV) :->
 		  ]),
 
 	send_list(Tools, append,
-		  [ add_missing_labels
+		  [ add_missing_labels,
+		    gap,
+		    new(Maintenance, popup(maintenance))
 		  ]),
 
 	send_list(Help, append,
 		  [ help,
 		    about
+		  ]),
+
+	send_list(Maintenance, append,
+		  [ delete_cached_ontologies,
+		    delete_snapshots
 		  ]),
 
 	send(Label, show_current, @on),
@@ -450,6 +457,25 @@ redo(OV) :->
 	->  true
 	;   send(OV, report, warning, 'No further redo')
 	).
+
+:- pce_group(maintenance).
+
+delete_cached_ontologies(OV) :->
+	"Delete cached ontologies from .cache directories"::
+	send(OV, report, progress, 'Deleting all cached ontologies ...'),
+	rdf_clear_ontology_cache,
+	send(OV, report, done).
+
+delete_snapshots(OV) :->
+	"Delete file@MD5.trp from ~/.triple20"::
+	send(@display, confirm,
+	     'Snapshots represent the state of an ontology as recorded\n\
+	      in a project file.  Deleting them may render project files\n\
+	      unusable.  Make sure you understand what you are doing before\n\
+	      continuing this operation.'),
+	send(OV, report, progress, 'Deleting all snapshots ...'),
+	rdf_clear_snapshots,
+	send(OV, report, done).
 
 :- pce_group(help).
 

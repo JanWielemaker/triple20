@@ -35,7 +35,10 @@
 	    rdf_ensure_snapshot_directory/0,
 	    rdf_archive_journal/1,	% +File
 	    rdf_install_archive/1,	% +File
-	    rdf_prepare_ontology_dirs/0
+	    rdf_prepare_ontology_dirs/0,
+
+	    rdf_clear_ontology_cache/0,
+	    rdf_clear_snapshots/0
 	  ]).
 :- use_module(semweb(rdf_edit)).
 :- use_module(library(debug)).
@@ -113,6 +116,27 @@ sub_dir(Dir, Sub) :-
 
 
 		 /*******************************
+		 *	    CLEAR CACHE		*
+		 *******************************/
+
+rdf_clear_ontology_cache :-
+	(   absolute_file_name(ontology(.),
+			       [ file_type(directory),
+				 access(write),
+				 solutions(all),
+				 file_errors(fail)
+			       ],
+			       Dir),
+	    atom_concat(Dir, '/*.trp', Pattern),
+	    expand_file_name(Pattern, Files),
+	    forall(member(F, Files),
+		   delete_file(F)),
+	    fail
+	;   true
+	).
+
+
+		 /*******************************
 		 *	    SNAPSHOTS		*
 		 *******************************/
 
@@ -161,6 +185,22 @@ snapshot_directory(Dir) :-
 			     file_errors(fail)
 			   ],
 			   Dir).
+
+%	rdf_clear_snapshots
+%	
+%	Clear the contents of the  users   snapshot  directory. Use with
+%	care as it may make  it  difficult   or  impossible  to  reuse a
+%	project file.
+
+rdf_clear_snapshots :-
+	(   snapshot_directory(Dir)
+	->  atom_concat(Dir, '/*.trp', Pattern),
+	    expand_file_name(Pattern, Files),
+	    forall(member(F, Files),
+		   delete_file(F))
+	;   true
+	).
+
 
 		 /*******************************
 		 *	      ARCHIVE		*

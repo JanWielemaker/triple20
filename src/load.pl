@@ -101,7 +101,8 @@ go(Argv) :-
 go(Argv) :-
 	debug(cache),
 	rdf_prepare_ontology_dirs,
-	(   select(Journal, Argv, Argv1),
+	debug_options(Argv, Argv0),
+	(   select(Journal, Argv0, Argv1),
 	    file_name_extension(_, rdfj, Journal)
 	->  (   select('--reset', Argv1, Argv2)
 	    ->	Mode = write
@@ -158,6 +159,15 @@ parse_argv([File|T]) :-
 parse_argv(_) :-
 	usage,
 	halt(1).
+
+debug_options([], []).
+debug_options([H|T0], T) :-
+	atom_concat('--debug=', Base, H), !,
+	debug(Base),
+	debug_options(T0, T).
+debug_options([H|T0], [H|T]) :-
+	debug_options(T0, T).
+
 
 usage :-
 	print_message(informational, rdf(usage)).
