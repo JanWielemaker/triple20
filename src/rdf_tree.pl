@@ -14,6 +14,7 @@
 :- use_module(rdf_template).
 :- use_module(rdf_cache).
 :- use_module(library(debug)).
+:- use_module(library(hyper)).
 
 :- pce_autoload(identifier_item, library(pce_identifier_item)).
 
@@ -47,6 +48,7 @@ initialise(H, Root:[name]) :->
 	),
 	send(H, direction, list),
 	send(H, level_gap, 15),
+	send(H, neighbour_gap, 1),
 	new(RootNode, rdf_root_node(TheRoot)),
 	send(H, root, RootNode).
 
@@ -427,7 +429,8 @@ new(N, Role:name) :->
 	),
 	new(_, hyper(N, C, editor, node)),
 	send(N?window, compute),
-	send(C, get_focus).
+	send(N?window, normalise, C, y),
+	send(C, show_dialog).
 
 new_class(N) :->
 	"Create subclass of this class"::
@@ -572,21 +575,46 @@ initialise(B, More:int) :->
 variable(cache,	int*, get, "Associated cache (left @nil)").
 
 initialise(N, Parent:name, Role:name) :->
-	send_super(N, initialise, new(D, rdf_create_dialog(Parent, Role))),
-	send(D, pen, 1),
+	new(D, rdf_create_dialog(Parent, Role)),
+	send_super(N, initialise, new(_B, rdf_window_ghost(100, 50))),
+	new(_, mutual_dependency_hyper(N, D, window, node)),
 	send(N, collapsed, @nil).
 
 resource_created(N, Resource:name, Role:name) :->
 	get(N, parents, chain(Parent)),
 	send(Parent, add_child, Resource, Role, N).
 
-get_focus(N) :->
-	send(N?image, advance).
+show_dialog(N) :->
+	get(N, image, Ghost),
+	send(Ghost, open).
 
 delete_item(N, _D:graphical) :->
 	send(N, destroy).
 
 :- pce_end_class(rdf_create_node).
+
+:- pce_begin_class(rdf_window_ghost, box,
+		   "Maintain location of a dialog box").
+
+client(B, W:window) :<-
+	get(B, node, Node),
+	get(Node, hypered, window, W).
+
+geometry(B, X:[int], Y:[int], W:[int], H:[int]) :->
+	send_super(B, geometry, X, Y, W, H),
+	get(B, client, Client),
+	get(B, display_position, point(DX, DY)),
+	format('Moving to ~w,~w~n', [DX, DY]),
+					% -1: hack
+	send(Client?frame, geometry, string('+%d+%d', DX-1, DY-1)).
+
+open(B) :->
+	get(B, client, W),
+	get(B, display_position, DP),
+	send(W, open, DP).
+
+:- pce_end_class.
+
 
 :- pce_begin_class(rdf_create_dialog, dialog,
 		   "Create instance or class").
@@ -603,36 +631,36 @@ initialise(D, Parent:name, Role:name) :->
 	send(D, append, new(rdf_id_item), right),
 	send(D, append, new(C, button(create, message(D, create_resource)))),
 	send(D, append, button(done)),
-	send(C, default_button, @on),
-	send(D, '_compute_desired_size').
+	send(C, default_button, @on).
 
 done(D) :->
-	(   get(D, contained_in, Container),
-	    send(Container, has_send_method, delete_item)
-	->  send(Container, delete_item, D)
-	;   send(D, destroy)
-	).
+	send(D, destroy).
 
-create_resource(N) :->
-	get(N, member, namespace, NSI),
+cancel(D) :->
+	send(D, done).
+
+create_resource(D) :->
+	"Create (new) resource from dialog contents"::
+	get(D, member, namespace, NSI),
 	get(NSI, selection, NS),
-	get(N, member, id, IDI),
+	get(D, member, id, IDI),
 	get(IDI, selection, Label),
 	local_uri_from_label(NS, Label, Local),
 	atom_concat(NS, Local, Resource),
-	rdfe_transaction(send(N, do_create_resource, Resource, Label)),
+	rdfe_transaction(send(D, do_create_resource, Resource, Label)),
 	send(IDI, clear),
-	(   get(N, contained_in, Container),
-	    send(Container, has_send_method, resource_created)
-	->  get(N, role, Role),
-	    send(Container, resource_created, Resource, Role)
+	(   get(D, hypered, node, Node),
+	    format('Node: ~p~n', [Node]),
+	    send(Node, has_send_method, resource_created)
+	->  get(D, role, Role),
+	    send(Node, resource_created, Resource, Role)
 	;   true
 	).
 
-do_create_resource(N, Resource:name, Label:name) :->
+do_create_resource(D, Resource:name, Label:name) :->
 	"Create a new resource"::
-	get(N, resource, Super),
-	(   get(N, role, rdf_class_node)
+	get(D, resource, Super),
+	(   get(D, role, rdf_class_node)
 	->  rdfe_assert(Resource, rdf:type, rdfs:'Class'),
 	    rdfe_assert(Resource, rdfs:subClassOf, Super)
 	;   rdfe_assert(Resource, rdf:type, Super)
@@ -679,7 +707,7 @@ initialise(ID, Default:[name]) :->
 
 typed(Id, Ev:event) :->
 	(   get(Ev, id, 27)
-	->  send(Id?device?node, destroy) % hack!
+	->  send(Id?device, cancel) % hack!
 	;   send_super(Id, typed, Ev)
 	).
 

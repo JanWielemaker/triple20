@@ -165,14 +165,8 @@ append_tool_buttons(OV) :->
 				image(resource(open)),
 				'Open journal or ontology'),
 		    gap,
-		    tool_button(undo,
-				image(resource(undo)),
-				'Undo last operation',
-				message(@prolog, rdfe_can_undo)),
-		    tool_button(redo,
-				image(resource(redo)),
-				'Undo last undo',
-				message(@prolog, rdfe_can_redo)),
+		    rdf_undo_button(undo),
+		    rdf_undo_button(redo),
 		    gap,
 		    Backward,
 		    Forward
@@ -397,6 +391,47 @@ redo(OV) :->
 :- pce_end_class(rdfs_explorer).
 
 
+:- pce_begin_class(rdf_undo_button, tool_button,
+		   "Button for undo/redo").
+
+initialise(B, Action:{undo,redo}) :->
+	send_super(B, initialise,
+		   Action,		% action
+		   image(resource(Action)),
+		   Action,		% tooltip
+		   message(B, verify)).
+						
+
+verify(B) :->
+	"Verify action is available"::
+	get(B, name, Action),
+	(   Action == undo
+	->  rdfe_can_undo(TID)
+	;   rdfe_can_redo(TID)
+	).
+
+help_message(B, _Which:{tag,summary}, _Ev:[event], Tooltip:char_array) :<-
+	"Report on action that will be un/re-done"::
+	get(B, name, Action),
+	(   (   Action == undo
+	    ->  rdfe_can_undo(TID)
+	    ;   rdfe_can_redo(TID)
+	    ),
+	    t_name(TID, Name)
+	->  new(Tooltip, string('%s %s', Action?label_name, Name))
+	;   get(Action, label_name, Tooltip)
+	).
+
+t_name(TID, Name) :-
+	rdfe_transaction_name([TID], Name), !.
+t_name(TID, Name) :-
+	rdfe_transaction_name([TID|_], Name), !.
+
+:- pce_end_class(rdf_undo_button).
+
+
+
+
 		 /*******************************
 		 *	     RDF VIEW		*
 		 *******************************/
@@ -464,6 +499,32 @@ resize(TT) :->
 	TW is max(0, W-2),		% table-width excludes the border
 	send(Table, table_width, TW).
 	
+scroll_vertical(TW,
+		Direction:{forwards,backwards,goto},
+		Unit:{page,file,line},
+		Amount:int) :->
+	"Prevent scrolling too far"::
+	get(TW, visible, VA),
+	get(TW, bounding_box, BB),
+	(   send(VA, inside, BB)
+	->  true
+	;   Direction == backwards,
+	    get(VA, y, Y),
+	    Y < 1
+	->  true
+	;   Direction == forwards,
+	    get(BB, bottom_side, BBBottom),
+	    get(VA, bottom_side, VABottom),
+	    VABottom > BBBottom
+	->  true
+	;   send_super(TW, scroll_vertical, Direction, Unit, Amount),
+	    get(TW, visible, area(_, AY, _, _)),
+	    (   AY < 0
+	    ->  send(TW, scroll_to, point(0,0))
+	    ;   true
+	    )
+	).
+
 :- pce_end_class(table_window).
 
 
