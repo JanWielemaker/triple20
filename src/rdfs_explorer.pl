@@ -1244,15 +1244,18 @@ reserved_instance_slot(Label) :-
 append_inferred_slots(AL) :->
 	"Append slots that can be inferred"::
 	get(AL, resource, I),
-	setof(P-Vs, setof(V, owl_has(I, P, V), Vs), Pairs),
-	remove_super_properties(Pairs, Pairs1, Covered),
-	send(AL, append_slot_values, Pairs1),
-	(   Covered \== [],
-	    call_rules(AL, view_inferred_super_properties)
-	->  send(AL, append, text('Super predicates', center, bold),
-		 halign := center, colspan := 2, background := khaki1),
-	    send(AL, next_row),
-	    send(AL, append_slot_values, Covered)
+	(   setof(P-Vs, setof(V, owl_has(I, P, V), Vs), Pairs)
+	->  remove_super_properties(Pairs, Pairs1, Covered),
+	    send(AL, append_slot_values, Pairs1),
+	    (   Covered \== [],
+		call_rules(AL, view_inferred_super_properties)
+	    ->  send(AL, append, text('Super predicates', center, bold),
+		     halign := center, colspan := 2, background := khaki1),
+		send(AL, next_row),
+		send(AL, append_slot_values, Covered)
+	    ;   true
+	    )
+	;   true
 	).
 
 	
