@@ -177,6 +177,7 @@ menu_item(copy,   show_id).
 menu_item(copy,   copy_id).
 menu_item(copy,   copy_as_xml_identifier).
 menu_item(copy,   copy_as_xml_attribute).
+menu_item(copy,   copy_text).
 
 menu_item(open,   view_rdf_source).
 menu_item(open,   diagram_).
@@ -451,6 +452,7 @@ orphan_resource(Resource) :-
 menu_item(Group, Item) :-
 	super::menu_item(Group, Item).
 menu_item(edit, modify).
+menu_item(edit, delete).
 
 drop_command(_Me, _Resource, modify) :-
 	true.				% must validate restrictions!

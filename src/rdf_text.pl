@@ -222,6 +222,21 @@ update(LT) :->
 	    send(LT, string, '')
 	).
 
+triple(T, Value:prolog) :<-
+	"Find part the triple I belong to"::
+	get(T, contained_in, C0),
+	container_with_get_method(C0, triple_from_part, Container),
+	get(Container, triple_from_part, T, Value).
+
+subject(T, Subject:name) :<-
+	get(T, triple, rdf(Subject, _, _)).
+
+predicate(T, Predicate:name) :<-
+	get(T, triple, rdf(_, Predicate, _)).
+
+resource(LT, Object:prolog) :<-
+	get(LT, object, Object).
+
 object(LT, Object:prolog) :<-
 	"Get RDF object: literal(Text)"::
 	get(LT, literal, Text),
@@ -245,7 +260,7 @@ obtain_focus(T) :->
 
 
 popup(T, Popup:popup) :<-
-	call_rules(T, popup(Popup)).
+	call_rules(T, popup(T, Popup)).
 
 event(T, Ev:event) :->
 	(   send_super(T, event, Ev)
@@ -254,11 +269,8 @@ event(T, Ev:event) :->
 
 delete(T) :->
 	"Delete associated triple"::
-	get(T, subject, Subject),
-	get(T, predicate, Predicate),
-	get(T, object, Text),
-	rdfe_transaction(rdfe_retractall(Subject, Predicate,
-					 literal(Text))).
+	get(T, triple, rdf(Subject, Predicate, Object)),
+	rdfe_transaction(rdfe_retractall(Subject, Predicate, Object)).
 
 forward(T) :->
 	"Set new value"::
@@ -281,6 +293,11 @@ forward(T) :->
 
 arm(T, Arm:bool) :->
 	send(T, underline, Arm).
+
+copy_text(T) :->
+	"Copy text"::
+	get(T, literal, Text),
+	send(@display, copy, Text).
 
 :- pce_end_class(rdf_literal_text).
 

@@ -6,7 +6,9 @@
 
 
 :- module(rdf_template,
-	  [ call_rules/2
+	  [ call_rules/2,
+	    container_with_get_method/3, % +Gr, +Method, -Container
+	    container_with_send_method/3
 	  ]).
 :- use_module(library(pce)).
 :- use_module(library(pce_template)).
@@ -312,7 +314,7 @@ container_with_particle(Obj, Particle) :-
 	->  debug(container, 'Try create context of ~p: ~p~n', [Obj, Context]),
 	    container_with_particle(Context, Particle)
 	;   print_message(error, not_contained(Obj)),
-	    trace,
+%	    trace,
 	    fail
 	).
 
