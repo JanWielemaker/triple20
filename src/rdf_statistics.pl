@@ -67,6 +67,7 @@ clear(ST) :->
 show_sources(ST) :->
 	send(ST, append, 'Loaded source', bold, center, background := khaki1),
 	send(ST, append, 'Triples',       bold, center, background := khaki1),
+	send(ST, append, 'Loaded',        bold, center, background := khaki1),
 	send(ST, next_row),
 	flag(rdf_triples, Old, 0),
 	(   rdf_source(Source),
@@ -76,7 +77,7 @@ show_sources(ST) :->
 	    fail
 	;   flag(rdf_triples, Total, Old)
 	),
-	send(ST, append, 'Total from files:', bold, halign := right),
+	send(ST, append, 'Total on files:', bold, halign := right),
 	send(ST, append, Total, bold, halign := right),
 	send(ST, next_row),
 	send(ST, append, 'Total:', bold, halign := right),
@@ -88,6 +89,8 @@ show_source(ST, Source:name) :->
 	send(ST, append, Source),
 	rdf_statistics(triples_by_file(Source, Triples)),
 	send(ST, append, Triples, halign := right),
+	rdf_db:rdf_source(Source, _, Loaded),
+	send(ST, append, Loaded, halign := right),
 	send(ST, next_row).
 
 :- pce_end_class(rdf_statistics_table).
