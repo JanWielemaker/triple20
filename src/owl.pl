@@ -395,8 +395,7 @@ owl_individual_of(Resource, Description) :-
 	->  rdfs_member(Sub, Set),
 	    owl_individual_of(Resource, Sub)
 	;   rdf_has(Description, owl:intersectionOf, Set)
-	->  forall(rdfs_member(Sub, Set),
-		   owl_individual_of(Resource, Sub))
+	->  intersection_of(Set, Resource)
 	;   rdf_has(Description, owl:complementOf, Arg)
 	->  \+ owl_individual_of(Resource, Arg)
 	;   rdf_has(Description, owl:oneOf, Arg)
@@ -406,6 +405,17 @@ owl_individual_of(Resource, Description) :-
 owl_individual_of(Resource, Description) :-
 	rdfs_individual_of(Description, rdfs:'Class'),
 	rdfs_individual_of(Resource, Description).
+
+intersection_of(List, Resource) :-
+	rdf_has(List, rdf:first, First),
+	owl_individual_of(Resource, First),
+	(   rdf_has(List, rdf:rest, Rest)
+	->  intersection_of(Rest, Resource)
+	;   true
+	).
+intersection_of(Nil, _) :-
+	rdf_equal(rdf:nil, Nil).
+
 
 
 		 /*******************************
