@@ -1,11 +1,12 @@
+user:file_search_path(semweb, library(semweb)).
 :- asserta(file_search_path(library, '.')).
 
 :- load_files([ library(rdf),
-		rdf_db,
-		rdfs,
+		semweb(rdf_db),
+		semweb(rdfs),
 		rdfs_explorer,
 		concur,
-		rdf_edit
+		semweb(rdf_edit)
 %		rdf_portray
 	      ],
 	      [ silent(true)

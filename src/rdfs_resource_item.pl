@@ -10,8 +10,8 @@
 :- module(rdfs_resource_item, []).
 :- use_module(library(pce)).
 :- use_module(rdfs_hierarchy).
-:- use_module(rdf_db).
-:- use_module(rdfs).
+:- use_module(semweb(rdf_db)).
+:- use_module(semweb(rdfs)).
 :- use_module(owl).
 
 resource(tree,	   image, image('16x16/hierarchy.xpm')).

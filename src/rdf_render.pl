@@ -14,8 +14,8 @@
 	  ]).
 :- use_module(library(pce)).
 :- use_module(library(pce_meta)).
-:- use_module(library(rdfs)).
-:- use_module(library(owl)).
+:- use_module(semweb(rdfs)).
+:- use_module(owl).
 :- use_module(library(debug)).
 
 		 /*******************************

@@ -9,8 +9,8 @@
 	  ]).
 :- use_module(library(pce)).
 :- use_module(library(tabular)).
-:- use_module(library(rdf_db)).
-:- use_module(rdf_edit).
+:- use_module(semweb(rdf_db)).
+:- use_module(semweb(rdf_edit)).
 
 :- pce_begin_class(rdf_statistics_dialog, dialog,
 		   "Show statistics").

@@ -6,8 +6,8 @@
 
 :- module(ulan, []).
 :- use_module(library(pce)).
-:- use_module(library(rdf_db)).
-:- use_module(library(rdfs)).
+:- use_module(semweb(rdf_db)).
+:- use_module(semweblibrary(rdfs)).
 :- use_module(library(rdf_template)).
 
 :- pce_begin_class(ulan_timestamp_item, device,

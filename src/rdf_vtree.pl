@@ -6,9 +6,9 @@
 
 :- module(rdf_vtree, []).
 :- use_module(library(pce)).
-:- use_module(rdf_db).
-:- use_module(rdfs).
-:- use_module(particle).
+:- use_module(semweb(rdf_db)).
+:- use_module(semweb(rdfs)).
+:- use_module(library(particle)).
 
 :- pce_begin_class(rdf_vnode, dict_item, "Virtual node").
 
@@ -134,7 +134,7 @@ initialise(NS, Parent:rdf_vnode, Role:name) :->
 		 *******************************/
 
 :- begin_particle(class_hierarchy, []).
-:- use_module(rdfs).
+:- use_module(semweb(rdfs)).
 
 child(Resource, Role, Child, SubRole) :-
 	rdfs_individual_of(Resource, rdfs:'Class'),

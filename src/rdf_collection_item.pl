@@ -8,7 +8,7 @@
 :- module(rdfs_collection_item, []).
 :- use_module(library(pce)).
 :- use_module(library(broadcast)).
-:- use_module(library(rdf_db)).
+:- use_module(semweb(rdf_db)).
 :- use_module(library(pce_graphical_browser)).
 :- use_module(library(rdf_render)).
 :- use_module(library(rdf_template)).

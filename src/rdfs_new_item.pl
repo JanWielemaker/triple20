@@ -9,9 +9,9 @@
 	  ]).
 :- use_module(library(pce)).
 :- use_module(library(pce_identifier_item)).
-:- use_module(rdf_db).
-:- use_module(rdfs).
-:- use_module(rdf_edit).
+:- use_module(semweb(rdf_db)).
+:- use_module(semweb(rdfs)).
+:- use_module(semweb(rdf_edit)).
 
 
 		 /*******************************

@@ -7,8 +7,8 @@
 :- module(rdf_tree, []).
 :- use_module(library(pce)).
 :- use_module(rdf_vtree).
-:- use_module(rdf_db).
-:- use_module(rdfs).
+:- use_module(semweb(rdf_db)).
+:- use_module(semweb(rdfs)).
 
 :- pce_autoload(rdf_explorer, rdf_explorer).
 :- pce_autoload(partof_hyper, library(hyper)).

@@ -6,8 +6,8 @@
 
 :- module(owl_class_item, []).
 :- use_module(library(pce)).
-:- use_module(library(rdf_db)).
-:- use_module(library(rdfs)).
+:- use_module(semweb(rdf_db)).
+:- use_module(semweb(rdfs)).
 
 
 :- pce_begin_class(owl_class_item, device,

@@ -38,11 +38,11 @@
 :- use_module(library(hyper)).
 :- use_module(rdfs_hierarchy).
 :- use_module(library(persistent_frame)).
-:- use_module(rdfs).
-:- use_module(rdf_db).
+:- use_module(semweb(rdfs)).
+:- use_module(semweb(rdf_db)).
 :- use_module(owl).
 :- use_module(rdf_table).
-:- use_module(rdf_edit).
+:- use_module(semweb(rdf_edit)).
 :- use_module(pce_history).
 :- use_module(library(broadcast)).
 

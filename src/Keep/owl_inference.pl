@@ -44,9 +44,9 @@
 	    owl_individual_unique_types/2,
 	    owl_same_individual/2
 	  ]).
-:- use_module(rdf_db).
-:- use_module(rdfs).
-:- use_module('owl.pl').
+:- use_module(semweb(rdf_db)).
+:- use_module(sebweb(rdfs)).
+:- use_module(owl).
 
 :- multifile
 	user:goal_expansion/2.

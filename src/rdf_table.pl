@@ -7,10 +7,10 @@
 :- module(rdf_table, []).
 :- use_module(library(pce)).
 :- use_module(library(tabular)).
-:- use_module(rdf_db).
-:- use_module(rdfs).
+:- use_module(semweb(rdf_db)).
+:- use_module(semweb(rdfs)).
 :- use_module(owl).
-:- use_module(rdf_edit).
+:- use_module(semweb(rdf_edit)).
 :- use_module(rdf_render).
 :- use_module(library(rdf_template)).
 

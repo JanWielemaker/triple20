@@ -9,7 +9,7 @@
 
 :- module(rdf_literal_item, []).
 :- use_module(library(pce)).
-:- use_module(library(rdf_db)).
+:- use_module(semweb(rdf_db)).
 
 :- pce_begin_class(rdf_literal_item, dialog_group,
 		   "Enter literal value").

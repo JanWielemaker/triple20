@@ -38,8 +38,8 @@
 	    owl_satisfies/2,		% +Spec, +Resource
 	    owl_individual_of/2		% ?Resource, +Description
 	  ]).
-:- use_module(rdf_db).
-:- use_module(rdfs).
+:- use_module(semweb(rdf_db)).
+:- use_module(semweb(rdfs)).
 
 
 		 /*******************************
