@@ -97,10 +97,20 @@ add(OT, Resource:name, _Role:[name], Node:rdf_node) :<-
 	    display_path(P0, OT, Node)
 	).
 	
-path(Resource, Resource, _, [Resource-[]]) :- !.
-path(Resource, Root, Tree, [Resource-Role|T]) :-
+%	path(+Resource, +Root, +Tree, -Path)
+%	
+%	Find path from Resource to Root using the rules of Tree. Path is
+%	a list of Resource-Role, where role is the visualiser role
+%	(=class) to be used for the node.
+
+path(Resource, Root, Tree, Path) :-
+	path(Resource, Root, Tree, [], Path).
+
+path(Resource, Resource, _, _, [Resource-[]]) :- !.
+path(Resource, Root, Tree, Visited, [Resource-Role|T]) :-
+	\+ memberchk(Resource, Visited),
 	call_rules(Tree, parent(Resource, Parent, Role)),
-	path(Parent, Root, Tree, T).
+	path(Parent, Root, Tree, [Resource|Visited], T).
 
 display_path([H-Role|_], OT, Node) :-
 	get(OT, member, H, Node),
