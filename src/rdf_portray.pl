@@ -31,7 +31,7 @@
 
 
 :- module(rdf_portray, []).
-:- use_module(rdfs).
+:- use_module(library('semweb/rdfs')).
 
 :- multifile
 	user:portray/1.
