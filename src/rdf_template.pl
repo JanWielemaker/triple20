@@ -187,8 +187,8 @@ preview_drop(T, Resource:name*) :->
 		 'Drop %s onto %s: %s', RL, OntoLabel, Cmd?label_name)
 	).
 
-drop(T, Resource:name) :->
-	call_rules(T, drop(T, Resource)).
+drop(T, Visual:visual) :->
+	call_rules(T, drop(T, Visual)).
 
 on_left_click(V) :->
 	"Left-click on object: find container that deals with it"::

@@ -275,19 +275,21 @@ root_property(Class, P) :-
 %	Drop a resource on a graphical.  Determines the possible commands
 %	and executes ::drop(Command, Graphical, Resource)
 
-drop(Gr, R) :-
+drop(Gr, V) :-
 	(   send(@event, instance_of, event),
 	    send(@event, is_a, ms_right_up)
-	->  findall(Cmd, ::drop_command(Gr, R, Cmd), List),
+	->  findall(Cmd, ::drop_command(Gr, V, Cmd), List),
 	    get(@receiver, select_command, List, Cmd)
-	;   ::drop_command(Gr, R, Cmd)
+	;   ::drop_command(Gr, V, Cmd)
 	->  true
 	),
-	rdfe_transaction(::drop(Cmd, Gr, R), Cmd).
+	rdfe_transaction(::drop(Cmd, Gr, V), Cmd).
 
-drop(Command, Gr, R) :-
+drop(Command, Gr, V) :-
 	send(Gr, has_get_method, resource),
+	send(V, has_get_method, resource),
 	get(Gr, resource, C),
+	get(V, resource, R),
 	::drop_resource(Command, C, R).
 
 drop_resource(move_class, C, R) :- !,			% drop R on C
@@ -307,9 +309,11 @@ drop_resource(Command, Graphical, Resource) :-
 	format('TBD: Drop ~w onto ~p: ~w~n',
 	       [Resource, Graphical, Command]).
 
-drop_command(Gr, R, Command) :-
+drop_command(Gr, V, Command) :-
 	send(Gr, has_get_method, resource),
+	send(V, has_get_method, resource),
 	get(Gr, resource, C),
+	get(V, resource, R),
 	::drop_resource_command(C, R, Command).
 
 drop_resource_command(C, R, move_property) :-
@@ -385,15 +389,22 @@ menu_item(Gr, edit, delete=delete_resource, Node) :-
 
 :- begin_particle(rdf_node, rdf_tree).
 
+%	Drop onto a node in the hierarchy
+
+drop(move_class, Onto, From) :- %fail,
+	get(From, triple, rdf(S, P, O)),
+	get(From, resource, S),
+	get(Onto, resource, New),
+	rdf_has(S, rdfs:subClassOf, O, P), !,
+	rdfe_transaction(rdfe_update(S, P, O, object(New)),
+			 move_class).
+drop(Command, Onto, From) :-
+	super::drop(Command, Onto, From).
+
 :- end_particle.
 
 
 :- begin_particle(rdf_individual_node, rdf_node).
-
-%icon(_, Icon) :-
-%	new(Icon, image(resource(individual))).
-
-%child_cache(_, _, _) :- !, fail.
 
 :- end_particle.
 
@@ -471,7 +482,8 @@ menu_item(edit, delete).
 drop_command(_Me, _Resource, modify) :-
 	true.				% must validate restrictions!
 
-drop(modify, Gr, Resource) :-
+drop(modify, Gr, V) :-
+	get(V, resource, Resource),
 	get(Gr, triple, rdf(Subject, Predicate, Old)),
 	rdfe_transaction(rdfe_update(Subject, Predicate, Old,
 				     object(Resource)),
@@ -485,7 +497,8 @@ drop(modify, Gr, Resource) :-
 drop_command(_Me, _Resource, add) :-
 	true.				% must validate restrictions!
 
-drop(add, Gr, Resource) :-
+drop(add, Gr, V) :-
+	get(V, resource, Resource),	
 	get(Gr, triple, rdf(Subject, Predicate, _)),
 	rdfe_transaction(rdfe_assert(Subject, Predicate, Resource),
 			 add_property).
@@ -494,7 +507,8 @@ drop(add, Gr, Resource) :-
 
 :- begin_particle(rdf_range_cell, rdf_object_cell).
 
-drop(modify, _Gr, Resource) :-
+drop(modify, _Gr, V) :-
+	get(V, resource, Resource),
 	get(@particle, triple, rdf(Subject, Predicate, Old)),
 	rdfe_transaction(rdfe_update(Subject, Predicate, Old,
 				     object(Resource)),
@@ -505,7 +519,8 @@ drop(modify, _Gr, Resource) :-
 
 :- begin_particle(rdf_domain_cell, rdf_object_cell).
 
-drop(modify, _Gr, Resource) :-
+drop(modify, _Gr, V) :-
+	get(V, resource, Resource),
 	get(@particle, triple, rdf(Subject, Predicate, Old)),
 	rdfe_transaction(rdfe_update(Subject, Predicate, Old,
 				     object(Resource)),

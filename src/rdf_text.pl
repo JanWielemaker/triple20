@@ -98,7 +98,7 @@ arm(TF, Arm:bool) :->
 :- pce_begin_class(rdf_drop_gesture, drag_and_drop_gesture).
 
 initialise(DD, Button:name) :->
-	send_super(DD, initialise, Button, get_source := @arg1?resource),
+	send_super(DD, initialise, Button),
 	send(DD, cursor, @default).
 
 initiate(DD, Ev:event) :->

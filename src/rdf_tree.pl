@@ -131,6 +131,14 @@ open_node(OT, Node:rdf_node) :->
 arm(_, _:bool) :->
 	fail.
 
+triple_from_part(_OT, From:graphical, Triple:prolog) :<-
+	"Find triple represented by a node"::
+	get(From, node, Node),
+	get(Node?parents, head, Parent),
+	get(Parent, resource, O),
+	get(Node, resource, S),
+	Triple = rdf(S, _, O).
+
 :- pce_end_class(rdf_tree).
 
 
