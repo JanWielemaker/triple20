@@ -760,8 +760,8 @@ drop(modify, _Gr, V) :-
 :- begin_particle(rdf_not_filled_label, rdf_resource_menu).
 
 menu_item(edit, delete).
-menu_item(edit, modify).
-menu_item(edit, make_literal=type(literal)).
+menu_item(edit, fill=modify).
+menu_item(edit, literal_value=type(literal)).
 
 clicked(V) :-
 	send(V, modify).

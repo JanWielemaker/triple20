@@ -263,15 +263,29 @@ set_value(Cell, Value:name, Type:{resource,literal}) :->
 	rdf_set_object(S,P,O,Object).
 
 type(Cell, Type:{resource,literal}) :->
+	"Change between resource and literal"::
+	get(Cell, triple, rdf(S,P,O)),
 	(   Type == literal
 	->  Object = literal('')
 	;   Object = '__not_filled'
 	),
-	get(Cell, triple, rdf(S,P,O)),
+	property_domain(S,P,Domain),
+	(   Object = literal(_)
+	->  (   owl_satisfies(Domain, Object)
+	    ->  true
+	    ;   rdfs_ns_label(P, PN),
+		rdfs_ns_label(S, SN),
+	        send(Cell, report, warning,
+		     'The range of %s on %s does not allow for a literal value',
+		     PN, SN),
+		fail
+	    )
+	;   true
+	),
 	rdfe_transaction(rdfe_update(S,P,O, object(Object)),
 			 modify_property_type).
 
-:- pce_end_class.
+:- pce_end_class(rdf_object_cell).
 
 :- pce_begin_class(rdf_domain_cell, rdf_object_cell,
 		   "Represent a slot-domain").
