@@ -1,0 +1,22 @@
+/* XPM */
+static char * orphanclass_xpm[] = {
+"15 15 4 1",
+" 	c None",
+".	c gray43",
+"X	c #ff8a8a",
+"o	c black",
+"     .....     ",
+"   ..XXXXX..   ",
+"  .XXXXXXXXX.  ",
+" .XXXXXXXXXXX. ",
+" .XXXXooooXXX. ",
+".XXXXoXXXXoXXX.",
+".XXXXoXXXXXXXX.",
+".XXXXoXXXXXXXX.",
+".XXXXoXXXXXXXX.",
+".XXXXoXXXXoXXX.",
+" .XXXXooooXXX. ",
+" .XXXXXXXXXXX. ",
+"  .XXXXXXXXX.  ",
+"   ..XXXXX..   ",
+"     .....     "};
