@@ -9,6 +9,8 @@
 	  ]).
 :- use_module(particle).
 :- use_module(semweb(rdfs)).
+:- use_module(rdf_text).
+:- use_module(rdf_label).
 
 
 		 /*******************************
@@ -18,7 +20,7 @@
 :- begin_particle(rdf_label_rules, []).
 
 label(Resource, Label) :-
-	::label_class(Resource, Class),
+	::label_class(Resource, Class), !,
 	Term =.. [Class, Resource],
 	new(Label, Term).
 
@@ -30,19 +32,36 @@ label(Resource, Label) :-
 %	Class is the XPCE class to use.
 
 label_class(literal(_), rdf_literal_text) :- !.
-label_class(Obj, rdf_resource_text) :-
-	rdf_has(Obj, rdfs:label, _), !.
-label_class(Obj, rdf_resource_text) :-	% anonymous node id
-	\+ sub_atom(Obj, _, _, _, '__'), !.
 label_class(Obj, ulan_timestamp_object_item) :-
 	rdfs_individual_of(Obj, ulan:'TimeStamp').
-label_class(Obj, owl_restriction_text) :-
+label_class(Obj, rdf_property_label) :-
+	rdfs_individual_of(Obj, rdf:'Property').
+label_class(Obj, owl_restriction_label) :-
 	rdfs_individual_of(Obj, owl:'Restriction').
-label_class(Obj, owl_class_text) :-
-	rdfs_individual_of(Obj, owl:'Class').
+label_class(Obj, LabelClass) :-
+	rdfs_individual_of(Obj, owl:'Class'),
+	(   owl_description_attribute(Att),
+	    rdf_has(Obj, Att, _)
+	->  LabelClass = owl_description_label
+	;   LabelClass = owl_class_label
+	).
+label_class(Obj, LabelClass) :-
+	rdfs_individual_of(Obj, rdfs:'Class'), !,
+	(   rdfs_subclass_of(Obj, rdfs:'Class')
+	->  LabelClass = rdfs_metaclass_label
+	;   LabelClass = rdfs_class_label
+	).
 label_class(Obj, rdf_list_label) :-
 	rdfs_individual_of(Obj, rdf:'List').
+label_class(Obj, rdf_individual_label) :-
+	rdf_has(Obj, rdf:type, _).
 label_class(_, rdf_resource_text).
+
+owl_description_attribute(X) :- rdf_equal(owl:oneOf, X).
+owl_description_attribute(X) :- rdf_equal(owl:complementOf, X).
+owl_description_attribute(X) :- rdf_equal(owl:unionOf, X).
+owl_description_attribute(X) :- rdf_equal(owl:intersectionOf, X).
+
 
 :- end_particle.
 
@@ -121,39 +140,6 @@ parent(Resource, Parent) :-
 	    ;	Parent = '<Untyped Resources>'
 	    )
 	).
-
-:- end_particle.
-
-
-		 /*******************************
-		 *	      TABLES		*
-		 *******************************/
-
-:- begin_particle(rdf_table_rules, []).
-
-object_visual(rdf(S,P,O), Table, ObjGraphical) :-
-	::object_visual_class(rdf(S,P,O), Class),
-	NewTerm =.. [Class, S, P, O, Table],
-	new(ObjGraphical, NewTerm).
-
-object_visual_class(rdf(_S,_P,literal(_O)), rdf_literal_text) :- !.
-object_visual_class(rdf(_S,_P,O), rdf_object_list_browser) :-
-	rdfs_individual_of(O, rdf:'List').
-object_visual_class(rdf(_S,_P,O), ulan_timestamp_object_item) :-
-	rdfs_individual_of(O, ulan:'TimeStamp').
-object_visual_class(rdf(_S,_P,_O), rdf_object_text).
-
-:- end_particle.
-
-		 /*******************************
-		 *	       LISTS		*
-		 *******************************/
-
-:- begin_particle(rdf_list_rules, []).
-
-collection_item_class(rdf(_S, _P, literal(_)), _LB,
-		      rdf_literal_text).
-collection_item_class(_, _, rdf_object_text).
 
 :- end_particle.
 

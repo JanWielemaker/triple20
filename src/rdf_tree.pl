@@ -170,31 +170,19 @@ make_rdf_node_format(F) :-
 initialise(N, VN:rdf_vnode) :->
 	get(VN, resource, Resource),
 	send(N, slot, resource, Resource),
-	send_super(N, initialise, new(D, device)),
-	send(D, format, @rdf_node_format),
+	send_super(N, initialise, new(graphical)), % dummy; should go
 	new(_, hyper(N, VN, virtual, node)).
 
 
 update(N) :->
 	"Update N and expansion-state"::
-	get(N, image, D),
-	send(D, clear),
-	(   get(N, icon, Icon), Icon \== @nil
-	->  send(D, display, bitmap(Icon))
-	;   true
-	),
-	get(N, label, Label),
-	send(D, display, Label),
+	get(N, resource, Resource),
+	call_rules(N, label(Resource, Label)),
+	send(N, image, Label),
 	(   send(N, can_expand)
 	->  send_super(N, collapsed, @on)
 	;   send_super(N, collapsed, @nil)
 	).
-
-
-label(N, Label:graphical) :<-
-	"Create a label for the node"::
-	get(N, resource, Resource),
-	call_rules(N, label(Resource, Label)).
 
 virtual(N, VN:rdf_vnode) :<-
 	get(N, hypered, virtual, VN).

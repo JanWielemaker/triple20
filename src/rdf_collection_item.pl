@@ -19,7 +19,6 @@
 
 variable(resource, name*,      get, "Resource describing the list").
 variable(auto_fit, int* := 5,  get, "AUtomatically re-fit after ->update").
-variable(rules,    name := rdf_list_rules, both, "Rules for plugins").
 
 initialise(LB, Collection:[name]*) :->
 	send_super(LB, initialise),
@@ -55,13 +54,8 @@ append_list(LB, Collection:name) :->
 	->  true
 	;   rdf_equal(rdf:first, First),
 	    rdf_has(Collection, First, Element),
-	    get(LB, rules, RuleSet),
-	    RuleSet::collection_item_class(rdf(Collection, First, Element),
-					   LB,
-					   Class),
-	    NewTerm =.. [Class, Collection, First, Element, LB],
-	    new(Gr, NewTerm),
-	    send(LB, append, Gr),
+	    call_rules(LB, label(Element, Label)),
+	    send(LB, append, Label),
 	    rdf_has(Collection, rdf:rest, Rest),
 	    send(LB, append_list, Rest)
 	).

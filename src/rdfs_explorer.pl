@@ -559,14 +559,12 @@ append_slot(AL, Slot:name, Class:[name]) :->
 	;   (   rdfs_subproperty_of(DomainProperty, rdfs:domain),
 	        rdf(Slot, DomainProperty, Base),
 	        Base \== TheClass
-	    ->  send(AL, append,
-		     rdf_object_text(Slot, DomainProperty, Base, AL))
+	    ->  send(AL, append_resource, Base)
 	    ;	send(AL, append, '<self>', italic)
 	    ),
 	    (   rdfs_subproperty_of(RangeProperty, rdfs:range),
 		rdf(Slot, RangeProperty, Range)
-	    ->	send(AL, append,
-		     rdf_object_text(Slot, RangeProperty, Range, AL))
+	    ->	send(AL, append_resource, Range)
 	    ;	send(AL, append, '-')
 	    )
 	),
@@ -670,8 +668,7 @@ append_slots(AL) :->
 	get(AL, resource, I),
 	(   bagof(Value, rdf(I, Property, Value), [V1|Values]),
 	    \+ reserved_instance_slot(Property),
-	    send(AL, append,
-		 rdf_predicate_text(I, Property, AL)),
+	    send(AL, append_resource, Property),
 	    send(AL, append_resource, V1),
 	    send(AL, next_row),
 	    forall(member(V, Values),
@@ -759,10 +756,10 @@ missing_subject_predicate(AL, Property) :-
 	rdfs_subclass_of(Class, Domain),
 					% do we represent this?
 					% TBD: cleanup this mess
-	\+ get(AL?graphicals, find,
-	       and(message(@arg1, instance_of, rdf_predicate_text),
-		   @arg1?resource == Property),
-	       _),
+%	\+ get(AL?graphicals, find,
+%	       and(message(@arg1, instance_of, rdf_predicate_text),
+%		   @arg1?resource == Property),
+%	       _),
 	\+ rdf_equal(Property, rdf:type).
 
 :- pce_end_class(rdfs_instance_sheet).

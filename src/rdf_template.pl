@@ -49,6 +49,33 @@ container_with_send_method(Gr, Method, Container) :-
 		 *	      PARTICLE		*
 		 *******************************/
 
+:- pce_extend_class(object).
+
+rdf_particle(O, Particle:name) :<-
+	get(O, class_name, Particle).
+
+rdf_container(O, Container:visual) :<-
+	get(O, contained_in, Container).
+
+:- pce_end_class.
+
+:- pce_extend_class(node).
+
+rdf_container(N, Container:visual) :<-
+	(   get(N, parents, Parents),
+	    get(Parents, head, Container)
+	->  true
+	;   get(N, tree, Container),
+	    Container \== @nil
+	).
+
+:- pce_end_class.
+
+
+
+
+
+
 %	call_rules(+Obj, +Goal)
 %	
 %	Search the container classes for the first matching container
@@ -60,10 +87,10 @@ call_rules(Obj, Goal) :-
 	Particle::Goal.
 
 container_with_particle(Obj, Particle) :-
-	get(Obj, class_name, Particle),
+	get(Obj, rdf_particle, Particle),
 	current_particle(Particle).
 container_with_particle(Obj, Particle) :-
-	(   get(Obj, contained_in, Container)
+	(   get(Obj, rdf_container, Container)
 	->  container_with_particle(Container, Particle)
 	;   get(Obj, create_context,
 		message(@arg1, instance_of, visual),
