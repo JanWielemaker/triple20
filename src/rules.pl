@@ -160,10 +160,19 @@ icon(_, Icon) :-
 
 popup(Gr, Popup) :-
 	new(Popup, popup),
-	(   bagof(Item, ::menu_item(Gr, _Group, Item, Receiver), Items),
-	    send(Popup, append, gap),
-	    forall(item_member(Method, Label, Items),
-		   append_item(Popup, Label, Receiver, Method)),
+	(   bagof(Item, ::menu_item(Gr, Group, Item, Receiver), Items),
+	    (	::sub_menu(Group)
+	    ->	(   get(Popup?members?tail, popup, @nil)
+		->  send(Popup, append, gap)
+		;   true
+		),
+	        send(Popup, append, new(SubMenu, popup(Group))),
+		forall(item_member(Method, Label, Items),
+		       append_item(SubMenu, Label, Receiver, Method))
+	    ;	send(Popup, append, gap),
+		forall(item_member(Method, Label, Items),
+		       append_item(Popup, Label, Receiver, Method))
+	    ),
 	    fail
 	;   true
 	).
@@ -219,8 +228,15 @@ menu_item(copy,   copy_as_xml_identifier).
 menu_item(copy,   copy_as_xml_attribute).
 menu_item(copy,   copy_text).
 
-menu_item(open,   view_rdf_source).
-menu_item(open,   diagram_).
+menu_item(view,   view_rdf_source).
+menu_item(view,   diagram_).
+
+%	sub_menu(Group)
+%	
+%	Group of items to place in a sub-menu
+
+sub_menu(copy).
+sub_menu(view).
 
 :- end_particle.
 
@@ -302,18 +318,20 @@ child_cache(R, Cache, rdf_individual_node) :-
 %	showing Resource.
 
 parent(R, Parent, rdf_class_node) :-
-	rdf_has(R, rdfs:subClassOf, Parent), !.
+	rdf_has(R, rdfs:subClassOf, Parent).
 parent(R, Parent, rdf_property_node) :-
-	rdf_has(R, rdfs:subPropertyOf, Parent), !.
+	rdf_has(R, rdfs:subPropertyOf, Parent).
 parent(R, Parent, rdf_individual_node) :-
-	rdf_has(R, rdf:type, Parent), !.
-parent('__orphan_classes', Root, rdf_orphan_node) :- !,
+	rdf_has(R, rdf:type, Parent).
+parent('__orphan_classes', Root, rdf_orphan_node) :-
 	rdf_equal(Root, rdfs:'Resource').
-parent('__orphan_resources', Root, rdf_orphan_node) :- !,
+parent('__orphan_resources', Root, rdf_orphan_node) :-
 	rdf_equal(Root, rdfs:'Resource').
 parent(R, '__orphan_classes', rdf_class_node) :-
-	rdfs_individual_of(R, rdfs:'Class'), !.
-parent(_, '__orphan_resources', rdf_individual_node).
+	rdfs_individual_of(R, rdfs:'Class'),
+	\+ rdf_has(R, rdfs:subClassOf, _).
+parent(R, '__orphan_resources', rdf_individual_node) :-
+	\+ rdf_has(R, rdf:type, _).
 
 %	root_property(+Class, -Property)
 %	
@@ -436,6 +454,7 @@ clicked(V) :-
 
 menu_item(Group, Item) :-
 	super::menu_item(Group, Item).
+menu_item(view, show_all_parents).
 menu_item(edit, unrelate=unrelate_resource).
 menu_item(edit, delete=delete_resource).
 

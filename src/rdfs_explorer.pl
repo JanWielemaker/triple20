@@ -63,7 +63,7 @@
 :- pce_global(@finder, new(finder)).
 
 
-resource(rdfs_explorer_icon, image, image('16x16/hierarchy.xpm')).
+resource(rdfs_explorer_icon, image, image('32x32/triple20.xpm')).
 resource(new_icon,	     image, image('16x16/new.xpm')).
 resource(new_multiple,	     image, image('16x16/newmultiple.xpm')).
 resource(undo,		     image, image('16x16/undo.xpm')).

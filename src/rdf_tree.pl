@@ -93,8 +93,9 @@ add(OT, Resource:name, _Role:[name], Node:rdf_node) :<-
 	(   get(OT, member, Resource, Node)
 	->  true
 	;   get(OT?root, resource, Root),
-	    findall(Path, path(Resource, Root, OT, Path), [P0|_Paths]),
-	    display_path(P0, OT, Node)
+	    once(path(Resource, Root, OT, Path))
+	->  display_path(Path, OT, Node)
+	;   send(OT, report, warning, 'Cannot find path to %s', Resource)
 	).
 	
 %	path(+Resource, +Root, +Tree, -Path)
@@ -109,7 +110,7 @@ path(Resource, Root, Tree, Path) :-
 path(Resource, Resource, _, _, [Resource-[]]) :- !.
 path(Resource, Root, Tree, Visited, [Resource-Role|T]) :-
 	\+ memberchk(Resource, Visited),
-	call_rules(Tree, parent(Resource, Parent, Role)),
+	call_rules(Tree, parent(Resource, Parent, Role)), !,
 	path(Parent, Root, Tree, [Resource|Visited], T).
 
 display_path([H-Role|_], OT, Node) :-
@@ -122,6 +123,37 @@ display_path([H-Role|T], OT, Node) :-
 	get(Parent, add_child, H, Role, Node),
 	send_class(Parent, node, collapsed(@off)).
 
+%	->show_all_parents: Resource
+%	
+%	Show Resource as a child of  all   its  parents in the preferred
+%	role. This is very tricky. We only use non-determinism selecting
+%	the immediate parent as the  visualisation   of  all paths often
+%	explodes. We also only  provide  all   solutions  of  the  first
+%	parent/3 returned role (realised using the bagof call).
+
+show_all_parents(OT, Resource:name) :->
+	"Show all paths from the root to Resource"::
+	get(OT?root, resource, Root),
+	(   bagof(P, call_rules(OT, parent(Resource, P, Role)), Ps)
+	->  (   member(Parent, Ps),
+	        (   path(Parent, Root, OT, Path)
+		->  display_path(Path, OT, ParentNode),
+		    (	get(ParentNode?sons, find,
+			    and(@arg1?class_name == Role,
+				@arg1?resource == Resource),
+			    Node)
+		    ->	true
+		    ;	get(ParentNode, add_child, Resource, Role, Node)
+		    ),
+		    send_class(ParentNode, node, collapsed(@off)),
+		    send(Node, selected, @on)
+		;   true
+		),
+		fail
+	    ;   true
+	    )
+	;   true
+	).
 
 :- pce_group(event).
 
@@ -482,6 +514,16 @@ delete_hyper(N, Hyper:hyper) :->
 	->  send(N, update)
 	;   true
 	).
+
+:- pce_group(view).
+
+
+show_all_parents(N) :->
+	"Show all locations for this resource"::
+	get(N, resource, Resource),
+	get(N, tree, Tree),
+	send(Tree, show_all_parents, Resource).
+
 
 :- pce_group(debug).
 
