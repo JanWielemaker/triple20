@@ -35,7 +35,7 @@
 	    load_base_ontology/2,	% +Id, +Options
 	    current_base_ontology/1,	% -Id
 	    required_base_ontology/1,	% -Id
-	    register_default_ns/1	% +List
+	    register_default_ns/2	% +File, +List
 	  ]).
 :- use_module(semweb(rdf_db)).
 :- use_module(semweb(rdf_edit)).
@@ -88,7 +88,7 @@ rdf_db:ns(mia2,    'http://www.swi.psy.uva.nl/mia/mia2#').
 rdf_db:ns(rs,      'http://jena.hpl.hp.com/2003/03/result-set#').
 rdf_db:ns(t20,	   'http://www.swi-prolog.org/packages/Triple20/').
 
-%	register_default_ns(NS=URL)
+%	register_default_ns(File, NS=URL)
 %	
 %	Register a namespace as encounted in   the  namespace list of an
 %	RDF document. We only register if  both the abbreviation and URL
@@ -96,14 +96,17 @@ rdf_db:ns(t20,	   'http://www.swi-prolog.org/packages/Triple20/').
 %	also do checks on the consistency   of  RDF and other well-known
 %	namespaces.
 
-register_default_ns(X) :-
+register_default_ns(File, NSList) :-
+	register_def_ns(NSList, File).
+
+register_def_ns(X, _) :-
 	var(X), !,
 	throw(error(instantiation_error, _)).
-register_default_ns([]) :- !.
-register_default_ns([NS=URL|T]) :- !,
-	register_default_ns(NS=URL),
-	register_default_ns(T).
-register_default_ns(NS=URL) :-
+register_def_ns([], _) :- !.
+register_def_ns([NS=URL|T], File) :- !,
+	register_def_ns(NS=URL, File),
+	register_def_ns(T, File).
+register_def_ns(NS=URL, _File) :-
 	(   rdf_db:ns(NS, URL)
 	->  true
 	;   rdf_db:ns(NS, _)
