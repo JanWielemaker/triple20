@@ -40,11 +40,6 @@
 	user:file_search_path/2.
 
 user:file_search_path(semweb,   library(semweb)).
-user:file_search_path(snapshot, user_profile(Dir)) :-
-	(   current_prolog_flag(unix, true)
-	->  Dir = '.triple20'
-	;   Dir = 'Triple20'
-	).
 
 :- retractall(file_search_path(triple20, _)),
    prolog_load_context(directory, Dir),
@@ -53,6 +48,7 @@ user:file_search_path(snapshot, user_profile(Dir)) :-
    asserta(file_search_path(ontology, triple20('.'))).
 
 :- load_files([ rdf_base,		% Info on base ontologies
+		rdf_file,		% Info on files we manage
 		library(rdf),		% parser
 		semweb(rdf_db),		% triple store
 		semweb(rdfs),		% RDFS rules
@@ -66,11 +62,13 @@ user:file_search_path(snapshot, user_profile(Dir)) :-
 	      [ silent(true)
 	      ]).
 
-:- pce_image_directory(icons).
+:- pce_image_directory(triple20(icons)).
 
 :- pce_autoload(ulan_timestamp_object_item,
 		library(ulan)).
 
+user:file_search_path(snapshot, user_profile(Dir)) :-
+	rdf_snapshot_directory(Dir).
 
 		 /*******************************
 		 *	  DEBUGGING STUFF	*
@@ -86,32 +84,6 @@ dbg :-
 %:- dbg.
 
 :- catch(['~/.xpcerc'], _, true).
-
-
-		 /*******************************
-		 *	    FILE TYPES		*
-		 *******************************/
-
-rdf_file_extension(rdf,  'RDF file').
-rdf_file_extension(rdfs, 'RDF Schema file').
-rdf_file_extension(owl,  'OWL ontology file').
-rdf_file_extension(rdfj, 'OntoShow project file').
-
-
-		 /*******************************
-		 *	    ENVIRONMENT		*
-		 *******************************/
-
-ensure_snapshot_directory :-
-	absolute_file_name(snapshot(.),
-			   [ file_type(directory),
-			     access(write),
-			     file_errors(fail)
-			   ],
-			   Dir), !,
-	debug(snapshot, 'Using snapshot directory ~w', [Dir]).
-ensure_snapshot_directory :-
-	tbd.
 
 
 		 /*******************************
