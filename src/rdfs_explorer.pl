@@ -774,12 +774,15 @@ append_slot(AL, Slot:name, Class:[name]) :->
 append_property(AL, Property:name) :->
 	"Append slot and its values"::
 	get(AL, resource, R),
-	bagof(Value, rdf(R, Property, Value), [V1|Values]),
-	send(AL, append, rdf_predicate_cell(Property)),
-	send(AL, append, rdf_object_cell(V1, Property), colspan := 2),
-	send(AL, next_row),
-	forall(member(V, Values),
-	       send(AL, append_continuation_value, V, Property)).
+	bagof(Value, rdf_has(R, Property, Value, P), [V1|Values]),
+	(   send(AL, append, rdf_predicate_cell(P)),
+	    send(AL, append, rdf_object_cell(V1, P), colspan := 2),
+	    send(AL, next_row),
+	    forall(member(V, Values),
+		   send(AL, append_continuation_value, V, P)),
+	    fail
+	;   true
+	).
 
 
 append_continuation_value(AL, V:prolog, Pred:[name]) :->
@@ -909,12 +912,14 @@ display_predicates_title(AL) :->
 	
 append_slots(AL) :->
 	get(AL, resource, I),
-	(   bagof(Value, rdf(I, Property, Value), [V1|Values]),
+	(   call_rules(AL, visible_predicate(I, Property)),
 	    \+ reserved_instance_slot(Property),
+	    findall(V, rdf(I, Property, V), Values),
+	    sort_by_label(Values, [V1|RestValues]),
 	    send(AL, append, rdf_predicate_cell(Property)),
 	    send(AL, append, rdf_object_cell(V1, Property)),
 	    send(AL, next_row),
-	    forall(member(V, Values),
+	    forall(member(V, RestValues),
 		   send(AL, append_continuation_value, V, Property)),
 	    fail
 	;   true
@@ -931,12 +936,15 @@ reserved_instance_slot(Label) :-
 append_property(AL, Property:name) :->
 	"Append slot and its values"::
 	get(AL, resource, R),
-	bagof(Value, rdf(R, Property, Value), [V1|Values]),
-	send(AL, append, rdf_predicate_cell(Property)),
-	send(AL, append, rdf_object_cell(V1, Property)),
-	send(AL, next_row),
-	forall(member(V, Values),
-	       send(AL, append_continuation_value, V, Property)).
+	bagof(Value, rdf_has(R, Property, Value, P), [V1|Values]),
+	(   send(AL, append, rdf_predicate_cell(P)),
+	    send(AL, append, rdf_object_cell(V1, P)),
+	    send(AL, next_row),
+	    forall(member(V, Values),
+		   send(AL, append_continuation_value, V, P)),
+	    fail
+	;   true
+	).
 
 
 append_continuation_value(AL, V:prolog, Property:[name]) :->

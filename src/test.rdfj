@@ -6,11 +6,34 @@
    Do not edit!
 */
 
-start([time(1061392555), version(1)]).
-assert([0], 'http://www.w3.org/1999/02/22-rdf-syntax-ns#test', 'http://www.w3.org/1999/02/22-rdf-syntax-ns#type', 'http://www.w3.org/2000/01/rdf-schema#Class', user).
-assert([0], 'http://www.w3.org/1999/02/22-rdf-syntax-ns#test', 'http://www.w3.org/2000/01/rdf-schema#subClassOf', 'http://www.w3.org/1999/02/22-rdf-syntax-ns#Statement', user).
-assert([0], 'http://www.w3.org/1999/02/22-rdf-syntax-ns#test', 'http://www.w3.org/2000/01/rdf-schema#label', test, user).
-commit([0]).
-end([time(1061392567)]).
-resume([time(1061392588), version(1)]).
-end([time(1061392604)]).
+start([time(1064321575), version(1)]).
+rdf_load([1], '/staff/jan/projects/mia/jan/semweb/ulan.rdfs', [pwd('/staff/jan/projects/mia/jan/semweb'), size(4015), modified(1055967036), triples(60)]).
+rdf_load([1], '/staff/jan/projects/mia/jan/semweb/ulan.rdf', [pwd('/staff/jan/projects/mia/jan/semweb'), size(30516537), modified(1055967036), triples(808963)]).
+rdf_load([1], '/staff/jan/projects/mia/jan/semweb/rdfs.rdfs', [pwd('/staff/jan/projects/mia/jan/semweb'), size(8949), modified(1055967034), triples(158)]).
+commit([1], 1064321583.83).
+rdf_load([2], '/staff/jan/projects/mia/jan/semweb/wnclass.rdfs', [pwd('/staff/jan/projects/mia/jan/semweb'), size(969), modified(1055967036), triples(6)]).
+rdf_load([2], '/staff/jan/projects/mia/jan/semweb/wordnet-20000620.rdfs', [pwd('/staff/jan/projects/mia/jan/semweb'), size(3428), modified(1055967036), triples(37)]).
+rdf_load([2], '/staff/jan/projects/mia/jan/semweb/wordnet_glossary-20010201.rdf', [pwd('/staff/jan/projects/mia/jan/semweb'), size(15161489), modified(1055967038), triples(99642)]).
+rdf_load([2], '/staff/jan/projects/mia/jan/semweb/wordnet_hyponyms-20010201.rdf', [pwd('/staff/jan/projects/mia/jan/semweb'), size(8258513), modified(1055967038), triples(78445)]).
+rdf_load([2], '/staff/jan/projects/mia/jan/semweb/wordnet_nouns-20010201.rdf', [pwd('/staff/jan/projects/mia/jan/semweb'), size(9891489), modified(1055967039), triples(273644)]).
+rdf_load([2], '/staff/jan/projects/mia/jan/semweb/wordnet_similar-20010201.rdf', [pwd('/staff/jan/projects/mia/jan/semweb'), size(1805459), modified(1055967039), triples(21858)]).
+rdf_load([2], '/staff/jan/projects/mia/jan/semweb/rdfs.rdfs', [pwd('/staff/jan/projects/mia/jan/semweb'), size(8949), modified(1055967034), triples(158)]).
+commit([2], 1064321592.25).
+end([time(1064321597)]).
+resume([time(1064321607), version(1)]).
+update([0, 1], 'http://www.swi.psy.uva.nl/mia/ulan#role', 'http://www.w3.org/2000/01/rdf-schema#label', literal(art), object('http://www.w3.org/2000/01/rdf-schema#domain')).
+commit([0, 1], 1064326558.29).
+commit([0], 1064326558.29).
+update([1], 'http://www.swi.psy.uva.nl/mia/ulan#role', 'http://www.w3.org/2000/01/rdf-schema#label', 'http://www.w3.org/2000/01/rdf-schema#domain', object(literal(art))).
+commit([1], 1064326565.66).
+end([time(1064326589)]).
+resume([time(1064326614), version(1)]).
+end([time(1064326621)]).
+resume([time(1064327047), version(1)]).
+update([0, 1], 'http://www.swi.psy.uva.nl/mia/ulan#16023', 'http://www.swi.psy.uva.nl/mia/ulan#region', literal('Netherlands'), object('http://www.cogsci.princeton.edu/~wn/concept#106536741')).
+commit([0, 1], 1064327125.00).
+commit([0], 1064327125.00).
+end([time(1064327253)]).
+resume([time(1064327264), version(1)]).
+end([time(1064329619)]).
+resume([time(1064329629), version(1)]).

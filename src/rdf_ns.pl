@@ -83,6 +83,8 @@ class_variable(size, size, size(60, 10)).
 initialise(B) :->
 	send_super(B, initialise, 'RDF Namespaces'),
 	send(B, tab_stops, vector(60)),
+	send(B, select_message,
+	     message(B, copy_ns, @arg1)),
 	send(B, update),
 	listen(B, rdf_ns(_),
 	       send(B, update)).
@@ -90,6 +92,11 @@ initialise(B) :->
 unlink(B) :->
 	unlisten(B),
 	send_super(B, unlink).
+
+copy_ns(_B, Di:dict_item) :->
+	"Copy namespace expansion"::
+	get(Di, object, NS),
+	send(@display, copy, NS).
 
 update(B) :->
 	findall(ID, rdf_db:ns(ID, _), IDS0),
@@ -100,6 +107,6 @@ update(B) :->
 append(B, Id:name) :->
 	rdf_db:ns(Id, Name),
 	send_super(B, append,
-		   dict_item(Id, string('%s\t%s', Id, Name))).
+		   dict_item(Id, string('%s\t%s', Id, Name), Name)).
 
 :- pce_end_class(rdf_namespace_browser).

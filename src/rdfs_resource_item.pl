@@ -115,7 +115,7 @@ search(OI) :->
 	;   get(TI, value, Typed),
 	    (   Typed == ''
 	    ->  send(Tree, expand_domain)
-	    ;   send(B, find, Typed)
+	    ;   send(B, find, Typed, prefix)
 	    )
 	).
 
@@ -451,7 +451,7 @@ tree(F, Tree:rdfs_tree) :<-
 	get(P, member, rdfs_hierarchy, Tree).
 
 find(F, String:name, How:[name], In:[chain]) :->
-	"Highlight nodes holding substring"::
+	"Highlight nodes search"::
 	get(F, member, picture, P),
 	get(F, tree, Tree),
 	send(P, scroll_to, point(0,0)),
@@ -467,11 +467,11 @@ find(F, String:name, How:[name], In:[chain]) :->
 	send(Tree, find_from, String, How, Fields).
 
 mkfield(label,   P) :-
-	rdf_global_id(rdfs:label, P).
+	rdf_equal(rdfs:label, P).
 mkfield(comment, P) :-
-	rdf_global_id(rdfs:comment, P).
+	rdf_equal(rdfs:comment, P).
 mkfield(synonym, P) :-			% must move to private namespace
-	rdf_global_id(aat:synonym, P).
+	rdf_equal(aat:synonym, P).
 
 locate(F, Term:name) :->
 	"Expand to given term"::

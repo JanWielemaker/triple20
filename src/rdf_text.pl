@@ -302,5 +302,8 @@ copy_text(T) :->
 	get(T, literal, Text),
 	send(@display, copy, Text).
 
+drop(T, Visual:visual) :->
+	call_rules(T, drop(T, Visual)).
+
 :- pce_end_class(rdf_literal_text).
 

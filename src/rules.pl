@@ -214,10 +214,20 @@ menu_item(open,   diagram_).
 
 standard_predicate(Resource, Pred) :-
 	rdfs_individual_of(Resource, rdf:'Statement'), !,
-	(   rdf_equal(Pred, rdf:'Subject')
-	;   rdf_equal(Pred, rdf:'Predicate')
-	;   rdf_equal(Pred, rdf:'Object')
+	(   rdf_equal(Pred, rdf:subject)
+	;   rdf_equal(Pred, rdf:predicate)
+	;   rdf_equal(Pred, rdf:object)
 	).
+
+%	visible_predicate(+Resource, -Predicate)
+%	
+%	Return, on backtracking, predicates that should be displayed
+%	when showing a resource in a property table.
+
+visible_predicate(Resource, Predicate) :-
+	findall(P, rdf(Resource, P, _), Ps),
+	sort_by_label(Ps, Predicates),
+	member(Predicate, Predicates).
 
 :- end_particle.
 

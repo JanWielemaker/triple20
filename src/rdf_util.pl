@@ -65,22 +65,40 @@ property_type(Subject, Property, Type) :-
 
 %	sort_by_label(+Resources, -Sorted)
 %	
-%	Sort a list of resources by `ns'-label. This version does *not*
-%	remove duplicates.
+%	Sort a list of resources by `ns'-label.  Removes duplicates.
+%	Note that objects can have multiple labels.  We will sort by
+%	the first for the time being.  Maybe we should sort on the
+%	first in alphabetical order.  I don't think we want alternative
+%	ordering on backtracking.
 
 sort_by_label(Resources, Sorted) :-
 	tag_label(Resources, Tagged),
 	keysort(Tagged, Sorted0),
-	unkey(Sorted0, Sorted).
+	unique_unkey(Sorted0, Sorted).
 
 tag_label([], []).
 tag_label([H|T0], [K-H|T]) :-
-	rdfs_ns_label(H, K),
+	(   H = literal(K)
+	->  true
+	;   rdfs_ns_label(H, K)
+	->  true
+	),
 	tag_label(T0, T).
 
-unkey([], []).
-unkey([_-H|T0], [H|T]) :-
-	unkey(T0, T).
+unique_unkey([], []).
+unique_unkey([H0|T0], [H|T]) :-
+	remove_dups(H0, T0, T1),
+	H0 = _Key-H,
+	unique_unkey(T1, T).
+
+remove_dups(H, [H|T0], T) :- !,
+	remove_dups(H, T0, T).
+remove_dups(P, [H|T0], [H|T]) :-	% Handle different resources with
+	same_label(P, H), !,		% same label
+	remove_dups(P, T0, T).
+remove_dups(_, L, L).
+
+same_label(L-_, L-_).
 
 
 %	rdf_default_file(+Resource, -File)
