@@ -78,8 +78,11 @@ try_arm(W, Gr:graphical) :->
 
 arm_object(W, Gr:graphical*) :->
 	(   get(W, hypered, arm, Old)
-	->  send(W, delete_hypers, arm),
-	    send(Old, arm, @off)
+	->  (   Old == Gr
+	    ->	true			% no change
+	    ;	send(W, delete_hypers, arm),
+		send(Old, arm, @off)
+	    )
 	;   true
 	),
 	(   Gr \== @nil
