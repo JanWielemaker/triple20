@@ -618,13 +618,13 @@ about(M) :->
 	send(D, open_centered).
 
 about([ 'Triple20 version %s'+[@prolog?t20_version]-boldhuge,
-	'Copyright 2003, University of Amsterdam',
-	'XPCE comes with ABSOLUTELY NO WARRANTY.',
-	'This is free software (LGPL), and you are welcome to',
+	'Copyright 2003-2005, University of Amsterdam',
+	'Triple20 comes with ABSOLUTELY NO WARRANTY.',
+	'This is free software (GPL), and you are welcome to',
 	'redistribute it under certain conditions.',
 	url('http://www.swi-prolog.org/packages/Triple20/'),
 	'Jan Wielemaker\nBob Wielinga\nGuus Schreiber'-italic,
-	'SWI\nUniversity of Amsterdam\nRoetersstraat 15\n1018 WB  Amsterdam\nThe Netherlands'
+	'HCS (formerly SWI)\nUniversity of Amsterdam\nKruislaanKruislaan 419\n1098 VA  Amsterdam\nThe Netherlands'
       ]).
 
 add_about(D, X-Font) :- !,

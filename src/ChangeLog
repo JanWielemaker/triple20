@@ -1,4 +1,13 @@
+SNAPSHOT 0.5
+============
+
+Mar 02, 2005
+
+  * Some version cleanup
+
 Feb 24, 2005
+
+  * FIXED: various namespace issues
 
   * ADDED: class sheet: allow adding properties
 
