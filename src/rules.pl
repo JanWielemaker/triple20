@@ -490,6 +490,7 @@ menu_item(Group, Item) :-
 menu_item(view, show_all_parents).
 menu_item(edit, unrelate=unrelate_resource).
 menu_item(edit, delete=delete_resource).
+menu_item(edit, delete_class_hierarchy).
 
 menu_item(Gr, edit, new(Role), Node) :-
 	(   container_with_method(Gr, new, Node),

@@ -16,6 +16,7 @@
 :- use_module(library(debug)).
 :- use_module(library(hyper)).
 :- use_module(library(broadcast)).
+:- use_module(rdf_util).
 
 :- pce_autoload(rdf_create_dialog, rdf_create).
 
@@ -641,6 +642,13 @@ new_class(N) :->
 new_individual(N) :->
 	"Create indivisual of this class"::
 	send(N, new, rdf_individual_node).
+
+delete_class_hierarchy(N) :->
+	"Delete all subclasses below N"::
+	get(N, resource, Resource),
+	rdf_delete_hierarchy(Resource, rdfs:subClassOf,
+			     [ confirm(true)
+			     ]).
 
 :- pce_end_class.
 

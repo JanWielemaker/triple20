@@ -38,12 +38,14 @@
 	    rdf_set_object/3,		% +S, +P, +Object
 	    rdf_add_object/3,		% +S, +P, +O
 	    rdf_new_property/2,		% +S, +P
-	    rdf_list_operation/3	% +Action, +Triple, +Resource
+	    rdf_list_operation/3,	% +Action, +Triple, +Resource
+	    rdf_delete_hierarchy/3	% +Root, +Relation, +Options
 	  ]).
 :- use_module(semweb(rdf_db)).
 :- use_module(semweb(rdfs)).
 :- use_module(semweb(rdf_edit)).
 :- use_module(owl).
+:- use_module(library(option)).
 
 %	user:goal_expansion(+NSGoal, -Goal)
 %	
@@ -69,6 +71,11 @@ user:goal_expansion(rdf_add_object(Subj0, Pred0, Obj0),
 	rdf_global_id(Subj0, Subj),
 	rdf_global_id(Pred0, Pred),
 	rdf_global_id(Obj0, Obj).
+user:goal_expansion(rdf_delete_hierarchy(Root0, Pred0, Opts0),
+		    rdf_delete_hierarchy(Root, Pred, Opts)) :-
+	rdf_global_id(Root0, Root),
+	rdf_global_id(Pred0, Pred),
+	rdf_global_term(Opts0, Opts).
 
 
 %	property_domain(+Subject, +Property, -Domain)
@@ -332,5 +339,43 @@ list_delete(S, P, O, Resource) :-
 list_delete(_, _, O, Resource) :-
 	rdf_has(O, rdf:rest, Rest, P1),
 	list_delete(O, P1, Rest, Resource).
+	
+	
+		 /*******************************
+		 *	 HIERACHY DELETE	*
+		 *******************************/
+
+%	rdf_delete_hierarchy(+Root, +Property, +Options)
+%	
+%	Delete all objects reachable from Root through property that
+%	have no relations of type property, unless they have another
+%	relation to the root.  Options:
+%	
+%	    * unless_reachable_from(Root)
+%	      Do not delete resources that can be reached from the
+%	      given Root.
+
+rdf_delete_hierarchy(Root, Property, Options) :-
+	rdfe_transaction(delete_hierarchy(Root, Property, Options),
+			 delete_hierarchy).
+
+delete_hierarchy(Root, Property, Options) :-
+	rdf_equal(rdfs:'Resource', RdfsResource),
+	option(unless_reachable_from(Keep), Options, RdfsResource),
+	rdfe_retractall(Root, Property, _),
+	findall(X, rdf_reachable(X, Property, Root), Set0),
+	findall(X, rdf_reachable(X, Property, Keep), KeepSet0),
+	sort(Set0, Set1),
+	sort(KeepSet0, KeepSet1),
+	oset_diff(Set1, KeepSet1, DelSet),
+	(   option(confirm(true), Options, false)
+	->  length(DelSet, Len),
+	    send(@display, confirm,
+		 'Delete %d classes and all associated properties?',
+		 Len)
+	;   true
+	),
+	forall(member(R, DelSet),
+	       rdfe_delete(R)).
 	
 	
