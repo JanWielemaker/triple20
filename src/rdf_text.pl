@@ -103,22 +103,22 @@ initialise(DD, Button:name) :->
 	send_super(DD, initialise, Button, get_source := @arg1?resource),
 	send(DD, cursor, @default).
 
-drag(DD, Ev:event) :->
-	(   send(DD, activate)
-	->  get(DD, source, Source),
-	    (   get(Ev, inside_sub_window, Frame),
-	        get(Ev, inside_sub_window, Frame, Window),
-		send(Window, has_get_method, arm),
-		get(Window, arm, drop, Target)
-	    ->  send(DD, target, Source, Ev, Target)
-	    ;	send(DD, target, Source, @nil, @nil)
-	    )
-	;   true
-	).
+%drag(DD, Ev:event) :->
+%	(   send(DD, activate)
+%	->  get(DD, source, Source),
+%	    (   get(Ev, inside_sub_window, Frame),
+%	        get(Ev, inside_sub_window, Frame, Window),
+%		format('Inside window ~p~n', [Window]),
+%		send(Window, has_get_method, arm),
+%		format('Dropping in ~p~n', [Window]),
+%		get(Window, arm, drop, Target)
+%	    ->  send(DD, target, Source, Ev, Target)
+%	    ;	send(DD, target, Source, @nil, @nil)
+%	    )
+%	;   true
+%	).
 
 :- pce_end_class(rdf_drop_gesture).
-
-
 
 
 		 /*******************************

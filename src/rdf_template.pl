@@ -51,7 +51,9 @@ event(W, Ev:event) :->
 :- pce_group(arm).
 
 arm(W, For:[name], Target:graphical) :<-
-	(   new(Ev, event(arm)),
+	(   get(@event, position, W, point(X, Y)),
+	    new(Ev, event(arm, W, X, Y)),
+	    debug(arm, 'Arm ~p at ~w,~w~n', [W, X, Y]),
 	    (	For == @default
 	    ->	true
 	    ;	send(Ev, attribute, arm_for, For)
