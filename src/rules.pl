@@ -619,6 +619,11 @@ drop(modify, Gr, V) :-
 
 :- begin_particle(rdf_predicate_cell, rdf_tabular).
 
+menu_item(Group, Item) :-
+	super::menu_item(Group, Item).
+menu_item(edit, add_value).
+menu_item(edit, delete_all_values).
+
 drop_command(_Me, _Resource, add) :-
 	true.				% must validate restrictions!
 

@@ -38,6 +38,7 @@
 	    owl_satisfies/2,		% +Spec, +Resource
 	    owl_individual_of/2		% ?Resource, +Description
 	  ]).
+:- use_module(library(lists)).
 :- use_module(semweb(rdf_db)).
 :- use_module(semweb(rdfs)).
 
@@ -360,13 +361,7 @@ owl_satisfies(one_of(List), Resource) :- !,
 	member(Resource, List).
 					% Restrictions
 owl_satisfies(all_values_from(Domain), Resource) :- !,
-	(   rdf_equal(Domain, rdfs:'Resource')
-	->  (   atom(Resource)
-	    ->  true
-	    ;   rdf_subject(Resource)
-	    )
-	;   rdfs_individual_of(Resource, Domain)
-	).
+	rdfs_individual_of(Resource, Domain).
 owl_satisfies(some_values_from(_Domain), _Resource) :- !.
 owl_satisfies(has_value(Value), Resource) :-
 	rdf_equal(Value, Resource).	% TBD: equality

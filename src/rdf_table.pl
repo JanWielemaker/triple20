@@ -200,6 +200,32 @@ triple(Cell, Triple:prolog) :<-
 :- pce_end_class.
 
 :- pce_begin_class(rdf_predicate_cell, rdf_resource_cell).
+
+:- pce_group(edit).
+
+add_value(Cell) :->
+	"Add new value from menu"::
+	get(Cell, triple, rdf(S,P,_)),
+	get(Cell, image, Image),
+	get(Image, device, Tabular),
+	send(Tabular, prompt_value,
+	     message(Cell, do_add_value, @arg1, @arg2),
+	     S, P, @default, @default, Image).
+
+do_add_value(Cell, Value:name, Type:{resource,literal}) :->
+	(   Type == literal
+	->  Object = literal(Value)
+	;   Object = Value
+	),
+	get(Cell, triple, rdf(S,P,_)),
+	rdf_add_object(S,P,Object).
+
+delete_all_values(Cell) :->
+	"Delete all values for this property"::
+	get(Cell, triple, rdf(S,P,_)),
+	rdfe_transaction(rdfe_retractall(S,P,_),
+			 delete_all_values).
+
 :- pce_end_class.
 
 :- pce_begin_class(rdf_object_cell, rdf_resource_cell).
