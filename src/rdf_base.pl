@@ -125,6 +125,9 @@ rdf_file(wnrdfs,	 ontology('wnclass.rdfs')).
 
 rdf_file(ic,		 ontology('iconclass.rdfs')).
 
+rdf_file(cyc,		 ontology('cyc03.rdfs')).
+rdf_file(sumo,		 ontology('sumo.rdfs')).
+
 %	requires(+Id1, -Id2)
 %	
 %	Base Id1 requires base Id2.
@@ -138,6 +141,8 @@ requires(ulan,	   rdfs).
 requires(wn,	   rdfs).
 requires(wnrdfs,   wn).
 requires(ic,	   rdfs).
+requires(cyc,	   owl).
+requires(sumo,	   owl).
 
 requires(world,	   owl).
 requires(world,	   aat).
