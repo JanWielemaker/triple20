@@ -32,8 +32,6 @@ resource(description, image, image('16x16/description.xpm')).
 :- pce_begin_class(rdf_tree, tree,
 		   "Display an RDF hierarchy").
 
-variable(vtree,          rdf_vnode,   get, "Underlying data").
-variable(show_namespace, bool := @on, get, "Add namespace indicator to label").
 variable(selectable,	 chain*,      both, "Roles of selectable nodes").
 variable(message,	 code*,	      both, "Message on select").
 variable(open_message,	 code*,	      both, "Message  on double-click").
@@ -48,36 +46,21 @@ make_onto_tree_recogniser(R) :-
 	send(R, append, new(KB, key_binding)),
 	send(KB, function, '\\ef', find).
 
-initialise(H, Root:[name], RuleSet:[name]) :->
+initialise(H, Root:[name]) :->
 	send_super(H, initialise),
 	(   Root == @default
 	->  rdf_equal(rdfs:'Resource', TheRoot)
 	;   TheRoot = Root
 	),
-	send(H, slot, vtree, new(N, rdf_vnode(TheRoot))),
-	send(N, rules, RuleSet),
 	send(H, direction, list),
 	send(H, level_gap, 20),
-	send(H, create_root).
-
-create_root(H) :->
-	"Create the root-node"::
-	send(H, clear),
-	get(H, vtree, VNode),
-	get(H, create_node, VNode, Node),
-	send(H, root, Node),
-	send(Node, update).
+	call_rules(H, root_node(TheRoot, RootNode)),
+	send(H, root, RootNode).
 
 expand_root(H) :->
 	"Expand the root node"::
 	get(H, root, Root),
 	send(Root, collapsed, @off).
-
-create_node(_H, V:rdf_vnode, N:rdf_node) :<-
-	"Create a real node from a virtual one"::
-	get(V, role, Role),
-	Term =.. [Role, V],
-	new(N, Term).
 
 :- pce_group(build).
 
@@ -93,25 +76,21 @@ add(OT, Resource:name, _Role:[name], Node:rdf_node) :<-
 	"Expand the tree to show a resource"::
 	(   get(OT, member, Resource, Node)
 	->  true
-	;   get(OT?root, virtual, VN),
-	    get(VN, rules, Rules),
-	    get(VN, resource, Root),
-	    findall(Path, path(Resource, Root, Rules, Path), [P0|_Paths]),
+	;   get(OT?root, resource, Root),
+	    findall(Path, path(Resource, Root, OT, Path), [P0|_Paths]),
 	    display_path(P0, OT, Node)
 	).
 	
 path(Resource, Resource, _, [Resource]) :- !.
-path(Resource, Root, Rules, [Resource|T]) :-
-	Rules::parent(Resource, Parent),
-	path(Parent, Root, Rules, T).
+path(Resource, Root, Tree, [Resource|T]) :-
+	call_rules(Tree, parent(Resource, Parent)),
+	path(Parent, Root, Tree, T).
 
 display_path([H|_], OT, Node) :-
 	get(OT, member, H, Node), !.
 display_path([H|T], OT, Node) :-
 	display_path(T, OT, Parent),
-	get(Parent, virtual, VP),
-	get(VP, child, H, @on, VN),
-	get(Parent, add_child, VN, Node),
+	get(Parent, add_child, H, Node),
 	send_class(Parent, node, collapsed(@off)).
 
 
@@ -157,38 +136,20 @@ open_node(OT, Node:rdf_node) :->
 		   "Node of an RDF hierarchy").
 
 variable(resource, name,   get,	"Represented resource").
-variable(icon,	   image*, get,	"Prepresented icon").
+variable(cache,	   int,    get, "Cache for child result-set").
 
-class_variable(icon, image*, resource(class)).
-class_variable(font, font,   normal).
-
-:- pce_global(@rdf_node_format, make_rdf_node_format).
-make_rdf_node_format(F) :-
-	new(F, format(vertical, 1, @on)),
-	send(F, row_sep, 5).
-
-initialise(N, VN:rdf_vnode) :->
-	get(VN, resource, Resource),
+initialise(N, Resource:name) :->
 	send(N, slot, resource, Resource),
-	send_super(N, initialise, new(graphical)), % dummy; should go
-	new(_, hyper(N, VN, virtual, node)).
-
-
-update(N) :->
-	"Update N and expansion-state"::
-	get(N, resource, Resource),
 	call_rules(N, label(Resource, Label)),
-	send(N, image, Label),
+	send_super(N, initialise, Label),
+	send(N, update_can_expand).
+
+update_can_expand(N) :->
+	"Update expansion-state"::
 	(   send(N, can_expand)
 	->  send_super(N, collapsed, @on)
 	;   send_super(N, collapsed, @nil)
 	).
-
-virtual(N, VN:rdf_vnode) :<-
-	get(N, hypered, virtual, VN).
-
-role(N, Role:name) :<-
-	get(N?virtual, role, Role).
 
 :- pce_group(expand).
 
@@ -201,12 +162,11 @@ collapsed(N, V:bool*) :->
 
 can_expand(N) :->
 	"Test whether this node has childs"::
-	get(N, virtual, VN),
-	send(VN, can_expand).
+	get(N, resource, Resource),
+	call_rules(N, child(Resource, _)), !.
 
 expand(N) :->
 	"Expand this node"::
-	get(N, virtual, VN),
 	send(@display, busy_cursor),
 	send(N?sons, for_all, message(@arg1, delete_tree)),
 	send(VN?children, for_all,
@@ -231,17 +191,15 @@ expand_role(N, Role:name, Children:rdf_vnodeset, ShowMax:'[0..]') :->
 	    )
 	).
 
-add_child(N, VN:rdf_vnode, Son:rdf_node) :<-
-	"Create child for virtual node"::
-	get(N?tree, create_node, VN, Son),
-	send(N, son, Son),
-	send(Son, update).
+add_child(N, Resource:name, Son:rdf_node) :<-
+	"Create child for resource"::
+	call_rules(N, child_node(Resource, Son)),
+	send(N, son, Son).
 
-add_child(N, VN:rdf_vnode, Before:[node]) :->
+add_child(N, Resource:name, Before:[node]) :->
 	"Create child for virtual node"::
-	get(N?tree, create_node, VN, Son),
-	send(N, son, Son, Before),
-	send(Son, update).
+	get(N, add_child, Resource, Son),
+	send(N, son, Son, Before).
 	
 show_more(N, MoreNode:rdf_more_node, Role:name, Count:int) :->
 	"Show next Count nodes on Role"::
@@ -326,50 +284,6 @@ on_double_left_click(N) :->
 	).
 
 :- pce_end_class(rdf_node).
-
-:- pce_begin_class(rdf_class_node, rdf_node).
-:- pce_end_class.
-
-:- pce_begin_class(rdf_metaclass_node, rdf_class_node).
-class_variable(icon, image*, resource(metaclass)).
-:- pce_end_class.
-
-:- pce_begin_class(owl_restriction_node, rdf_class_node).
-class_variable(icon, image*, resource(restriction)).
-:- pce_end_class(owl_restriction_node).
-
-:- pce_begin_class(rdf_root_node, rdf_class_node).
-:- pce_end_class.
-
-:- pce_begin_class(rdf_orphan_node, rdf_class_node).
-class_variable(icon, image*, resource(orphanclass)).
-class_variable(font, font, italic).
-:- pce_end_class.
-
-:- pce_begin_class(rdf_property_node, rdf_node).
-class_variable(icon, image*, resource(property)).
-:- pce_end_class.
-
-:- pce_begin_class(rdf_list_node, rdf_node).
-class_variable(icon, image*, resource(list)).
-:- pce_end_class.
-
-:- pce_begin_class(rdf_list_member_node, rdf_node).
-class_variable(icon, image*, resource(list_member)).
-:- pce_end_class.
-
-:- pce_begin_class(rdf_individual_node, rdf_node).
-class_variable(icon, image*, resource(individual)).
-:- pce_end_class.
-
-:- pce_begin_class(rdf_untyped_node, rdf_node).
-class_variable(icon, image*, resource(untyped)).
-class_variable(font, font, italic).
-:- pce_end_class.
-
-:- pce_begin_class(rdf_resource_node, rdf_individual_node).
-class_variable(icon, image*, resource(resource)).
-:- pce_end_class.
 
 
 		 /*******************************

@@ -9,7 +9,7 @@
 :- use_module(rdf_tree).
 
 :- pce_begin_class(rdfs_hierarchy, rdf_tree,
-		   "Tmporary stuff").
+		   "Temporary stuff").
 
 variable(domain,	prolog, get, "Domain of visualised objects").
 
