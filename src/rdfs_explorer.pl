@@ -756,6 +756,24 @@ append_continuation_value(AL, V:prolog) :->
 
 :- pce_group(edit).
 
+%	<-triple_from_part: graphical --> rdf(S,P,O)
+%	
+%	Compute the triple of which graphical is a part.
+
+triple_from_part(AL, Part:graphical, Triple:prolog) :<-
+	"Find triple in which Part participates"::
+	get(Part, layout_interface, Cell), Cell \== @nil,
+	get(Cell, column, Column),
+	get(Cell, row, Row),
+	get(AL, resource, R),
+	(   Column == 2			% value side
+	->  get(AL, property_on_row, Row, PropertyItem),
+	    get(PropertyItem, resource, Property),
+	    get(Part, resource, Object),
+	    Triple = rdf(R, Property, Object)
+	;   tbd				% edited other column?
+	).
+
 rdf_modified(AL, Part:graphical, From:prolog, To:prolog) :->
 	"Part requested modification"::
 	get(AL, resource, R),

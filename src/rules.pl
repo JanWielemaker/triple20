@@ -11,6 +11,7 @@
 :- use_module(particle).
 :- use_module(semweb(rdfs)).
 :- use_module(semweb(rdf_db)).
+:- use_module(semweb(rdf_edit)).
 :- use_module(rdf_text).
 :- use_module(rdf_label).
 :- use_module(rdf_cache).
@@ -243,10 +244,25 @@ root_property(Class, P) :-
 
 :- begin_particle(rdf_drag_and_drop, []).
 
+%	drop(Graphical, Resource)
+%	
+%	Drop a resource on a graphical.  Determines the possible commands
+%	and executes ::drop(Command, Graphical, Resource)
 
+drop(Gr, R) :-
+	(   send(@event, instance_of, event),
+	    send(@event, is_a, ms_right_up)
+	->  findall(Cmd, ::drop_command(Gr, R, Cmd), List),
+	    get(@receiver, select_command, List, Cmd)
+	;   ::drop_command(Gr, R, Cmd)
+	->  true
+	),
+	rdfe_transaction(::drop(Cmd, Gr, R)).
 
+drop_command(_Gr, _R, _Command) :- fail.
 
-
+drop(Command, Graphical, Resource) :-
+	format('TBD: Drop ~w onto ~p: ~w~n', [Resource, Graphical, Command]).
 
 :- end_particle.
 
@@ -259,7 +275,8 @@ root_property(Class, P) :-
 		  [ rdf_label_rules,
 		    rdf_icon_rules,
 		    class_hierarchy,
-		    rdf_resource_menu
+		    rdf_resource_menu,
+		    rdf_drag_and_drop
 		  ]).
 :- end_particle.
 
@@ -313,5 +330,13 @@ child_cache(R, Cache, rdf_property_node) :-
 menu_item(Group, Item) :-
 	super::menu_item(Group, Item).
 menu_item(edit, modify).
+
+drop_command(_Me, _Resource, modify) :-
+	true.				% must validate restrictions!
+
+drop(modify, Gr, Resource) :-
+	get(Gr, triple, rdf(Subject, Predicate, Old)),
+	rdfe_transaction(rdfe_update(Subject, Predicate, Old,
+				     object(Resource))).
 
 :- end_particle.

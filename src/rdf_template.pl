@@ -148,6 +148,27 @@ rdf_diagram(T, Diagram:rdf_explorer) :<-
 	    new(_, partof_hyper(Frame, Diagram, rdf_explorer, hierarchy))
 	).
 
+:- pce_group(drag_and_drop).
+
+preview_drop(T, Resource:name*) :->
+	(   Resource == @nil
+	->  send(T, report, status, '')
+	;   call_rules(T, drop_command(T, Resource, Cmd)),
+	    get(T, resource, OnTo),
+	    rdfs_ns_label(Resource, RL),
+	    rdfs_ns_label(OnTo, OntoLabel),
+	    send(T, report, status,
+		 'Drop %s onto %s: %s', RL, OntoLabel, Cmd?label_name)
+	).
+
+drop(T, Resource:name) :->
+	call_rules(T, drop(T, Resource)).
+
+triple(T, Value:prolog) :<-
+	"Find part the triple I belong to"::
+	get(T, contained_in, C0),
+	container_with_get_method(C0, triple_from_part, Container),
+	get(Container, triple_from_part, T, Value).
 
 :- pce_end_class(rdf_resource_template).
 
@@ -163,6 +184,13 @@ container_with_send_method(Gr, Method, Gr) :-
 container_with_send_method(Gr, Method, Container) :-
 	get(Gr, contained_in, Container0),
 	container_with_send_method(Container0, Method, Container).
+
+
+container_with_get_method(Gr, Method, Gr) :-
+	send(Gr, has_get_method, Method).
+container_with_get_method(Gr, Method, Container) :-
+	get(Gr, contained_in, Container0),
+	container_with_get_method(Container0, Method, Container).
 
 
 		 /*******************************
