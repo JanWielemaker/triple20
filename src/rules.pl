@@ -484,7 +484,14 @@ orphan_resource(Resource) :-
 		 *	      TABLE		*
 		 *******************************/
 
-:- begin_particle(rdf_object_cell, display).
+:- begin_particle(rdf_tabular, display).
+
+clicked(V) :-
+	send(V?device, selection, V).
+
+:- end_particle.
+
+:- begin_particle(rdf_object_cell, rdf_tabular).
 
 menu_item(Group, Item) :-
 	super::menu_item(Group, Item).
@@ -504,7 +511,7 @@ drop(modify, Gr, V) :-
 :- end_particle.
 
 
-:- begin_particle(rdf_predicate_cell, display).
+:- begin_particle(rdf_predicate_cell, rdf_tabular).
 
 drop_command(_Me, _Resource, add) :-
 	true.				% must validate restrictions!
