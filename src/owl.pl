@@ -37,7 +37,11 @@
 	    owl_cardinality_on_subject/3, % +Subject, +Predicate, -Card
 	    owl_satisfies/2,		% +Spec, +Resource
 	    owl_individual_of/2,	% ?Resource, +Description
-	    owl_has/3			% +Subject, +Predicate, ?Object
+	    owl_subclass_of/2,		% ?Resource, ?Class
+
+	    owl_has/3,			% ?Subject, ?Predicate, ?Object
+	    owl_has_direct/3,		% ?Subject, ?Predicate, ?Object
+	    owl_same_as/2		% ?X, ?Y
 	  ]).
 :- use_module(library(lists)).
 :- use_module(semweb(rdf_db)).
@@ -445,20 +449,123 @@ intersection_of(Nil, _) :-
 
 
 		 /*******************************
-		 *	      PROPERTY		*
+		 *	  OWL PROPERTIES	*
 		 *******************************/
 
-%	owl_has(+Subject, +Predicate, ?Object)
+%	owl_has(?Subject, ?Predicate, ?Object)
 %	
-%	True if the property is stored  or   can  be  inferred using OWL
-%	entailment rules.
+%	True if this relation is specified or can be deduced using OWL
+%	inference ruls.
 
-owl_has(Subject, Predicate, Object) :-
-	rdf_has(Subject, Predicate, Object).
+owl_has(S, P, O) :-
+	(   var(P)
+	->  rdfs_individual_of(P, rdf:'Property')
+	;   true
+	),
+	rdf_reachable(SP, rdfs:subPropertyOf, P),
+	owl_has_transitive(S, SP, O).
 
 
-		 /*******************************
-		 *	     ANNOTATION		*
-		 *******************************/
+%	owl_has_transitive(?Subject, ?Predicate, ?Object)
+%	
+%	If Predicate is transitive, do a transitive closure on the
+%	relation.
 
-%	owl_annotation(?Id, ?Annotation)
+owl_has_transitive(S, P, O) :-
+	rdfs_individual_of(P, owl:'TransitiveProperty'), !,
+	owl_has_transitive(S, P, O, [P]).
+owl_has_transitive(S, P, O) :-
+	owl_has_equivalent(S, P, O).
+
+owl_has_transitive(S, P, O, Visited) :-
+	owl_has_equivalent(S, P, O1),
+	\+ memberchk(O1, Visited),
+	(   O = O1
+	;   owl_has_transitive(O1, P, O, [O1|Visited])
+	).
+
+%	owl_has_equivalent(?Subject, ?Predicate, ?Object)
+%	
+%	Adds owl:sameAs on Subject and Object to owl_has_direct/3
+
+owl_has_equivalent(S, P, O) :-
+	nonvar(S), !,
+	owl_same_as(S, S1),
+	owl_has_direct(S1, P, O0),
+	owl_same_as(O0, O).
+owl_has_equivalent(S, P, O) :-
+	nonvar(O), !,
+	owl_same_as(O1, O),
+	owl_has_direct(S0, P, O1),
+	owl_same_as(S0, S).
+owl_has_equivalent(S, P, O) :-
+	owl_has_direct(S0, P, O0),
+	owl_same_as(S0, S),
+	owl_same_as(O0, O).
+
+
+%	owl_same_as(?X, ?Y)
+%	
+%	True if X and Y are connected by the OWL identity relation.
+
+owl_same_as(X, Y) :-
+	nonvar(X), !,
+	owl_same_as(X, Y, [X]).
+owl_same_as(X, Y) :-
+	owl_same_as(Y, X, [X]).
+
+owl_same_as(X, X, _).
+owl_same_as(X, Y, Visited) :-
+	(   rdf_has(X, owl:sameAs, X1)
+	;   rdf_has(X1, owl:sameAs, X)
+	),
+	\+ memberchk(X1, Visited),
+	owl_same_as(X1, Y, [X1|Visited]).
+
+
+%	owl_has_direct(?Subject, ?Predicate, ?Object)
+%	
+%	Deals with `One-step' OWL inferencing: inverse properties,
+%	symmetric properties and being subtype of a restriction with
+%	an owl:hasValue statement on this property.
+
+owl_has_direct(S, P, O) :-
+	rdf(S, P, O).
+owl_has_direct(S, P, O) :-
+	(   rdf_has(P, owl:inverseOf, P2)
+	;   rdf_has(P2, owl:inverseOf, P)
+	),
+	rdf(S, P2, O).
+owl_has_direct(S, P, O) :-
+	rdfs_individual_of(P, owl:'SymetricProperty'),
+	rdf(O, P, S).
+owl_has_direct(S, P, O) :-
+	rdf_has(S, rdf:type, Type),
+	owl_subclass_of(Type, Super),
+	rdfs_individual_of(Super, owl:'Restriction'),
+	rdf_has(Super, owl:onProperty, P),
+	rdf_has(Super, owl:hasValue, O).
+
+
+%	owl_subclass_of(-SubClass, +Class)
+%	owl_subclass_of(+SubClass, -Class)
+%	
+%	Returns both the RDFS subclasses and classes that have Class in
+%	their owl:intersectionOf attribute.  What to do with unionOf?
+
+owl_subclass_of(Class, R) :-
+	rdf_has(Class, rdfs:subClassOf, R).
+owl_subclass_of(Class, R) :-
+	(   nonvar(R)
+	->  rdf_has(List, rdf:first, R),
+	    list_head(List, Head),
+	    rdf_has(Class, owl:intersectionOf, Head)
+	;   rdf_has(Class, owl:intersectionOf, List),
+	    rdfs_member(R, List)
+	).
+
+list_head(List, Head) :-
+	(   rdf_has(H, rdf:rest, List)
+	->  list_head(H, Head)
+	;   Head = List
+	).
