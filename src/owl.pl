@@ -366,7 +366,7 @@ owl_satisfies(one_of(List), Resource) :- !,
 	member(Resource, List).
 					% Restrictions
 owl_satisfies(all_values_from(Domain), Resource) :- !,
-	rdfs_individual_of(Resource, Domain).
+	owl_individual_of(Resource, Domain).
 owl_satisfies(some_values_from(_Domain), _Resource) :- !.
 owl_satisfies(has_value(Value), Resource) :-
 	rdf_equal(Value, Resource).	% TBD: equality
