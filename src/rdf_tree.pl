@@ -132,12 +132,12 @@ arm(_, _:bool) :->
 		 *	       NODES		*
 		 *******************************/
 
-:- pce_begin_class(rdf_node, node,
+:- pce_begin_class(rdf_node(resource), node,
 		   "Node of an RDF hierarchy").
 
-variable(resource,   name,                get,
+variable(resource, name, get,
 	 "Represented resource").
-variable(cache,  int*, get,
+variable(cache, int*, get,
 	 "(Parent) cache that produced me").
 variable(caches, sheet := new(sheet), get,
 	 "Cached relations").
@@ -169,7 +169,10 @@ label(N, Label:graphical) :<-
 update_can_expand(N) :->
 	"Update expansion-state"::
 	(   send(N, can_expand)
-	->  send_super(N, collapsed, @on)
+	->  (   send(N?sons, empty)
+	    ->	send_super(N, collapsed, @on)
+	    ;	send_super(N, collapsed, @off)
+	    )
 	;   send_super(N, collapsed, @nil)
 	).
 
@@ -207,7 +210,7 @@ expand_role(N, Role:name, Cache:int) :->
 	;   rdf_cache_result(Cache, I, Value),
 	    (	I == 11
 	    ->	!,
-		send(N, son, rdf_more_node(Cache, Role, 11))
+		send(N, son, rdf_more_node(Role, Cache, 11))
 	    ;	send(N, add_child_from_cache, Value, Role, Cache),
 		fail
 	    )
@@ -248,6 +251,17 @@ show_more(N, MoreNode:rdf_more_node, Role:name, Count:int) :->
 	
 :- pce_group(changes).
 
+/* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+The module rdf_cache monitors changes in  the background and informs the
+main loop to update visualisation due  to   a  changed cache result. The
+task of this group of methods is to   update  the tree with as little as
+possible effort.  There are still two pitfalls:
+
+	* If the cache has grown too big it must add a `more' node
+	* Elements added at the end a cache that is not the last will
+	  be added as last child.
+- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
+
 cache_updated(Cache) :-
 	debug(rdf_cache, 'Check cache ~w', [Cache]),
 	rdf_cache_attached(Cache, Node),
@@ -257,7 +271,9 @@ cache_updated(Cache) :-
 	  cache_updated(Cache)).
 
 update(N, Cache:[int]) :->
-	(   get(N, sons, Sons),
+	(   get(N, hypered, editor, _)
+	->  true
+	;   get(N, sons, Sons),
 	    \+ send(Sons, empty)
 	->  get(N, caches, Caches),
 	    (   Cache == @default
@@ -291,45 +307,48 @@ update_role(N, Role:name, Cache:int) :->
 	    (   rdf_cache_result(Cache, I, R),
 		(   nonvar(Here), I > Here
 		->  !
-		;   get(Existing, nth1, I, Node),
+		;   get(Existing, head, Node),
 		    get(Node, resource, R)
-		->  fail			% next one
+		->  send(Existing, delete_head),
+		    fail			% OK: next one
 		;   get(Existing, find, @arg1?resource == R, Node)
-		->  get(Existing, index, Node, I2),
-		    assume(I2>I),
-		    delete_nodes(I, I2, Existing),
+		->  delete_upto(Node, Existing),
 		    fail
-		;   insert_node(I, R, Role, Existing, Cache, N),
+		;   insert_node(R, Role, Existing, Cache, N),
 		    fail
 		)
-	    ;   true
+	    ;   send(Existing, for_all,
+		     message(@arg1, delete_tree))
 	    )
 	),
 	free(Existing).
 	    
-delete_nodes(I, I, _) :- !.
-delete_nodes(I, To, Existing) :-
-	get(Existing, nth1, I, Node),
-	send(Existing, delete, Node),
-	send(Node, delete_tree),
-	I2 is I + 1,
-	delete_nodes(I2, To, Existing).
+delete_upto(R, Existing) :-
+	get(Existing, delete_head, Node),
+	(   Node == R
+	->  true
+	;   send(Node, delete_tree),
+	    delete_upto(R, Existing)
+	).
 
-insert_node(I, R, Role, Existing, Cache, Parent) :-
-	get(Existing, nth1, I, Next), !, 		% inserted
+insert_node(R, Role, Existing, Cache, Parent) :-
+	get(Parent?sons, find,
+	    and(@arg1?resource == R,		% same resource
+		@arg1?class_name == Role,	% same role
+	        @arg1?cache == @nil),		% not in a cache
+	    Node), !,				% --> reuse
+	(   get(Existing, head, Next)
+	->  send(Node, move_before, Next)
+	;   send(Node, move_after)
+	),
+	send(Node, slot, cache, Cache).
+insert_node(R, Role, Existing, Cache, Parent) :-
+	get(Existing, head, Next), !, 		% inserted
 	get(Parent, add_child, R, Role, Next, NewNode),
-	send(NewNode, slot, cache, Cache),
-	send(Existing, insert_before, NewNode, Next).
-insert_node(_, R, Role, Existing, Cache, Parent) :-
-	get(Existing, tail, Last), !,
+	send(NewNode, slot, cache, Cache).
+insert_node(R, Role, _, Cache, Parent) :-
 	get(Parent, add_child, R, Role, NewNode),
-	send(NewNode, slot, cache, Cache),
-	send(NewNode, move_after, Last),
-	send(Existing, append, NewNode).
-insert_node(_, R, Role, Existing, Cache, Parent) :-
-	get(Parent, add_child, R, Role, NewNode),
-	send(NewNode, slot, cache, Cache),
-	send(Existing, append, NewNode).
+	send(NewNode, slot, cache, Cache).
 
 :- pce_group(event).
 
@@ -378,11 +397,38 @@ on_double_left_click(N) :->
 
 :- pce_group(edit).
 
+delete_resource(N) :->
+	"Delete a class or individual"::
+	get(N, resource, Resource),
+	send(@display, confirm,
+	     string('Delete resource %s?', Resource)),
+	rdfe_delete(Resource).
+
+delete_hyper(N, Hyper:hyper) :->
+	(   get(Hyper, forward_name, editor)
+	->  Update = true
+	;   true
+	),
+	send_super(N, delete_hyper, Hyper),
+	(   Update == true
+	->  send(N, update)
+	;   true
+	).
+
+:- pce_end_class(rdf_node).
+
+
+:- pce_begin_class(rdf_class_node, rdf_node).
+
+
+:- pce_group(edit).
+
 new_class(N) :->
 	"Create subclass of this class"::
 	send_class(N, node, collapsed(@off)),
 	get(N, resource, Resource),
 	send(N, son, new(C, rdf_create_node(Resource, class))),
+	new(_, hyper(N, C, editor, node)),
 	send(N?window, compute),
 	send(C, get_focus).
 
@@ -391,20 +437,10 @@ new_individual(N) :->
 	send_class(N, node, collapsed(@off)),
 	get(N, resource, Resource),
 	send(N, son, new(C, rdf_create_node(Resource, individual))),
+	new(_, hyper(N, C, editor, node)),
 	send(N?window, compute),
 	send(C, get_focus).
 
-delete_resource(N) :->
-	"Delete a class or individual"::
-	get(N, resource, Resource),
-	send(@display, confirm,
-	     string('Delete resource %s?', Resource)),
-	rdfe_delete(Resource).
-
-:- pce_end_class(rdf_node).
-
-
-:- pce_begin_class(rdf_class_node, rdf_node).
 :- pce_end_class.
 
 
@@ -530,6 +566,8 @@ initialise(B, More:int) :->
 
 :- pce_begin_class(rdf_create_node, node,
 		   "Create a new instance").
+
+variable(cache,	int*, get, "Associated cache (left @nil)").
 
 initialise(N, Parent:name, What:{class,individual}) :->
 	send_super(N, initialise, new(D, rdf_create_dialog(Parent, What))),

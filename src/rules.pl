@@ -144,6 +144,9 @@ menu_item(Gr, Group, Item, Receiver) :-
 	(   container_with_method(Gr, Method, Receiver)
 	->  debug(menu, '~p: mapping ~w to ~p->~w',
 		  [Gr, _Label, Receiver, Method])
+	;   debug(menu, '~p: no container implements ->~w',
+		  [Gr, Method]),
+	    fail
 	).
 
 %	menu_item(Group, Item)
@@ -239,23 +242,6 @@ root_property(Class, P) :-
 :- end_particle.
 
 
-:- begin_particle(rdf_individual_node, display).
-
-%icon(_, Icon) :-
-%	new(Icon, image(resource(individual))).
-
-%child_cache(_, _, _) :- !, fail.
-
-:- end_particle.
-
-:- begin_particle(rdf_property_node, display).
-
-child_cache(R, Cache, rdf_property_node) :-
-	rdf_cache(V, rdf_has(V, rdfs:subPropertyOf, R), Cache).
-
-:- end_particle.
-
-
 :- begin_particle(rdf_node, display).
 
 menu_item(Group, Item) :-
@@ -265,3 +251,21 @@ menu_item(edit, new_individual).
 menu_item(edit, delete=delete_resource).
 
 :- end_particle.
+
+:- begin_particle(rdf_individual_node, rdf_node).
+
+%icon(_, Icon) :-
+%	new(Icon, image(resource(individual))).
+
+%child_cache(_, _, _) :- !, fail.
+
+:- end_particle.
+
+:- begin_particle(rdf_property_node, rdf_node).
+
+child_cache(R, Cache, rdf_property_node) :-
+	rdf_cache(V, rdf_has(V, rdfs:subPropertyOf, R), Cache).
+
+:- end_particle.
+
+

@@ -622,21 +622,15 @@ refresh(AL) :->
 
 display_title(AL) :->
 	"Display common information"::
-	send(AL, display_label),
 	send(AL, display_resource),
+	send(AL, display_label),
 	send(AL, display_type),
 	send(AL, display_comment).
 
 display_label(AL) :->
 	"Display the label (if any)"::
-	get(AL, resource, I),
-	(   rdfs_subproperty_of(P, rdfs:label),
-	    rdf(I, P, Label)
-	->  send(AL, append, 'Label', bold, right),
-	    send(AL, append_resource, Label),
-	    send(AL, next_row)
-	;   true
-	).
+	rdf_equal(rdfs:label, Property),
+	send(AL, append_property, Property).
 
 display_resource(AL) :->
 	get(AL, resource, I),
@@ -646,16 +640,8 @@ display_resource(AL) :->
 
 display_type(AL) :->
 	"Display class(es) I belong to"::
-	get(AL, resource, I),
-	setof(Class, rdf_has(I, rdf:type, Class), Classes),
-	(   Classes = [C1|T]
-	->  send(AL, append, 'Class', bold, right),
-	    send(AL, append_resource, C1),
-	    send(AL, next_row),
-	    forall(member(C, T),
-		   send(AL, append_continuation_value, C))
-	;   true
-	).
+	rdf_equal(rdf:type, Property),
+	send(AL, append_property, Property).
 
 display_comment(AL) :->
 	"Display the comment field"::
@@ -696,11 +682,21 @@ append_slots(AL) :->
 	).
 
 
+append_property(AL, Property:name) :->
+	"Append slot and its values"::
+	get(AL, resource, R),
+	bagof(Value, rdf(R, Property, Value), [V1|Values]),
+	send(AL, append_resource, Property),
+	send(AL, append_resource, V1),
+	send(AL, next_row),
+	forall(member(V, Values),
+	       send(AL, append_continuation_value, V)).
+
+
 reserved_instance_slot(Type) :-
 	rdfs_subproperty_of(Type, rdf:type).
 reserved_instance_slot(Label) :-
-	rdfs_subproperty_of(Label, rdfs:label),
-	\+ Label= 'http://www.cogsci.princeton.edu/~wn/schema/wordForm'. %BJW
+	rdfs_subproperty_of(Label, rdfs:label).
 reserved_instance_slot(Label) :-
 	rdfs_subproperty_of(Label, rdfs:comment).
 
@@ -717,6 +713,30 @@ append_continuation_value(AL, V:prolog) :->
 	send(AL, next_row).
 
 :- pce_group(edit).
+
+rdf_modified(AL, Part:graphical, From:prolog, To:prolog) :->
+	"Part requested modification"::
+	get(AL, resource, R),
+	get(Part, layout_interface, Cell),
+	get(Cell, column, Column),
+	get(Cell, row, Row),
+	(   Column == 2			% value side
+	->  get(AL, property_on_row, Row, PropertyItem),
+	    get(PropertyItem, resource, Property),
+	    rdfe_transaction(rdfe_update(R, Property, From, object(To)))
+	;   tbd				% edited other column?
+	).
+
+property_on_row(AL, Row:int, PropertyItem:graphical) :<-
+	"Find property visualiser at Row"::
+	get(AL, layout_manager, Table),
+	get(Table, cell, 1, Row, Cell),
+	get(Cell, image, Gr),
+	(   get(Gr, class_name, graphical)
+	->  Row2 is Row - 1,
+	    get(AL, property_on_row, Row2, PropertyItem)
+	;   PropertyItem = Gr
+	).
 
 add_predicate(AL, From:button) :->
 	"Add another attribute"::

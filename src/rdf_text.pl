@@ -6,6 +6,7 @@
 
 :- module(rdf_text, []).
 :- use_module(library(pce)).
+:- use_module(library(debug)).
 :- use_module(owl).
 :- use_module(semweb(rdf_edit)).
 :- use_module(semweb(rdfs)).
@@ -77,19 +78,6 @@ entered(TF, Enter:bool) :->
 	->  send(@unclip_window, attach, TF)
 	;   true
 	).
-
-:- pce_group(edit).
-
-prompt(T, Subject:name, Property:name, Default:[name], Label:[name]) :->
-	"Prompt for a (new) value"::
-	get(T, device, AL),
-	send(AL, prompt_value,
-	     message(T, edited, @arg1, @arg2),
-	     Subject,
-	     Property,
-	     Default,
-	     Label,
-	     T).
 
 :- pce_end_class(rdf_resource_text).
 
@@ -175,10 +163,10 @@ forward(T) :->
 	get(T, literal, OldText),
 	(   OldText == NewText
 	->  true
-	;   get(T, device, Dev),
+	;   get(T, contained_in, Dev),
 	    send(Dev, has_send_method, rdf_modified)
 	->  send(Dev, rdf_modified, T, literal(OldText), literal(NewText))
-	;   true
+	;   debug(edit, '~p: Container cannot handle edit', [T])
 	).
 
 arm(T, Arm:bool) :->

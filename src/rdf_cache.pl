@@ -202,6 +202,9 @@ rdf_cache_create_update_thread :-
 		      ]),
 	listen(rdf_transaction(X),
 	       thread_send_message(rdf_cache_updater,
+				   rdf_transaction(X))),
+	listen(rdf_undo(X),
+	       thread_send_message(rdf_cache_updater,
 				   rdf_transaction(X))).
 
 update_loop :-

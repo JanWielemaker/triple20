@@ -49,11 +49,18 @@ clear(AL) :->
 	"Delete all rows"::
 	send(AL, delete_rows).
 
+:- pce_group(append).
 
+append_resource(AL, Resource:prolog, ColSpan:colspan=[int],
+		Label:graphical) :<-
+	"Append a general resource"::
+	call_rules(AL, label(Resource, Label)),
+	send(AL, append, Label, colspan := ColSpan).
 append_resource(AL, Resource:prolog, ColSpan:colspan=[int]) :->
 	"Append a general resource"::
-	rdf_label_rules::label(Resource, Label),
-	send(AL, append, Label, colspan := ColSpan).
+	get(AL, append_resource, Resource, ColSpan, _Label).
+
+:- pce_group(edit).
 
 %	->prompt_value
 %	
