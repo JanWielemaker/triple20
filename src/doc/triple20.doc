@@ -200,26 +200,12 @@ CVS password: prolog
 % cvs -z 9 -d :pserver:pl@gollem.swi.psy.uva.nl:/usr/local/cvspl co -r STABLE Triple20
 \end{code}
 
-This command both downloads the software and the public ontologies, some
-of which are very large. Alternatively you may use multiple CVS
-\const{co} commands to extract the required subdirectories.
-\Tabref{dirs} provides an overview of the directories.
-
-\begin{table}
-\begin{center}
-\begin{tabular}{|l|p{0.6\linewidth}|}
-\hline
-\tt Triple20/src		& The software \\
-\tt Triple20/Ontologies/Base	& Small basic ontologies: OWL, RDFS, etc. \\
-\tt Triple20/Ontologies/Demo	& Demos: wine.owl \\
-\tt Triple20/Ontologies/Public	& Large public ontologies: WordNet, OpenCyc
-				  $\pm 47Mb$.  Optional. \\
-\hline
-\end{tabular}
-\end{center}
-    \caption{Directories on the Triple20 CVS server}
-    \label{tab:dirs}
-\end{table}
+This command both downloads the software and the basic ontologies.
+Alternatively you may checkout the CVS module
+\textbf{Triple20-Full}, which also download RDF versions of
+\url[WordNet]{http://www.cogsci.princeton.edu/~wn/},
+\url[OpenCyc]{http://www.opencyc.org/} and
+\url[SUMO]{http://suo.ieee.org/} (total $\pm$~47~Mb).
 
 \subsection{Finishing in MS-Windows}
 

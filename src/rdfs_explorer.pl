@@ -460,7 +460,7 @@ help(_) :->
 			     file_errors(fail)
 			   ],
 			   Path),
-	atom_concat(Path, 'file:', URI),
+	atom_concat('file:', Path, URI),
 	www_open_url(URI).
 
 %	->about
