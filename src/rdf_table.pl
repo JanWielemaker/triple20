@@ -233,6 +233,12 @@ delete_all_values(Cell) :->
 	rdfe_transaction(rdfe_retractall(S,P,_),
 			 delete_all_values).
 
+view_triples(N) :->
+	"View triples on this relation"::
+	get(N, resource, P),
+	rdf_cache(rdf(S,P,O), rdf(S,P,O), Cache),
+	call_rules(N, show_triple_cache(Cache)).
+
 :- pce_end_class.
 
 :- pce_begin_class(rdf_object_cell, rdf_resource_cell).

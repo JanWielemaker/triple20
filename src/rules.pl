@@ -249,6 +249,7 @@ menu_item(copy,   copy_text).
 
 menu_item(view,   view_rdf_source).
 menu_item(view,   diagram_).
+menu_item(view,   triples=view_triples).
 
 menu_item(edit,   rename_resource).
 

@@ -61,6 +61,7 @@ add_missing_labels(Predicate) :-
 	    ;	Label1 = Label0
 	    ),
 	    get(Label1, strip, Label),
+	    Label \== '',
 	    rdf_default_file(Subject, File),
 	    rdfe_assert(Subject, Predicate, literal(Label), File),
 	    fail
