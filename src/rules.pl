@@ -603,9 +603,12 @@ default_resource_tab(_, instance).
 :- begin_rules(image_window, default).
 
 image(Resource, Img) :-
-	file_name_extension(_, Ext, Resource),
+	file_name_extension(_, Ext0, Resource),
+	downcase_atom(Ext0, Ext),	% avoid DOS/Unix trouble
 	image_extension(Ext),
-	new(Img, scaled_bitmap(url_image(Resource))).
+	new(I, url_image(Resource)),
+	get(I, exists, @on),		% demand existence
+	new(Img, scaled_bitmap(I)).
 
 image_extension(jpeg).
 image_extension(jpg).

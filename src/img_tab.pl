@@ -53,6 +53,14 @@ initialise(IW, Resource:[name]*) :->
 	).
 
 
+active(TW, Active:bool) :->
+	"Activate tab"::
+	(   get(TW, container, tab, Tab)
+	->  send(Tab, active, Active)
+	;   send_super(TW, active, Active)
+	).
+
+
 resource(IW, Resource:name*) :->
 	"Dislay a resource"::
 	(   get(IW, resource, Resource)
@@ -72,7 +80,11 @@ resource(IW, Resource:name*) :->
 
 value(IW, Resource:name*) :->
 	"Triple20 integration"::
-	send(IW, resource, Resource).
+	send(IW, resource, Resource),
+	(   send(IW?graphicals, empty)
+	->  send(IW, active, @off)
+	;   send(IW, active, @on)
+	).
 
 
 resize(IW) :->

@@ -446,7 +446,10 @@ initialise(T, Cache:[int]) :->
 cache(T, Cache:int*) :->
 	"Change the cache"::
 	(   get(T, cache, Cache)
-	->  true
+	->  (   Cache == @nil
+	    ->	send(T, active, @off)
+	    ;	true
+	    )
 	;   send(T?window, scroll_to, point(0,0)),
 	    send(T, detach_cache),
 	    send(T, clear),

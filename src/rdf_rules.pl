@@ -247,7 +247,8 @@ current_container(Cont) :-
 	    prolog_frame_attribute(Frame, parent_goal,
 				   rdf_rules:with_container(Cont, _))
 	->  true
-	;   throw(error(existence_error(container, current), _))
+	;   backtrace(20),
+	    throw(error(existence_error(container, current), _))
 	).
 
 %	call_inner(+Goal)
@@ -295,7 +296,7 @@ container(Obj, Container) :-
 	->  debug(container,
 		  'Try create context of ~p: ~p~n', [Obj, Container])
 	;   print_message(error, not_contained(Obj)),
-%	    trace,
+	    backtrace(20),
 	    fail
 	).
 

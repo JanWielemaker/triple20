@@ -756,8 +756,11 @@ window_value(_OS, Window:window, Value:any) :->
 	    get(Method, argument_type, 1, Type),
 	    send(Type, validate, Value)
 	->  send(Tab, active, @on),
-	    send(Window, value, Value)
-	;   send(Tab, active, @on)	% was @off BJW
+	    (	send(Window, value, Value)
+	    ->	true
+	    ;	debug(error, '~p->value failed', [Window])
+	    )
+	;   send(Tab, active, @off)	% was @off BJW
 	).
 
 resource(OS, Resource:name*) :->
@@ -807,8 +810,7 @@ value(TT, Object:any*) :->
 	    get(Table, send_method, value, tuple(_, Method)),
 	    get(Method, argument_type, 1, Type),
 	    send(Type, validate, Object)
-	->  send(TT, active, @on),
-	    send(Table, value, Object)
+	->  send(Table, value, Object)
 	;   send(TT, active, @off)
 	).
 

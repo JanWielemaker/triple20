@@ -592,14 +592,17 @@ owl_use_rule(S, P, O):-
 	rdfs_list_to_prolog_list(BodyList, BL),
 	rdf_has(IPA, swrl:argument1, A1),
 	rdf_has(IPA, swrl:argument2, A2),
-	(   nonvar(S) ->
-	    (	nonvar(O) -> SL = [A1/S, A2/O]
-	    ;	SL= [A1/S])
-	;   nonvar(O) -> SL = [A2/O]
-	;   SL = []),
+	(   nonvar(S)
+	->  (	nonvar(O) -> SL = [A1/S, A2/O]
+	    ;	SL= [A1/S]
+	    )
+	;   nonvar(O)
+	->  SL = [A2/O]
+	;   SL = []
+	),
 	owl_evaluate_body(BL, SL, Subst),
-	(   member(A1/S, Subst) ->true ;true), % make sure S and O are instantiated
-	(   member(A2/O, Subst) ->true ;true). % could probably be done more elegantly
+	ignore(member(A1/S, Subst)), % make sure S and O are instantiated
+	ignore(member(A2/O, Subst)). % could probably be done more elegantly
 	
 owl_evaluate_body([], Subst, Subst).
 owl_evaluate_body([IPA| Rest], SL, Subst):-
