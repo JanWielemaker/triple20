@@ -65,12 +65,14 @@ resource(T, Resource:name) :->
 make_resource_text_recogniser(G) :-
 	new(CG, click_gesture(left, '', single,
 			      message(@receiver, on_left_click))),
-	new(DG, drag_and_drop_gesture(left, get_source := @arg1?resource)),
-	send(DG, cursor, @default),	% copy from graphical
+	new(DG1, drag_and_drop_gesture(left, get_source := @arg1?resource)),
+	send(DG1, cursor, @default),	% copy from graphical
 	new(PG, popup_gesture(@receiver?popup)),
+	new(DG2, drag_and_drop_gesture(right, get_source := @arg1?resource)),
+	send(DG2, cursor, @default),	% copy from graphical
 	new(AE, handler(area_enter, message(@receiver, entered, @on))),
 	new(AX, handler(area_exit, message(@receiver, entered, @off))),
-	new(G, handler_group(CG, DG, PG, AE, AX)).
+	new(G, handler_group(CG, DG1, PG, DG2, AE, AX)).
 
 popup(T, Popup:popup) :<-
 	call_rules(T, popup(T, Popup)).

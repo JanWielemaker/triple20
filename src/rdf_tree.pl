@@ -419,20 +419,50 @@ delete_hyper(N, Hyper:hyper) :->
 preview_drop(N, R:name*) :->
 	"Show action on drop"::
 	(   R == @nil
-	->  send(N, report, status, '')
-	;   get(N, resource, NR),
-	    send(N, report, status, '%s: Accept drop %s', NR, R)
+	->  send(N, arm, @off),
+	    send(N, report, status, '')
+	;   send(N, arm, @on),
+	    get(N, resource, NR),
+	    drop_command(NR, R, Action),
+	    rdfs_ns_label(NR, NRL),
+	    rdfs_ns_label(R, RL),
+	    send(N, report, status, 'Drop: %s on %s: %s',
+		 RL, NRL, Action?label_name)
 	).
 
 drop(N, R:name) :->
 	get(N, resource, C),
-	rdfe_transaction(drop(C, R)).
+	(   send(@event, instance_of, event),
+	    send(@event, is_a, ms_right_up)
+	->  findall(Cmd, drop_command(C, R, Cmd), List),
+	    get(@receiver, select_command, List, Cmd)
+	;   drop_command(C, R, Cmd)
+	->  true
+	),
+	rdfe_transaction(drop(Cmd, C, R)).
 
-drop(C, R) :-				% drop R on C
+drop_command(C, R, move_subclass) :-
 	rdfs_individual_of(C, rdfs:'Class'),
-	rdfs_individual_of(R, rdfs:'Class'),
+	rdfs_individual_of(R, rdfs:'Class').
+drop_command(C, R, add_subclass) :-
+	rdfs_individual_of(C, rdfs:'Class'),
+	rdfs_individual_of(R, rdfs:'Class').
+drop_command(C, R, change_type) :-
+	rdfs_individual_of(C, rdfs:'Class'),
+	\+ rdfs_individual_of(R, rdfs:'Class').
+
+drop(move_subclass, C, R) :-				% drop R on C
 	rdfe_retractall(R, rdfs:subClassOf, _),
 	rdfe_assert(R, rdfs:subClassOf, C).
+drop(add_subclass, C, R) :-
+	rdfe_retractall(R, rdfs:subClassOf, _),
+	rdfe_assert(R, rdfs:subClassOf, C).
+drop(change_type, C, R) :-
+	rdfe_retractall(R, rdf:type, _),
+	rdfe_assert(R, rdf:type, C).
+drop(add_type, C, R) :-
+	rdfe_assert(R, rdf:type, C).
+
 
 :- pce_end_class(rdf_node).
 
