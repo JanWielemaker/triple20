@@ -95,15 +95,14 @@ arm(W, For:[name|code], Target:graphical) :<-
 :- pce_begin_class(drop_files, template,
 		   "Drop files from file browser (explorer)").
 
-drop_files(Window, Files:chain, DisplayAt:point) :->
-	object(DisplayAt, point(X, Y)),
-	get(Window, display_position, point(WX, WY)),
-	new(At, point(X-WX, Y-WY)),
+drop_files(Window, Files:chain, At:point) :->
+	"Call from window system when dropping files"::
 	get(Window, find, At,
 	    message(@arg1, has_send_method, drop_files), Gr),
 	(   Gr \== Window
 	->  send(Gr, drop_files, Files)
-	;   send(Window, flash, area(X-2, Y-2, 5, 5))
+	;   object(At, point(X, Y)),
+	    send(Window, flash, area(X-2, Y-2, 5, 5))
 	).
 
 :- pce_end_class(drop_files).
