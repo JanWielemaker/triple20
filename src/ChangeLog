@@ -1,5 +1,8 @@
 Nov 20, 2003
 
+  * ADDED: Check database for triples that are not in any context.  If
+    there are, add 'user' to save file menu.
+
   * ENHANCED: Tools/Add missing labels: better cleaning of label names,
     capitalise class-names (but not the name of other resources).
 

@@ -382,7 +382,7 @@ merge_files(OV) :->
 	send(D, modal, transient),
 	send(D, open_centered, OV?area?center).
 
-update_save_popup(_OV, Popup:popup) :->
+update_save_popup(OV, Popup:popup) :->
 	"Update menu with all (modified) sources"::
 	send(Popup, clear),
 	setof(F, rdf_source(F), Files),
@@ -393,6 +393,12 @@ update_save_popup(_OV, Popup:popup) :->
 	    ;   send(ME, active, @off)
 	    ),
 	    fail
+	;   rdf_statistics(triples_by_file(user, UserTriples)),
+	    UserTriples > 0
+	->  send(Popup, append, gap),
+	    send(Popup, append, menu_item(user,
+					  message(OV, save_user_triples),
+					  user))
 	;   true
 	).
 	
@@ -409,6 +415,15 @@ save_all(_OV) :->
 	    fail
 	;   true
 	).
+
+save_user_triples(_OV) :->
+	"Save triples in user context"::
+	get(@finder, file, save,
+	    chain(tuple('RDF files', rdf),
+		  tuple('RDFS files', rdfs),
+		  tuple('OWL files', owl)),
+	    FileName),
+	rdf_save(FileName, user).
 
 is_modified(_OV) :->
 	"True if there are modified files"::
