@@ -200,6 +200,7 @@ fill_dialog(OV) :->
 	     right),
 	send(OV, search_field, rdfs:label, @on),
 	send(OV, search_field, rdfs:comment),
+	send(Fields, append, resource),
 	send(Fields, layout, horizontal),
 	send_list([Fields, For], alignment, left),
 	send(Find, default_button, @on),
