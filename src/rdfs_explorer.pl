@@ -41,6 +41,7 @@
 :- use_module(semweb(rdfs)).
 :- use_module(semweb(rdf_db)).
 :- use_module(rdf_cache).
+:- use_module(rdf_base).
 :- use_module(owl).
 :- use_module(rdf_util).
 :- use_module(semweb(rdfs)).
@@ -137,10 +138,14 @@ fill_tool_dialog(OV) :->
 
 	send_list(File, append,
 		  [ menu_item(new_window),
+		    gap,
 		    menu_item(open_project),
 		    menu_item(new_project),
 		    gap,
 		    menu_item(load_ontology),
+		    new(Base, popup(load_base_ontology,
+				    message(OV, load_base_ontology, @arg1))),
+			
 		    menu_item(new_file),
 		    gap,
 		    new(SaveFile, popup(save_file,
@@ -168,6 +173,8 @@ fill_tool_dialog(OV) :->
 	send(Label, selection, namespace_and_label),
 	send(SaveFile, update_message,
 	     message(OV, update_save_popup, SaveFile)),
+	send(Base, update_message,
+	     message(OV, update_base_popup, Base)),
 	send(OV, append_tool_buttons).
 
 append_tool_buttons(OV) :->
@@ -408,6 +415,18 @@ has_project(_OV) :->
 	"Test whether a project is defined"::
 	rdfe_current_journal(_).
 
+update_base_popup(_OV, Popup:popup) :->
+	"Update menu with available base ontologies"::
+	send(Popup, clear),
+	(   current_base_ontology(Base),
+	    send(Popup, append, Base),
+	    fail
+	;   true
+	).
+
+load_base_ontology(_OV, Base:name) :->
+	"Load a registered base"::
+	rdfe_transaction(load_base_ontology(Base)).
 
 statistics(OV) :->
 	"Show elementary statistics"::
