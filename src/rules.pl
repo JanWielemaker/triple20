@@ -135,6 +135,7 @@ label_class(_, rdf_resource_label).
 	resource/3.
 
 resource(class,       image, image('16x16/class.xpm')).
+resource(litclass,    image, image('16x16/doc.xpm')).
 resource(metaclass,   image, image('16x16/Metaclass.gif')).
 resource(orphanclass, image, image('16x16/orphanclass.xpm')).
 resource(orphanres,   image, image('16x16/orphanres.xpm')).
@@ -169,6 +170,8 @@ icon_resource(R, ResName) :-
 	;   owl_description_attribute(Att),
 	    rdf_has(R, Att, _)
 	->  ResName = description
+	;   rdfs_subclass_of(R, rdfs:'Literal')
+	->  ResName = litclass
 	;   ResName = class
 	).
 icon_resource(R, property) :-

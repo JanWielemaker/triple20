@@ -84,8 +84,11 @@ search_field(D, Field:prolog, Selected:[bool]) :->
 	get(D, member, search_in, Menu),
 	rdf_global_id(Field, Global),
 	rdfs_label(Global, Label),
-	send(Menu, append,
-	     new(MI, menu_item(Global, @default, Label))),
+	(   get(Menu, member, Global, MI)
+	->  true
+	;   send(Menu, append,
+		 new(MI, menu_item(Global, @default, Label)))
+	),
 	(   Selected == @on
 	->  send(MI, selected, Selected)
 	;   true

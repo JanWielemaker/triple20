@@ -1,3 +1,7 @@
+Mar 30, 2005
+
+  * Show subclasses of literal using `doc.xpm'.
+
 Mar 29, 2005
 
   * Fix toplevel after changing to library.
