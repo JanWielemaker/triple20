@@ -892,10 +892,10 @@ display_predicates_title(AL) :->
 	send(D, format, new(F, format(vertical, 1, @on))),
 	send(F, adjustment, vector(center)),
 	send(D, display, text('Predicates', left, bold)),
-	send(D, display,
-	     new(B, button(new, message(AL, add_predicate, @receiver)))),
-	send(B, label, image(resource(new_icon))),
-	send(B, show_focus_border, @off),
+	send(D, display, new(BM, bitmap(resource(new_icon)))),
+	send(BM, recogniser,
+	     click_gesture(left, '', single,
+			   message(AL, add_predicate, @receiver))),
 	send(AL, append, D,
 	     halign := center, colspan := 2, background := khaki1),
 	send(AL, next_row).
@@ -976,7 +976,7 @@ rdf_modified(AL, Part:graphical, From:prolog, To:prolog) :->
 	).
 
 
-add_predicate(AL, From:button) :->
+add_predicate(AL, From:graphical) :->
 	"Add another attribute"::
 	(   setof(Pred, missing_subject_predicate(AL, Pred), Preds0),
 	    sort_by_label(Preds0, Preds)

@@ -179,12 +179,16 @@ unfocussed(W, G) :-
 text_changes(X) :-
 	debug(update, 'Transaction: ~w', [X]),
 	rdfe_transaction_member(X, Action),
-	arg(1, Action, Resource),
+	action_resource(Action, Resource),
 	get(@resource_texts, member, Resource, TextChain),
 	debug(update, 'Updating resource-texts for ~p~n', [Resource]),
 	send(TextChain, for_all, message(@arg1, update)),
 	fail.
 text_changes(_).
+
+action_resource(assert(R, _, _), R).
+action_resource(retract(R, _, _), R).
+action_resource(update(R, _, _, _), R).
 
 
 		 /*******************************

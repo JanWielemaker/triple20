@@ -15,6 +15,7 @@
 :- use_module(rdf_cache).
 :- use_module(library(debug)).
 :- use_module(library(hyper)).
+:- use_module(library(broadcast)).
 
 :- pce_autoload(rdf_create_dialog, rdf_create).
 
@@ -38,6 +39,7 @@ make_onto_tree_recogniser(R) :-
 	send(R, append, click_gesture(left, '', single,
 				      message(@receiver, on_left_click))),
 	send(R, append, new(KB, key_binding)),
+	send(KB, function, key_top_5, update),
 	send(KB, function, '\\ef', find).
 
 initialise(H, Root:[name]) :->
@@ -51,7 +53,9 @@ initialise(H, Root:[name]) :->
 	send(H, neighbour_gap, 1),
 	new(RootNode, rdf_root_node(TheRoot)),
 	send(H, root, RootNode),
-	listen(H, rdf_reset, send(H, clear)).
+	listen(H, rdf_reset, send(H, clear)),
+	listen(H, rdf_journal(_), send(H, update)),
+	listen(H, rdf_transaction(TID), send(H, update_transaction, TID)).
 
 unlink(H) :->
 	unlisten(H),
@@ -151,6 +155,21 @@ triple_from_part(_OT, From:graphical, Triple:prolog) :<-
 	get(Node, resource, S),
 	Triple = rdf(S, _, O).
 
+:- pce_group(update).
+
+update_transaction(T, TID:int) :->
+	"Update after a transaction"::
+	rdfe_transaction_member(TID, file(_)),
+	send(T, update_label).
+
+update_label(T) :->
+	"Check all nodes for updated label classes"::
+	send(T?root, for_all, message(@arg1, update_label)).
+
+update(T) :->
+	send(T?root, for_all, message(@arg1, update_label)),
+	send(T?root, for_all, message(@arg1, update)).
+
 :- pce_end_class(rdf_tree).
 
 
@@ -190,6 +209,17 @@ unlink(N) :->
 label(N, Label:graphical) :<-
 	get(N, resource, Resource),
 	call_rules(N, label(Resource, Label)).
+
+
+update_label(N) :->
+	"Check for possibly changed label classification"::
+	get(N, resource, Resource),
+	call_rules(N, label_class(Resource, LabelClass)),
+	(   get(N?image, class_name, LabelClass)
+	->  true
+	;   get(N, label, NewLabel),
+	    send(N, image, NewLabel)
+	).
 
 
 update_can_expand(N) :->
