@@ -38,7 +38,7 @@
 :- use_module(rdf_rules).
 :- use_module(library(debug)).
 
-:- pce_autoload(rdf_explorer,  rdf_explorer).
+:- pce_autoload(rdf_graph_frame,  rdf_graph).
 
 :- pce_begin_class(rdf_arm, template,
 		   "(Un)arm objects in a window").
@@ -221,10 +221,10 @@ diagram_(T) :->
 rdf_diagram(T, Diagram:rdf_explorer) :<-
 	"Get associated RDF explorer"::
 	get(T, frame, Frame),
-	(   get(Frame, hypered, rdf_explorer, Diagram)
+	(   get(Frame, hypered, rdf_graph, Diagram)
 	->  true
-	;   new(Diagram, rdf_explorer),
-	    new(_, partof_hyper(Frame, Diagram, rdf_explorer, hierarchy))
+	;   new(Diagram, rdf_graph_frame),
+	    new(_, partof_hyper(Frame, Diagram, rdf_graph, hierarchy))
 	).
 
 :- pce_group(drag_and_drop).
