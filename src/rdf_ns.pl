@@ -40,6 +40,7 @@
 :- use_module(library(broadcast)).
 :- use_module(library(lists)).
 :- use_module(semweb(rdf_edit)).
+:- use_module(rdf_util).
 
 :- pce_autoload(identifier_item, library(pce_identifier_item)).
 
@@ -108,7 +109,19 @@ initialise(B) :->
 	send(B, tab_stops, vector(60)),
 	send(B, select_message,
 	     message(B, copy_ns, @arg1)),
+	send(B, style, fallback, style(font := bold)),
 	send(B, update),
+	send(B, popup, new(P, popup)),
+	Item = ?(B, dict_item, @event),
+	HasItem = (condition := Item),
+	send_list(P, append,
+		  [ menu_item(set_fallback,
+			      message(B, set_fallback, Item?key),
+			      HasItem),
+		    menu_item(delete,
+			      message(B, delete_ns, Item?key),
+			      HasItem)
+		  ]),
 	listen(B, rdf_ns(_),
 	       send(B, update)).
 
@@ -129,7 +142,18 @@ update(B) :->
 
 append(B, Id:name) :->
 	rdf_db:ns(Id, Name),
-	send_super(B, append,
-		   dict_item(Id, string('%s\t%s', Id, Name), Name)).
+	(   rdf_default_ns([], Id)
+	->  Style = fallback,
+	    sformat(Label, '~w\t~w (fallback)', [Id, Name])
+	;   Style = @default,
+	    sformat(Label, '~w\t~w', [Id, Name])
+	),
+	send_super(B, append, dict_item(Id, Label, Name, Style)).
+
+:- pce_group(edit).
+
+set_fallback(_B, NS:name) :->
+	"Make this the fallback default namespace"::
+	rdf_set_default_ns(_, NS).
 
 :- pce_end_class(rdf_namespace_browser).

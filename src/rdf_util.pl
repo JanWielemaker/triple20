@@ -36,6 +36,7 @@
 
 	    rdf_default_file/2,		% +Resources, -File
 	    rdf_default_file/3,		% +Resources, -File, -NS
+	    rdf_default_ns/2,		% +File, -Namespace
 	    rdf_set_default_ns/2,	% +File, +Namespace
 
 	    rdf_set_dialect/1,		% Set the RDF dialect
