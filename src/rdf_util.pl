@@ -601,11 +601,17 @@ rdf_merge_files(Into, From) :-
 			 merge_files(Into, From)).
 
 merge_files(Into, From) :-
-	(   rdf(S, P, O, From:Line),
-	    rdfe_update(S, P, O, From:Line, source(Into)),
-	    fail
-	;   true
-	).
+	findall(rdf(S,P,O,F),
+		rdf_in_file(S,P,O,F,From),
+		Triples),
+	forall(member(rdf(S,P,O,F), Triples),
+	       rdfe_update(S, P, O, F, source(Into))).
+
+rdf_in_file(S,P,O,From:Line,From) :-
+	rdf(S, P, O, From:Line).
+rdf_in_file(S,P,O,From, From) :-
+	rdf(S, P, O, From).
+	    
 
 		 /*******************************
 		 *	      RESOURCES		*
