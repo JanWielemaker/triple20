@@ -123,7 +123,7 @@ resource(individual,  image, image('16x16/instance.xpm')).
 resource(resource,    image, image('16x16/resource.xpm')).
 resource(property,    image, image('16x16/SlotDirect.gif')).
 resource(list,        image, image('16x16/list.xpm')).
-resource(list_member, image, image('16x16/list_member.xpm')).
+resource(list_item,   image, image('16x16/list_member.xpm')).
 resource(untyped,     image, image('16x16/untyped.xpm')).
 resource(resource,    image, image('16x16/resource.xpm')).
 resource(restriction, image, image('16x16/restriction.xpm')).
@@ -374,7 +374,7 @@ child_cache(R, Cache, rdf_inferred_node) :-
 	rdfs_individual_of(R, owl:'Class'),
 	\+ rdfs_subclass_of(R, rdfs:'Class'),
 	rdf_cache(lsorted(V), owl_inferred_member(V, R), Cache).
-child_cache(R, Cache, rdf_list_node) :-
+child_cache(R, Cache, rdf_list_item_node) :-
 	rdfs_individual_of(R, rdf:'List'), !,
 	rdf_cache(lsorted(V), rdfs_member(V, R), Cache).
 child_cache(R, Cache, rdf_part_node) :-	% TBD: move outside
@@ -773,16 +773,6 @@ drop(modify, Gr, V) :-
 :- end_rules.
 
 
-:- begin_rules(rdf_inferred_object_cell, default).
-
-icon_resource(_, inferred).
-icon_resource(R, Icon) :-
-	super::icon_resource(R, Icon),
-	Icon \== inferred.
-
-:- end_rules.
-
-
 :- begin_rules(rdf_predicate_cell, default).
 
 menu_item(Group, Item) :-
@@ -846,6 +836,9 @@ clicked(V) :-
 
 :- begin_rules(rdf_list_label, default).
 
+icon_resource(R, Icon) :-		% kill outer extra icons
+	display:icon_resource(R, Icon).
+
 menu_item(Group, Item) :-
 	rdf_resource_menu:menu_item(Group, Item).
 menu_item(edit, delete=delete_member(@arg1)). % @arg1 = popup object
@@ -886,16 +879,6 @@ sub_menu(Popup) :-
 sub_menu(type).
 
 :- end_rules.
-
-
-:- begin_rules(rdf_inferred_node, default).
-
-icon_resource(_, inferred).
-icon_resource(R, Icon) :-
-	super::icon_resource(R, Icon).
-
-:- end_rules.
-
 
 		 /*******************************
 		 *	      TOOL		*

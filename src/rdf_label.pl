@@ -73,8 +73,13 @@ make_rdf_composite_format(F) :-
 	send(F, row_sep, 2).
 
 icon(T, Icon:image) :->
-	"Set the (left-most) icon"::
+	"Append an icon"::
 	send(T, append, bitmap(Icon)).
+
+prefix_icon(T, Icon:image) :->
+	"Prepend (left-most) icon"::
+	send(T, append, new(BM, bitmap(Icon))),
+	send(BM, hide).			% first in <-graphicals
 
 append(T, Gr:graphical) :->
 	(   send(T?graphicals?tail, instance_of, bitmap),

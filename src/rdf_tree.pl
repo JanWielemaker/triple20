@@ -818,6 +818,9 @@ unrelate_resource(N) :->
 :- pce_end_class.
 
 
+resource(list_item,   image, image('16x16/list_member.xpm')).
+resource(inferred,    image, image('16x16/think.xpm')).
+
 :- pce_begin_class(rdf_property_node, rdf_node).
 
 view_triples(N) :->
@@ -831,10 +834,29 @@ view_triples(N) :->
 :- pce_begin_class(rdf_part_node, rdf_node).
 :- pce_end_class.
 
+:- pce_begin_class(rdf_list_item_node, rdf_node).
+
+label(N, Label:graphical) :<-
+	get_super(N, label, Label),
+	(   send(Label, has_send_method, prefix_icon)
+	->  send(Label, prefix_icon, image(resource(list_item)))
+	;   true
+	).
+
+:- pce_end_class.
+
 :- pce_begin_class(owl_restriction_node, rdf_node).
 :- pce_end_class.
 
 :- pce_begin_class(rdf_inferred_node, rdf_node).
+
+label(N, Label:graphical) :<-
+	get_super(N, label, Label),
+	(   send(Label, has_send_method, prefix_icon)
+	->  send(Label, prefix_icon, image(resource(inferred)))
+	;   true
+	).
+
 :- pce_end_class.
 
 :- pce_begin_class(rdf_root_node, rdf_class_node).

@@ -45,6 +45,8 @@
 :- pce_autoload(rdfs_resource_item,	 library(rdfs_resource_item)).
 :- pce_autoload(rdf_literal_item,	 library(rdf_literal_item)).
 
+resource(inferred,    image, image('16x16/think.xpm')).
+
 	  
 		 /*******************************
 		 *	      TABLE		*
@@ -243,7 +245,8 @@ view_triples(N) :->
 
 :- pce_end_class.
 
-:- pce_begin_class(rdf_inferred_object_cell, rdf_resource_cell).
+:- pce_begin_class(rdf_simple_object_cell, rdf_resource_cell,
+		   "Abstract cell showing the object part of a triple").
 
 variable(predicate, name*, get, "Related predicate").
 
@@ -257,10 +260,23 @@ initialise(C, R:prolog, P:[name]) :->
 create_label(C, R:prolog, Label:graphical) :<-
 	call_rules(C, label(R, Label)).
 
+:- pce_end_class(rdf_simple_object_cell).
+
+:- pce_begin_class(rdf_inferred_object_cell, rdf_simple_object_cell,
+		   "Object cell showing derived value").
+
+create_label(C, R:prolog, Label:graphical) :<-
+	get_super(C, create_label, R, Label),
+	(   send(Label, has_send_method, prefix_icon)
+	->  send(Label, prefix_icon, image(resource(inferred)))
+	;   true
+	).
+
 :- pce_end_class(rdf_inferred_object_cell).
 
 
-:- pce_begin_class(rdf_object_cell, rdf_inferred_object_cell).
+:- pce_begin_class(rdf_object_cell, rdf_simple_object_cell,
+		   "Ordinary cell showing object").
 
 delete(Cell) :->
 	"Delete triple from database"::
