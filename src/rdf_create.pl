@@ -238,7 +238,7 @@ do_create_resource(D) :->
 	uri_from_label(NS, Label, Resource),
 	
 	rdfe_assert(Resource, rdf:type, Type, File),
-	rdfe_assert(Resource, rdfs:label, literal(Label)),
+	rdfe_assert(Resource, rdfs:label, literal(Label), File),
 	rdfe_assert(Resource, rdfs:domain, Domain, File),
 	rdfe_assert(Resource, rdfs:range, Range, File),
 
