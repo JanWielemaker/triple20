@@ -468,6 +468,14 @@ close_other_nodes(O) :->
 	send(Others, for_all, message(@arg1, destroy)),
 	send(O, update).
 
+close_related_nodes(O) :->
+	"Close all nodes I'm related to"::
+	get(O, connections, Cs),
+	get(Cs, map, when(@arg1?from == O, @arg1?to, @arg1?from), Others),
+	send(Others, for_all, message(@arg1, destroy)),
+	send(O, update).
+
+
 expand_slot_values(Obj, P:name, Where:point) :->
 	"Expand all values for slot P"::
 	get(Obj, device, Graph),
@@ -475,6 +483,7 @@ expand_slot_values(Obj, P:name, Where:point) :->
 	get(Where, clone, Pos),
 	send(@display, busy_cursor),	% doesn't work?
 	(   rdf(S,P,O),
+	    atom(O),			% only resources
 	    send(Graph, append, O, @default, Pos),
 	    send(Pos, plus, point(5, 20)),
 	    fail
@@ -519,6 +528,7 @@ initialise(C, Subject:rdf_object, Predicate:name, Object:rdf_object) :->
 
 menu_item(graph, close).
 menu_item(graph, close_other_nodes).
+menu_item(graph, close_related_nodes).
 menu_item(graph, values_to_nodes).
 menu_item(Group, Item) :-
 	super::menu_item(Group0, Item),
