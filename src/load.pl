@@ -69,7 +69,7 @@ user:file_search_path(semweb,   library(semweb)).
 		rdf_text,		% basic text representation
 		rules,			% rendering rules
 		anon,			% Nicely show anonymous objects
-		rdfs_explorer,		% visualization
+		rdfs_explorer		% visualization
 %		rdf_portray
 	      ],
 	      [ silent(true)
