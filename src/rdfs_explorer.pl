@@ -296,8 +296,7 @@ load_ontology(_OV) :->
 		  tuple('OWL files', owl),
 		  tuple('RDF files', rdf)),
 	    FileName),
-	rdfe_transaction(rdfe_load(FileName), load_file(FileName),
-			 load_ontology).
+	rdfe_transaction(rdfe_load(FileName), load_file(FileName)).
       
 open_project(OV) :->
 	"Open an existing journal file"::
