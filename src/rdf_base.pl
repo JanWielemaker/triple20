@@ -96,6 +96,7 @@ rdf_db:ns(t20,	   'http://www.swi-prolog.org/packages/Triple20/').
 %	also do checks on the consistency   of  RDF and other well-known
 %	namespaces.
 
+register_default_ns(_, []) :- !.
 register_default_ns(File, NSList) :-
 	register_def_ns(NSList, File).
 
