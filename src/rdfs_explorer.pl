@@ -53,6 +53,7 @@
 :- use_module(rdf_tools).
 :- use_module(library(tabbed_window)).
 :- use_module(window).
+:- use_module(rdf_dialog).
 
 :- pce_autoload(report_dialog,	       library(pce_report)).
 :- pce_autoload(rdf_statistics_dialog, library(rdf_statistics)).
@@ -87,7 +88,8 @@ initialise(OV, Domain0:[prolog], Label:[name]) :->
 	send(P, name, hierarchy_window),
 	send(OV, append, TD),
 	send(P, width, 250),
-	send(new(D, dialog), above, new(rdfs_sheet)),
+	send(new(D, rdf_search_dialog), above, new(rdfs_sheet)),
+	send(D, name, search_dialog),
 	send_list([D,TD], hor_stretch, 100),
 	send_list([D,TD], hor_shrink, 100),
 	send(D, right, P),
@@ -100,7 +102,6 @@ initialise(OV, Domain0:[prolog], Label:[name]) :->
 	send(Tree, message, message(OV, show_resource, @arg1, table)),
 	send(Tree, expand_domain),
 	send(OV, fill_tool_dialog),
-	send(OV, fill_dialog),
 	get(Tree?root, resource, TheRoot),
 	send(OV, show_resource, TheRoot, table),
 	listen(OV, rdf_undo(_,_), send(OV, refresh)),
@@ -211,72 +212,11 @@ menu(OV, Name:name, Popup:popup) :<-
 	get(MB, member, Name, Popup).
 
 
-fill_dialog(OV) :->
-	get(OV, member, dialog, D),
-	send(D, pen, 0),
-	send(D, border, size(2, 10)),
-	send(D, append, new(Fields, menu(search_in, toggle))),
-	send(D, append, new(For, label(for, 'For', bold)), right),
-	send(For, alignment, left),
-	send(D, append, new(SI, text_item(search))),
-	send(SI, show_label, @off),
-	send(D, append, new(ST, menu(how, cycle)), right),
-	send_list(ST, append, [substring, word, prefix, exact]),
-	send(ST, show_label, @off),
-	send(D, append,
-	     new(Find, button(find,
-			      message(OV, find,
-				      SI?selection, ST?selection,
-				      Fields?selection))),
-	     right),
-	send(OV, search_field, rdfs:label, @on),
-	send(OV, search_field, rdfs:comment),
-	send(Fields, append, resource),
-	send(Fields, layout, horizontal),
-	send_list([Fields, For], alignment, left),
-	send(Find, default_button, @on),
-	send(Find, active, @off),
-					% HACK: force stretching
-	send(D, resize_message,
-	     message(OV, resize_dialog, D, @arg2)).
-
-
 search_field(OV, Field:prolog, Selected:[bool]) :->
 	"Define a field for textual search"::
-	get(OV, member, dialog, D),
-	get(D, member, search_in, Menu),
-	rdf_global_id(Field, Global),
-	rdfs_label(Global, Label),
-	send(Menu, append,
-	     new(MI, menu_item(Global, @default, Label))),
-	(   Selected == @on
-	->  send(MI, selected, Selected)
-	;   true
-	).
+	get(OV, member, search_dialog, D),
+	send(D, search_field, Field, Selected).
 
-
-%	->resize_dialog
-%	
-%	Properly spread the items of the row holding the text-item,
-%	menu and button.  Something XPCE should be able to handle
-%	using the declarative layout, but this doesn't work.  Ugly
-%	but efficient as long as we can't do better.
-
-resize_dialog(_OV, D:dialog, Size:size) :->
-	object(Size, size(W,_H)),
-	get(D, border, size(BW,_)),
-	get(D, gap, size(GW,_)),
-	send(D, layout, Size),
-	get(D, member, find, Find),
-	get(D, member, how, How),
-	get(D, member, search, TI),
-	get(Find, width, FW),
-	get(How, width, HW),
-	FX is W-BW-FW-4,
-	HX is FX-GW-HW,
-	send(Find, x, FX),
-	send(How, x, HX),
-	send(TI, right_side, HX-GW).
 
 :- pce_group(parts).
 
@@ -294,7 +234,7 @@ find(F, String:name, How:name, In:[chain]) :->
 	get(Tree, device, P),
 	send(P, scroll_to, point(0,0)),
 	(   In == @default
-	->  rdf_global_id(rdfs:label, Label),
+	->  rdf_equal(rdfs:label, Label),
 	    Fields = chain(Label)
 	;   Fields = In
 	),
