@@ -148,7 +148,7 @@ restriction_facet(R, cardinality(Min, Max)) :-
 %	library.
 
 non_negative_integer(Atom, Int, _, _) :-
-	catch(atom_number(Atom, Int), _, fail),
+	catch(atom_number(Atom, Int), _, fail), !,
 	integer(Int),
 	Int >= 0.
 non_negative_integer(Atom, _, S, P) :-
