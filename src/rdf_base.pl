@@ -85,6 +85,7 @@ rdf_db:ns(skos,    'http://www.w3.org/2004/02/skos/core#').
 rdf_db:ns(skosm,   'http://www.w3.org/2004/02/skos/mapping#').
 rdf_db:ns(aeneas,  'http://www.swi.psy.uva.nl/mia/aeneas#').
 rdf_db:ns(mia2,    'http://www.swi.psy.uva.nl/mia/mia2#').
+rdf_db:ns(thales,  'http://www.swi.psy.uva.nl/metis/thales#').
 rdf_db:ns(rs,      'http://jena.hpl.hp.com/2003/03/result-set#').
 rdf_db:ns(t20,	   'http://www.swi-prolog.org/packages/Triple20/').
 rdf_db:ns(nci,	   'http://ncicb.nci.nih.gov/xml/owl/EVS/Thesaurus.owl#').

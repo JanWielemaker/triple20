@@ -384,6 +384,11 @@ child_cache(R, Cache, rdf_part_node) :-	% TBD: move outside
 	rdf_has(R, rdf:type, Class),
 	rdfs_subclass_of(Class, Domain),
 	rdf_cache(lsorted(V), rdf_has(R, erc:has_part, V), Cache).
+child_cache(R, Cache, rdf_part_node) :-	% TBD: move outside
+	rdf_has(thales:hasPart, rdfs:domain, Domain),
+	rdf_has(R, rdf:type, Class),
+	rdfs_subclass_of(Class, Domain),
+	rdf_cache(lsorted(V), rdf_has(R, thales:hasPart, V), Cache).
 child_cache(R, Cache, rdf_class_node) :-
 	rdfs_individual_of(R, skos:'Concept'),
 	rdf_cache(lsorted(V), skos_narrower(R, V), Cache).

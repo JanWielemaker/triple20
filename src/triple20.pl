@@ -9,7 +9,7 @@ directory in your $PATH.
 - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
 
 file_search_path(triple20, '.').
-file_search_path(triple20, 'd:/oz/mia/jan/semweb'). % BJW VAIO settings
+file_search_path(triple20, 'd:/oz/Triple20'). % BJW VAIO settings
 file_search_path(triple20, '/staff/jan/src/Triple20/src').
 :- load_files([ triple20(load)
 	      ],
