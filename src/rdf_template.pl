@@ -30,8 +30,9 @@ define_event(Name, Parent) :-
 	).
 
 :- pce_global(@arm_recogniser,
-	      new(handler(arm, message(@event?window, try_arm,
-				       @event?receiver)))).
+	      new(handler(arm,
+			  message(@event?display, try_arm,
+				  @event?receiver)))).
 :- initialization
    define_event(arm, user).
 
@@ -43,7 +44,7 @@ event(W, Ev:event) :->
 	    get(W, arm, _Target)
 	->  true
 	;   send(Ev, is_a, area_exit)
-	->  send(W, arm_object, @nil)
+	->  send(@display, arm_object, @nil)
 	;   true
 	),
 	send_super(W, event, Ev).
@@ -61,11 +62,16 @@ arm(W, For:[name], Target:graphical) :<-
 	    ),
 	    debug(arm, 'Posting arm to ~p at ~d,~d', [W, AX, AY]),
 	    send(Ev, post, W)
-	->  get(W, hypered, arm, Target)
-	;   send(W, arm_object, @nil),
+	->  get(@display, hypered, arm, Target)
+	;   send(@display, arm_object, @nil),
 	    fail
 	).
 	
+:- pce_end_class(rdf_arm).
+
+
+:- pce_extend_class(display).
+
 try_arm(W, Gr:graphical) :->
 	(   get(@event, attribute, arm_for, For)
 	->  send(Gr, has_send_method, For)
@@ -85,7 +91,7 @@ arm_object(W, Gr:graphical*) :->
 	;   true
 	).
 
-:- pce_end_class(rdf_arm).
+:- pce_end_class(display).
 
 
 :- pce_begin_class(rdf_container, template,

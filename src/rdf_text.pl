@@ -103,7 +103,8 @@ initialise(DD, Button:name) :->
 
 initiate(DD, Ev:event) :->
 	send_super(DD, initiate, Ev),
-	send(Ev?window, grab_pointer, @on).
+	send(Ev?window, grab_pointer, @on). % work around problems with
+					% library(unclip)!?
 
 
 cancel(DD, Ev:event) :->
@@ -123,7 +124,8 @@ drag(DD, Ev:event) :->
 	        get(Ev, inside_sub_window, Frame, Window)
 	    ->  debug(arm, 'Drag in ~p', [Window]),
 	        (   send(Window, has_get_method, arm)
-		->  (   unfocussed(Window, get(Window, arm, drop, Target))
+		->  get(Ev, window, Owner),
+		    (	unfocussed(Owner, get(Window, arm, drop, Target))
 		    ->  send(DD, target, Source, Ev, Target)
 		    ;	send(DD, target, Source, @nil, @nil)
 		    )
