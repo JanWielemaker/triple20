@@ -262,7 +262,7 @@ rdf_set_object(Subject, Predicate, Object) :-
 	).
 
 set_object(Subject, Predicate, Object) :-
-	findall(O-P, rdf_has(Subject, Predicate, O), Pairs0),
+	findall(O-Predicate, rdf_has(Subject, Predicate, O), Pairs0),
 	sort(Pairs0, Pairs),
 	(   Pairs = []
 	->  rdf_default_file(Subject, File),
