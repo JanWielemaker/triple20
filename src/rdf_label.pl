@@ -73,10 +73,14 @@ make_rdf_composite_format(F) :-
 
 icon(T, Icon:image) :->
 	"Set the (left-most) icon"::
-	send(T, append, bitmap(Icon)),
-	send(T, append, graphical(0,0,1,0)).
+	send(T, append, bitmap(Icon)).
 
 append(T, Gr:graphical) :->
+	(   send(T?graphicals?tail, instance_of, bitmap),
+	    \+ send(Gr, instance_of, bitmap)
+	->  send(T, display, graphical(0,0,1,0))
+	;   true
+	),
 	send(T, display, Gr),
 	(   get(T, format, @nil)
 	->  send(T, format, @rdf_composite_format)

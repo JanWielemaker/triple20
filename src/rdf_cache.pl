@@ -13,7 +13,8 @@
 	    rdf_cache_clear/0,
 	    rdf_cache_attach/2,		% +Cache, +Term
 	    rdf_cache_detach/2,		% +Cache, -Term
-	    rdf_cache_attached/2	% ?Cache, ?Term
+	    rdf_cache_attached/2,	% ?Cache, ?Term
+	    rdf_cache_statistics/1	% ?Term
 	  ]).
 :- use_module(library(debug)).
 :- use_module(semweb(rdf_db)).
@@ -225,6 +226,20 @@ rdf_cache_detach(Cache, Satelite) :-
 
 rdf_cache_attached(Cache, Satelite) :-
 	cache_attached(Cache, Satelite).
+
+
+		 /*******************************
+		 *	     STATISTICS		*
+		 *******************************/
+
+%	rdf_cache_statistics(?Term)
+%	
+%	Provide statistics about the cache status.
+
+rdf_cache_statistics(count(Count)) :-
+	predicate_property(cache_directory(_,_), number_of_clauses(Count)).
+rdf_cache_statistics(attached(Count)) :-
+	predicate_property(cache_attached(_,_), number_of_clauses(Count)).
 
 
 		 /*******************************

@@ -37,6 +37,7 @@
 :- use_module(library(tabular)).
 :- use_module(semweb(rdf_db)).
 :- use_module(semweb(rdf_edit)).
+:- use_module(rdf_cache).
 
 :- pce_begin_class(rdf_statistics_dialog, tabbed_window,
 		   "Show various statistics").
@@ -143,11 +144,21 @@ initialise(D) :->
 	    fail
 	;   true
 	),
+	send(T, append, 'Counts', bold, center, Khaki, colspan := 4),
+	send(T, next_row),
 	(   rdf_statistics(searched_nodes(Nodes))
-	->  send(T, append, 'Searched nodes', bold, right, colspan := 3),
-	    send(T, append, Nodes, normal, right),
-	    send(T, next_row)
+	->  send(D, count, searched_nodes, Nodes)
 	;   true
-	).
+	),
+	rdf_cache_statistics(count(Caches)),
+	rdf_cache_statistics(attached(Attached)),
+	send(D, count, cached_queries, Caches),
+	send(D, count, attached_cached_queries, Attached).
+
+count(D, Name:name, Count:int) :->
+	get(D, member, tabular, T),
+	send(T, append, Name?label_name, bold, right, colspan := 3),
+	send(T, append, Count, normal, right),
+	send(T, next_row).
 
 :- pce_end_class(rdf_call_dialog).

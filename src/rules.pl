@@ -129,6 +129,7 @@ resource(description, image, image('16x16/description.xpm')).
 resource(wnclass,     image, image('16x16/wnclass.xpm')).
 resource(nil,         image, image('16x16/DisketteBoxEmpty.xpm')).
 resource(part,        image, image('16x16/part.xpm')).
+resource(inferred,    image, image('16x16/think.xpm')).
 
 :- begin_particle(rdf_icon_rules, []).
 
@@ -315,24 +316,29 @@ child_cache(R, Cache, Class) :-
 	;   (   rdf_cache(lsorted(V), rdf_has(V, rdfs:subClassOf, R), Cache),
 	        Class = rdf_class_node
 	    ;   \+ rdfs_subclass_of(R, rdfs:'Class'),
-		(   rdfs_individual_of(R, owl:'Restriction')
-		->  rdf_cache(lsorted(V), owl_individual_of(V, R), Cache)
-		;   rdf_cache(lsorted(V), rdf_has(V, rdf:type, R), Cache)
-		),
-		Class = rdf_individual_node
+		Class = rdf_individual_node,
+		rdf_cache(lsorted(V), rdf_has(V, rdf:type, R), Cache)
 	    ;	rdfs_subclass_of(R, owl:'Restriction'),
 		rdf_cache(V, ordered_restriction(V, R), Cache),
 		Class = owl_restriction_node
 	    )
 	).
+child_cache(R, Cache, rdf_inferred_node) :-
+	rdfs_individual_of(R, owl:'Class'),
+	\+ rdfs_subclass_of(R, rdfs:'Class'),
+	rdf_cache(lsorted(V), owl_inferred_member(V, R), Cache).
 child_cache(R, Cache, rdf_list_node) :-
 	rdfs_individual_of(R, rdf:'List'), !,
 	rdf_cache(lsorted(V), rdfs_member(V, R), Cache).
-child_cache(R, Cache, rdf_part_node) :-		% erc:Class has_part relations
+child_cache(R, Cache, rdf_part_node) :-
 	rdf_has(erc:has_part, rdfs:domain, Domain),
 	rdf_has(R, rdf:type, Class),
 	rdfs_subclass_of(Class, Domain),
 	rdf_cache(lsorted(V), rdf_has(R, erc:has_part, V), Cache).
+
+owl_inferred_member(R, Class) :-
+	owl_individual_of(R, Class),
+	\+ rdf_has(R, rdf:type, Class).
 
 ordered_restriction(R, Class) :-
 	findall(L-R, owl_restriction_with_label(Class, R, L), Pairs),
@@ -769,5 +775,14 @@ menu_item(type, intersectionOf=owl_description_type(P)) :-
 sub_menu(Popup) :-
 	super::sub_menu(Popup).
 sub_menu(type).
+
+:- end_particle.
+
+
+:- begin_particle(rdf_inferred_node, rdf_node).
+
+icon_resource(_, inferred).
+icon_resource(R, Icon) :-
+	super::icon_resource(R, Icon).
 
 :- end_particle.

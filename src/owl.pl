@@ -387,6 +387,15 @@ in_all_domains([H|T], Resource) :-
 %	Test or generate the resources that satisfy Description
 %	according the the OWL-Description entailment rules.
 
+owl_individual_of(Resource, Thing) :-
+	rdf_equal(Thing, owl:'Thing'), !,
+	(   atom(Resource)
+	->  true
+	;   rdf_subject(Resource)
+	).
+owl_individual_of(_Resource, Nothing) :-
+	rdf_equal(Nothing, owl:'Nothing'), !,
+	fail.
 owl_individual_of(Resource, Description) :-
 	rdfs_individual_of(Description, owl:'Class'), !,
 	(   rdfs_individual_of(Description, owl:'Restriction')
