@@ -87,6 +87,7 @@ rdf_db:ns(aeneas,  'http://www.swi.psy.uva.nl/mia/aeneas#').
 rdf_db:ns(mia2,    'http://www.swi.psy.uva.nl/mia/mia2#').
 rdf_db:ns(rs,      'http://jena.hpl.hp.com/2003/03/result-set#').
 rdf_db:ns(t20,	   'http://www.swi-prolog.org/packages/Triple20/').
+rdf_db:ns(nci,	   'http://ncicb.nci.nih.gov/xml/owl/EVS/Thesaurus.owl#').
 
 %	register_default_ns(File, NS=URL)
 %	
@@ -107,6 +108,7 @@ register_def_ns([], _) :- !.
 register_def_ns([NS=URL|T], File) :- !,
 	register_def_ns(NS=URL, File),
 	register_def_ns(T, File).
+register_def_ns([]=_, _) :- !.		% xmlns= (overall default)
 register_def_ns(NS=URL, File) :-
 	(   rdf_db:ns(NS, URL)
 	->  true
