@@ -53,6 +53,7 @@ user:file_search_path(semweb,   library(semweb)).
 		semweb(rdf_db),		% triple store
 		semweb(rdfs),		% RDFS rules
 		semweb(rdf_edit),	% transactions and changes
+		owl,			% OWL inferencing
 		rdf_text,		% basic text representation
 		rules,			% rendering rules
 		rdfs_explorer,		% visualization
@@ -75,7 +76,7 @@ user:file_search_path(snapshot, user_profile(Dir)) :-
 		 *	      VERSION		*
 		 *******************************/
 
-rdf_version('0.2, November 2003').
+rdf_version('0.3, November 2003').
 
 
 		 /*******************************

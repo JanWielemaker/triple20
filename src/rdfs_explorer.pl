@@ -1210,7 +1210,8 @@ append_inferred_slots(AL) :->
 	"Append slots that can be inferred"::
 	get(AL, resource, I),
 	(   setof(P-Vs, setof(V, owl_has(I, P, V), Vs), Pairs),
-	    sort_by_predicate_label(Pairs, ByPred),
+	    remove_super_properties(Pairs, Pairs1),
+	    sort_by_predicate_label(Pairs1, ByPred),
 	    member(Pred-Values, ByPred),
 	    \+ reserved_instance_slot(Pred),
 	    sort_by_label(Values, [V1|RestValues]),
@@ -1225,6 +1226,31 @@ append_inferred_slots(AL) :->
 	    fail
 	;   true
 	).
+
+%	remove_super_properties(+Pairs, -Clean)
+%	
+%	If Pairs is a list of Property-Values, delete all elements whole
+%	values are completely covered by subproperties of Property.
+
+remove_super_properties(Set0, Set) :-
+	select(P-Vs, Set0, Set1),
+	sub_property_values(P, Set1, SubValues),
+	sort(SubValues, Vs), !,
+	debug(owl, 'Values of ~p are covered by sub-properties', [P]),
+	remove_super_properties(Set1, Set).
+remove_super_properties(Set, Set).
+
+sub_property_values(_, [], []).
+sub_property_values(P, [SP-Vs|T], Values) :-
+	rdfs_subproperty_of(SP, P),
+	append(Vs, Rest, Values), !,
+	sub_property_values(P, T, Rest).
+sub_property_values(P, [_|T], Values) :-
+	sub_property_values(P, T, Values).
+
+%	sort_by_predicate_label(+Pairs, -Sorted)
+%	
+%	Sort list if Property-Values to the label of Property
 
 sort_by_predicate_label(Pairs, Sorted) :-
 	tag_label(Pairs, Tagged),

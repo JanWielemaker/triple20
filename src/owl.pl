@@ -74,6 +74,20 @@ user:goal_expansion(owl_satisfies(Desc0, Res0),
 		    owl_satisfies(Desc, Res)) :-
 	rdf_global_term(Desc0, Desc),
 	rdf_global_id(Res0, Res).
+user:goal_expansion(owl_has(S0, P0, O0),
+		    owl_has(S, P, O)) :-
+	rdf_global_id(S0, S),
+	rdf_global_id(P0, P),
+	rdf_global_id(O0, O).
+user:goal_expansion(owl_has_direct(S0, P0, O0),
+		    owl_has_direct(S, P, O)) :-
+	rdf_global_id(S0, S),
+	rdf_global_id(P0, P),
+	rdf_global_id(O0, O).
+user:goal_expansion(owl_same_as(X0, Y0),
+		    owl_same_as(X, Y)) :-
+	rdf_global_id(X0, X),
+	rdf_global_id(Y0, Y).
 
 
 		 /*******************************
@@ -440,6 +454,10 @@ owl_individual_of(Resource, Description) :-
 	owl_individual_from_range(Resource, Description).
 
 owl_individual_from_range(Resource, Class) :-
+	nonvar(Resource), !,
+	rdf_has(_, P, Resource),
+	rdf_has(P, rdfs:range, Class), !.
+owl_individual_from_range(Resource, Class) :-
 	rdf_has(P, rdfs:range, Class),
 	rdf_has(_, P, Resource).	% owl_has?
 
@@ -549,6 +567,15 @@ owl_has_direct(S, P, O) :-
 	rdfs_individual_of(P, owl:'SymetricProperty'),
 	rdf(O, P, S).
 owl_has_direct(S, P, O) :-
+	owl_use_has_value(S, P, O).
+
+owl_use_has_value(S, P, O) :-
+	nonvar(P), !,
+	rdf_has(Super, owl:onProperty, P),
+	rdf_has(Super, owl:hasValue, O),
+	owl_subclass_of(Type, Super),
+	rdf_has(S, rdf:type, Type).
+owl_use_has_value(S, P, O) :-
 	rdf_has(S, rdf:type, Type),
 	owl_subclass_of(Type, Super),
 	rdfs_individual_of(Super, owl:'Restriction'),
