@@ -172,6 +172,51 @@ selection(TI, Selection:name) :<-
 :- pce_end_class.
 
 
+:- pce_begin_class(rdf_language_item, text_item,
+		   "Select a language code").
+
+
+:- pce_global(@iso_639_value_set, make_iso_639_value_set).
+
+make_iso_639_value_set(Set) :-
+	new(Set, chain),
+	setof(L, C^iso_639(C, L), Ls),
+	forall(member(L, Ls), send(Set, append, L)),
+	setof(C, C^iso_639(C, L), Cs),
+	forall(member(C, Cs), send(Set, append, C)).
+
+initialise(I, Name:name, Sel:[name], Msg:[code]*) :->
+	send_super(I, initialise, Name, @default, Msg),
+	(   Sel \== @default
+	->  send(I, selection, Sel)
+	;   true
+	),
+	send(I, value_set, @iso_639_value_set).
+
+selection(I, C:name) :->
+	"Set selection from code"::
+	send_super(I, selection, C),
+	(   iso_639(C, L)
+	->  send(I?value_text, string, string('%s (%s)', C, L)),
+	    send(I, caret, 0)
+	;   true
+	).
+
+selection(I, Sel:name) :<-
+	"Get language code"::
+	get_super(I, selection, S0),
+	(   iso_639(S0, L)
+	->  Sel = S0,
+	    send(I?value_text, string, string('%s (%s)', S0, L))
+	;   iso_639(Sel, S0)
+	->  send(I?value_text, string, string('%s (%s)', Sel, S0))
+	;   Sel = S0,
+	    send(I, report, status, 'Unknown language: %s', Sel)
+	).
+
+:- pce_end_class(rdf_language_item).
+
+
 		 /*******************************
 		 *	  GENERIC DIALOG	*
 		 *******************************/
@@ -201,6 +246,10 @@ open(D, Pt:[point]) :->
 	;   send_super(D, open, Pt)
 	).
 
+confirm(D, Pt:[point], Rval:any) :<-
+	send(D, open, Pt),
+	get_super(D, confirm, Rval).
+
 item_selection(F, From:name, Warn:[bool], Selection:any) :<-
 	"Get selection of an item"::
 	get(F, member, From, Item),
@@ -209,9 +258,13 @@ item_selection(F, From:name, Warn:[bool], Selection:any) :<-
 	;   get(Item, selection, Selection)
 	).
 
-standard_buttons(F, Name:name) :->
+standard_buttons(F, Action:'name|button') :->
 	"Append action and cancel buttons"::
-	send(F, append, new(B, button(Name))),
+	(   atom(Action)
+	->  new(B, button(Action))
+	;   B = Action
+	),
+	send(F, append, B),
 	send(B, active, @off),
 	send(B, default_button, @on),
 	send(F, append, button(cancel)).

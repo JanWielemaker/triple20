@@ -257,6 +257,8 @@ menu_item(view,   diagram_).
 menu_item(view,   triples=view_triples).
 
 menu_item(edit,   rename_resource).
+menu_item(edit,	  set_language).
+menu_item(edit,   set_type).
 
 %	sub_menu(Group)
 %	

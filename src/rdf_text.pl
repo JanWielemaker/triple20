@@ -240,29 +240,51 @@ action_resource(update(R, _, _, _), R).
 variable(subject,   name*, get, "Resource I belong to").
 variable(predicate, name*, get, "Resource I belong to").
 variable(literal,   name*, get, "Represented object (=value)").
+variable(lang,      name*, get, "Language of the literal").
+variable(type,      name*, get, "Type of the literal").
 
 initialise(LT, Value:prolog, Subject:[name]*, Predicate:[name]*) :->
-	(   Value = literal(Text)
-	->  true
-	;   Text = Value
-	),
+	get_text(Value, TypeOrLang, Text),
 	send_super(LT, initialise, Text),
 	send(LT, margin, 400, wrap),
 	default(Subject, @nil, S),
 	default(Predicate, @nil, P),
 	send(LT, slot, subject, S),
 	send(LT, slot, predicate, P),
-	send(LT, slot, literal, Text).
+	send(LT, slot, literal, Text),
+	set_type_or_lang(TypeOrLang, LT).
+
+%	get_text(+Object, -TypeOrLanguage, -Text)
+%	
+%	Extract Text and Language from an RDF Object.
+
+get_text(literal(X), Lang, Text) :- !,
+	get_text(X, Lang, Text).
+get_text(lang(Lang, Text), lang(Lang), Text) :- !.
+get_text(type(Type, Text), type(Type), Text) :- !.
+get_text(Text, -, Text).
+
+set_type_or_lang(-, LT) :-
+	send(LT, slot, lang, @nil),
+	send(LT, slot, type, @nil).
+set_type_or_lang(lang(Lang), LT) :-
+	send(LT, slot, lang, Lang),
+	send(LT, slot, type, @nil).
+set_type_or_lang(type(Type), LT) :-
+	send(LT, slot, lang, @nil),
+	send(LT, slot, type, Type).
 
 update(LT) :->
 	"Update represented text"::
 	get(LT, subject, Subject), Subject \== @nil,
 	get(LT, predicate, Predicate), Predicate \== @nil,
-	(   rdf(Subject, Predicate, literal(Text))
-	->  send(LT, literal, Text),
-	    send(LT, string, Text)
+	(   rdf(Subject, Predicate, literal(Value))
+	->  get_text(Value, TypeOrLang, Text),
+	    send(LT, string, Text),
+	    set_type_or_lang(TypeOrLang, LT)
 	;   send(LT, literal, @nil),
-	    send(LT, string, '')
+	    send(LT, string, ''),
+	    set_type_or_lang(-, LT)
 	).
 
 triple(T, Value:prolog) :<-
@@ -283,8 +305,13 @@ resource(LT, Object:prolog) :<-
 object(LT, Object:prolog) :<-
 	"Get RDF object: literal(Text)"::
 	get(LT, literal, Text),
-	Object = literal(Text).
-	
+	Object = literal(Value),
+	(   get(LT, lang, Lang), Lang \== @nil
+	->  Value = lang(Lang, Text)
+	;   get(LT, type, Type), Type \== @nil
+	->  Value = type(Type, Text)
+	;   Value = Text
+	).
 
 obtain_focus(T) :->
 	"Start editing"::
@@ -319,22 +346,68 @@ delete(T) :->
 forward(T) :->
 	"Set new value"::
 	get(T?string, value, NewText),
-	get(T, literal, OldText),
-	(   OldText == NewText
+	send(T, modify, literal, NewText).
+
+
+modify(T, What:{literal,lang,type}, Value:name) :->
+	"Modify a value and forward the changes"::
+	get(T, What, OldValue),
+	(   Value == OldValue
 	->  true
 	;   get(T, subject, Subject),
 	    get(T, predicate, Predicate),
 	    Subject \== @nil,
 	    Predicate \== @nil
-	->  rdfe_transaction(rdfe_update(Subject, Predicate,
-					 literal(OldText),
-					 object(literal(NewText))),
-			     modify_literal)
+	->  get(T, object, OldObject),
+	    send(T, slot, What, Value),
+	    get(T, object, NewObject),
+	    catch(rdfe_transaction(rdfe_update(Subject, Predicate, OldObject,
+					       object(NewObject)),
+				   modify(What)),
+		  E,
+		  (   report_exception(T, E),
+		      send(T, slot, What, OldValue),
+		      fail
+		  ))
 	;   debug(edit, '~p: Container cannot handle edit', [T])
 	).
 
+
+report_exception(Gr, E) :-
+	message_to_string(E, Message),
+	send(Gr, report, error, Message).
+
+set_language(T) :->
+	(   get(T, lang, Lang), Lang \== @nil
+	->  true
+	;   Lang = @default
+	),
+	new(D, rdf_dialog(T, 'Select language')),
+	send(D, append, new(I, rdf_language_item(language, Lang,
+						 message(D, return, @arg1)))),
+	send(D, standard_buttons,
+	     button(ok, message(I, execute))),
+	get(D, confirm, NewLang),
+	send(D, destroy),
+	send(T, modify, lang, NewLang).
+
+
 arm(T, Arm:bool) :->
-	send(T, underline, Arm).
+	send(T, underline, Arm),
+	(   Arm == @on
+	->  (   get(T, lang, Lang), Lang \== @nil
+	    ->	(   iso_639(Lang, Language)
+		->  true
+		;   Language = unknown
+		),
+	        send(T, report, status, 'xml:lang="%s" <%s>', Lang, Language)
+	    ;	get(T, type, Type), Type \== @nil
+	    ->	rdfs_ns_label(Type, Label),
+	        send(T, report, status, 'rdf:dataType="%s"', Label)
+	    ;	send(T, report, status, '')
+	    )
+	;   send(T, report, status, '')
+	).
 
 copy_text(T) :->
 	"Copy text"::
