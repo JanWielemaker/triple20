@@ -324,6 +324,8 @@ child_cache(R, Cache, Class) :-
 child_cache(R, Cache, rdf_individual_node) :-
 	rdfs_individual_of(R, rdf:'List'), !,
 	rdf_cache(lsorted(V), rdfs_member(V, R), Cache).
+child_cache(R, Cache, rdf_part_node) :- % BJW
+	rdf_cache(lsorted(V), rdf_has(R, erc:has_part, V), Cache).
 
 ordered_restriction(R, Class) :-
 	findall(L-R, owl_restriction_with_label(Class, R, L), Pairs),
@@ -528,6 +530,13 @@ drop(Command, Onto, From) :-
 
 
 :- begin_particle(rdf_individual_node, rdf_node).
+
+:- end_particle.
+
+:- begin_particle(rdf_part_node, rdf_node).
+
+icon(_, Icon) :-
+	new(Icon, image(resource(property))).
 
 :- end_particle.
 

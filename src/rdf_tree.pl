@@ -651,6 +651,8 @@ unrelate_resource(N) :->
 :- pce_begin_class(rdf_property_node, rdf_node).
 :- pce_end_class.
 
+:- pce_begin_class(rdf_part_node, rdf_node).
+:- pce_end_class.
 
 :- pce_begin_class(owl_restriction_node, rdf_node).
 :- pce_end_class.
