@@ -85,6 +85,7 @@ initialise(H, Root:[name]) :->
 	listen(H, rdf_reset, send(H, clear)),
 	listen(H, rdf_journal(_), send(H, update)),
 	listen(H, rdf_dialect(_), send(H, update)),
+	listen(H, triple20(refresh), send(H, update)),
 	listen(H, rdf_transaction(TID), send(H, update_transaction, TID)).
 
 unlink(H) :->

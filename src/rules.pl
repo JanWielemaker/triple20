@@ -38,6 +38,7 @@
 :- use_module(semweb(rdfs)).
 :- use_module(semweb(rdf_db)).
 :- use_module(semweb(rdf_edit)).
+:- use_module(library(broadcast)).
 :- use_module(rdf_text).
 :- use_module(rdf_label).
 :- use_module(rdf_cache).
@@ -57,17 +58,33 @@ owl_description_attribute(X) :- rdf_equal(owl:intersectionOf, X).
 :- begin_rules(rdf_label_rules, default).
 
 :- dynamic
-	view_label_as/1.
+	view_label_as_setting/1.
 
 label_text(Resource, Text) :-
-	view_label_as(label_only), !,
+	view_label_as_setting(label_only), !,
 	rdfs_label(Resource, Text).
 label_text(Resource, Text) :-
-	view_label_as(resource), !,
+	view_label_as_setting(resource), !,
 	rdf_global_id(NS:Local, Resource),
 	concat_atom([NS, :, Local], Text).
 label_text(Resource, Text) :-
 	rdfs_ns_label(Resource, Text).
+
+%	view_label_as(Style)
+%	
+%	This is not a rule, but intended to  be called to change the way
+%	labels are presented to the user.
+
+view_label_as(As) :-
+	view_label_as_setting(As), !.
+view_label_as(As) :-
+	retractall(view_label_as_setting(_)),
+	assert(view_label_as_setting(As)),
+	send(@resource_texts, for_all,
+	     message(@arg2, for_all,
+		     message(@arg1, update))),
+	broadcast(view_label_as(As)).
+
 
 label(Resource, Label) :-
 	inner::label_class(Resource, Class), !,

@@ -33,6 +33,8 @@
 :- module(triple20,
 	  [ triple20/0,
 	    triple20/1,			% +Argv
+					% Misc
+	    t20/1,			% +Action
 					% Maintenance
 	    t20_save/1			% +File
 	  ]).
@@ -62,6 +64,7 @@ user:file_search_path(semweb,   library(semweb)).
 		semweb(rdf_db),		% triple store
 		semweb(rdfs),		% RDFS rules
 		semweb(rdf_edit),	% transactions and changes
+		library(broadcast),	% Broadcasting service
 		owl,			% OWL inferencing
 		rdf_text,		% basic text representation
 		rules,			% rendering rules
@@ -86,7 +89,7 @@ user:file_search_path(snapshot, user_profile(Dir)) :-
 		 *******************************/
 
 t20_version('0.5, March 2005').
-required_prolog_version(50407).
+required_prolog_version(50509).
 
 check_prolog_version :-
 	current_prolog_flag(version, MyVersion),
@@ -226,6 +229,24 @@ usage :-
 
 :- initialization
 	rdf_prepare_ontology_dirs.
+
+
+		 /*******************************
+		 *	 PUBLIC ACTIONS		*
+		 *******************************/
+
+%	t20(+Message)
+%	
+%	Send a message to all Triple20 toplevel windows.  Note that this
+%	doesn't send any messages if no window exists.  Useful actions
+%	are:
+%	
+%		* refresh
+%		Refresh the interface after substantial changes to the
+%		data.
+
+t20(Action) :-
+	broadcast(triple20(Action)).
 
 
 		 /*******************************

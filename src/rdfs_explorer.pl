@@ -118,6 +118,8 @@ initialise(OV, Domain0:[prolog], Label:[name]) :->
 	listen(OV, rdf_undo(_,_), send(OV, refresh)),
 	listen(OV, rdf_transaction(_), send(OV, refresh)),
 	listen(OV, rdf_reset, send(OV, refresh)),
+	listen(OV, triple20(Action), send(OV, Action)),
+	listen(OV, view_label_as(As), send(OV, view_label_as(As))),
 	send(OV, refresh),
 	send(OV, set_label).
 
@@ -160,6 +162,7 @@ fill_tool_dialog(OV) :->
 		    menu_item(new_project),
 		    gap,
 		    menu_item(load_ontology),
+		    menu_item(load_rdf),
 		    new(Base, popup(load_base_ontology,
 				    message(OV, load_base_ontology, @arg1))),
 			
@@ -368,10 +371,23 @@ open_file(OV) :->
 	).
 
 load_ontology(_OV) :->
+	"Load RDF-Schema or OWL-ontology"::
 	get(@finder, file, open,
 	    chain(tuple('RDF-Schema and OWL files', chain(rdfs,owl)),
 		  tuple('OWL files', owl),
 		  tuple('RDF files', rdf)),
+	    FileName),
+	absolute_file_name(FileName, Path),
+	rdfe_transaction(rdfe_load(Path,
+				   [ namespaces(NSList)
+				   ]),
+			 load_file(FileName)),
+	register_default_ns(Path, NSList).
+      
+load_rdf(_OV) :->
+	"Load plain RDF file"::
+	get(@finder, file, open,
+	    chain(tuple('RDF files', rdf)),
 	    FileName),
 	absolute_file_name(FileName, Path),
 	rdfe_transaction(rdfe_load(Path,
@@ -502,11 +518,7 @@ name_spaces(OV) :->
 
 view_label_as(OV, As:name) :->
 	"Determine how a resource is visualised"::
-	retractall(rdf_label_rules:view_label_as(_)),
-	assert(rdf_label_rules:view_label_as(As)),
-	send(@resource_texts, for_all,
-	     message(@arg2, for_all,
-		     message(@arg1, update))),
+	rdf_label_rules:view_label_as(As),
 	(   get(OV, menu, view, label, Popup)
 	->  send(Popup, selection, As)
 	;   true
