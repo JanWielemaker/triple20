@@ -128,6 +128,19 @@ update(L) :->
 
 :- pce_end_class(rdf_individual_label).
 
+:- pce_begin_class(rdf_not_filled_label, rdf_individual_label,
+		   "Show __not_filled").
+
+update(L) :->
+	get(L, resource, Resource),
+	call_rules(L, icon(Resource, Icon)),
+	send(L, icon, Icon),
+	send(L, append, new(T, text('<not filled>', left, italic))),
+	send(T, colour, red).
+
+:- pce_end_class(rdf_not_filled_label).
+
+
 :- pce_begin_class(rdf_list_label, rdf_composite_label,
 		   "Show elements of a list").
 

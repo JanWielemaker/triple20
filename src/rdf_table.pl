@@ -14,6 +14,7 @@
 :- use_module(library(rdf_template)).
 :- use_module(particle).
 :- use_module(rdf_cache).
+:- use_module(rdf_util).
 
 :- pce_autoload(rdfs_resource_item,	 library(rdfs_resource_item)).
 :- pce_autoload(rdf_literal_item,	 library(rdf_literal_item)).
@@ -117,36 +118,6 @@ prompt_value(AL,
 	    send(D, open, point(X, Y+20))
 	).
 
-%	property_domain(+Subject, +Property, -Domain)
-%	
-%	Determine the domain of this property. Note that if the domain
-%	is a class we want the selector to select a class by browsing
-%	the class-hierarchy.  There is some issue around meta-classes
-%	here.  Maybe we need class(Root, Meta)!
-
-property_domain(Subject, Property, Domain) :-
-	findall(R, property_restriction(Subject, Property, R), List),
-	sort(List, Set),
-	(   Set = [Domain]
-	->  true
-	;   Domain = intersection_of(Set)
-	).
-
-property_restriction(_, Property, R) :-
-	rdf_has(Property, rdfs:range, Range),
-	adjust_restriction(all_values_from(Range), R).
-property_restriction(Subject, Property, R) :-
-	rdf_has(Subject, rdf:type, Class),
-	owl_restriction_on(Class, restriction(Property, R0)),
-	adjust_restriction(R0, R).
-	
-adjust_restriction(cardinality(_,_), _) :- !,
-	fail.
-adjust_restriction(all_values_from(Class), class(Root)) :-
-	rdfs_subclass_of(Class, rdfs:'Class'), !,
-	rdf_equal(Root, rdfs:'Resource').
-adjust_restriction(R, R).
-
 :- pce_end_class(rdf_tabular).
 
 
@@ -160,6 +131,10 @@ resource(C, Value:prolog) :<-
 	"Represented value"::
 	get(C, image, Image),
 	get(Image, resource, Value).
+
+triple(Cell, Triple:prolog) :<-
+	get(Cell, image, Image),
+	get(Image, triple, Triple).
 
 :- pce_end_class.
 
@@ -182,13 +157,27 @@ initialise(C, R:prolog, P:[name]) :->
 
 delete(Cell) :->
 	"Delete triple from database"::
-	get(Cell, image, Image),
-	get(Image, triple, rdf(S,P,O)),
+	get(Cell, triple, rdf(S,P,O)),
 	rdfe_transaction(rdfe_retractall(S,P,O),
 			 delete_property).
 
 modify(Cell) :->
-	format('Request to modify ~p~n', [Cell]).
+	get(Cell, triple, rdf(S,P,O)),
+	get(Cell, image, Image),
+	get(Image, device, Tabular),
+	send(Tabular, prompt_value,
+	     message(Cell, set_value, @arg1, @arg2),
+	     S, P, O,
+	     @default, Image).
+	     
+set_value(Cell, Value:name, Type:{resource,literal}) :->
+	(   Type == literal
+	->  Object = literal(Value)
+	;   Object = Value
+	),
+	get(Cell, triple, rdf(S,P,O)),
+	rdfe_transaction(rdfe_update(S,P,O, object(Object)),
+			 modify_property).
 
 :- pce_end_class.
 

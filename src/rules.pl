@@ -28,6 +28,16 @@ owl_description_attribute(X) :- rdf_equal(owl:intersectionOf, X).
 
 :- begin_particle(rdf_label_rules, []).
 
+:- dynamic
+	view_label_as/1.
+
+label_text(Resource, Text) :-
+	view_label_as(label_only), !,
+	rdfs_label(Resource, Text).
+label_text(Resource, Text) :-
+	view_label_as(resource), !,
+	rdf_global_id(NS:Local, Resource),
+	concat_atom([NS, :, Local], Text).
 label_text(Resource, Text) :-
 	rdfs_ns_label(Resource, Text).
 
@@ -69,6 +79,7 @@ label_class(Obj, rdf_list_label) :-
 	rdfs_individual_of(Obj, rdf:'List').
 label_class(Obj, rdf_individual_label) :-
 	rdf_has(Obj, rdf:type, _).
+label_class('__not_filled', rdf_not_filled_label).
 label_class(_, rdf_resource_text).
 
 :- end_particle.
@@ -86,6 +97,7 @@ resource(resource,    image, image('16x16/resource.xpm')).
 resource(restriction, image, image('16x16/restriction.xpm')).
 resource(description, image, image('16x16/description.xpm')).
 resource(wnclass,     image, image('16x16/wnclass.xpm')).
+resource(nil,         image, image('16x16/DisketteBoxEmpty.xpm')).
 
 :- begin_particle(rdf_icon_rules, []).
 
@@ -110,6 +122,8 @@ icon(R, Icon) :-
 icon(R, Icon) :-
 	rdfs_individual_of(R, rdf:'List'),
 	new(Icon, image(resource(list))).
+icon('__not_filled', Icon) :-
+	new(Icon, image(resource(nil))).
 icon(_, Icon) :-
 	new(Icon, image(resource(individual))).
 

@@ -42,6 +42,7 @@
 :- use_module(semweb(rdf_db)).
 :- use_module(rdf_cache).
 :- use_module(owl).
+:- use_module(rdf_util).
 :- use_module(semweb(rdfs)).
 :- use_module(rdf_table).
 :- use_module(semweb(rdf_edit)).
@@ -146,12 +147,18 @@ fill_tool_dialog(OV) :->
 		    menu_item(exit)
 		  ]),
 
-	send(View, multiple_selection, @on),
-	send(View, show_current, @on),
 	send_list(View, append,
-		  [ menu_item(namespaces)
+		  [ new(Label, popup(label,
+				     message(OV, view_label_as, @arg1)))
 		  ]),
-	send(View, selected, namespaces, @on),
+
+	send(Label, show_current, @on),
+	send_list(Label, append,
+		  [ label_only,
+		    namespace_and_label,
+		    resource
+		  ]),
+	send(Label, selection, namespace_and_label),
 	send(OV, append_tool_buttons).
 
 append_tool_buttons(OV) :->
@@ -360,15 +367,17 @@ statistics(OV) :->
 
 :- pce_group(preferences).
 
-namespaces(OV) :->
-	"Toggle `show namespaces'"::
-	get(OV, tree, Tree),
-	get(Tree, show_namespace, Show),
-	get(Show, negate, NewShow),
-	send(Tree, show_namespace, NewShow),
-	(   get(OV, menu, view, Popup),
-	    get(Popup, member, namespaces, Item)
-	->  send(Item, selected, NewShow)
+view_label_as(OV, As:name) :->
+	"Determine how a resource is visualised"::
+	retractall(rdf_label_rules:view_label_as(_)),
+	assert(rdf_label_rules:view_label_as(As)),
+	send(@resource_texts, for_all,
+	     message(@arg2, for_all,
+		     message(@arg1, update))),
+	(   get(OV, menu, view, View),
+	    get(View, member, label, PopupItem),
+	    get(PopupItem, popup, Popup)
+	->  send(Popup, selection, As)
 	;   true
 	).
 
@@ -429,7 +438,7 @@ help_message(B, _Which:{tag,summary}, _Ev:[event], Tooltip:char_array) :<-
 %	version management on the journal.
 
 t_name(TID, Atom) :-
-	rdfe_transaction_name([TID], Name), !,
+	rdfe_transaction_name(TID, Name), !,
 	term_to_atom(Name, Atom).
 t_name(TID, Atom) :-
 	rdfe_transaction_name([TID|_], Name), !,
@@ -921,33 +930,17 @@ add_predicate(AL, From:button) :->
 	    Predicate \== @nil,
 
 	    get(AL, resource, Subject),
-	    send(AL, prompt_value,
-		 message(AL, new_predicate, Predicate, @arg1, @arg2),
-		 Subject,
-		 Predicate,
-		 @default,
-		 @default,
-		 From)
+	    property_type(Subject, Predicate, Type),
+	    (	Type == resource
+	    ->	Object = '__not_filled'
+	    ;	Object = literal('')
+	    ),
+	    rdfe_transaction(rdfe_assert(Subject, Predicate, Object),
+			     new_property)
 	;   send(AL, report, warning,
 		 'No more properties are defined')
 	).
 
-
-%	sort_by_label(+Resources, -Sorted)
-
-sort_by_label(Resources, Sorted) :-
-	tag_label(Resources, Tagged),
-	keysort(Tagged, Sorted0),
-	unkey(Sorted0, Sorted).
-
-tag_label([], []).
-tag_label([H|T0], [K-H|T]) :-
-	rdfs_ns_label(H, K),
-	tag_label(T0, T).
-
-unkey([], []).
-unkey([_-H|T0], [H|T]) :-
-	unkey(T0, T).
 
 new_predicate(AL, Predicate:name, Value:any, Type:{resource,literal}) :->
 	"Assert a new value"::
