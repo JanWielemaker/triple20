@@ -546,15 +546,11 @@ variable(cache,    int*,  get, "Cache I belong to").
 initialise(N, Role:name, Cache:int, Here:int) :->
 	"Create `more' button"::
 	rdf_cache_cardinality(Cache, Size),
-	send_super(N, initialise, new(D, figure)),
+	send_super(N, initialise, new(more_figure)),
 	send(N, slot, role, Role),
 	send(N, slot, size, Size),
 	send(N, slot, here, Here),
 	send(N, slot, cache, Cache),
-	send(D, pen, 1),
-	send(D, border, 2),
-	send(D, format, new(Fmt, format(vertical, 1, @on))),
-	send(Fmt, adjustment, vector(center)),
 	send(N, update_more),
 	send(N, collapsed, @nil).
 
@@ -631,6 +627,39 @@ initialise(B, More:int) :->
 	send(B, show_focus_border, @off).
 
 :- pce_end_class(more_button).
+
+:- pce_begin_class(more_figure, figure,
+		   "Showing more ... buttons").
+
+initialise(F) :->
+	send_super(F, initialise),
+	send(F, pen, 1),
+	send(F, border, 2),
+	send(F, format, new(Fmt, format(vertical, 1, @on))),
+	send(Fmt, adjustment, vector(center)).
+
+arm(TF, Val:bool) :->
+	"Unclip if obscured by window"::
+	(   Val == @on
+	->  (	send(TF, clipped_by_window),
+		send(@grabbed_windows, empty)
+	    ->  debug(arm, 'Arming ~p', [TF]),
+		send(TF, pen, 0),
+	        send(@unclip_window, attach, TF),
+		send(TF, pen, 1)
+	    ;	true
+	    )
+	;   true
+	).
+
+event(TF, Ev:event) :->
+	(   send(@arm_recogniser, event, Ev)
+	->  true
+	;   send_super(TF, event, Ev)
+	).
+
+:- pce_end_class.
+
 
 
 		 /*******************************

@@ -51,7 +51,7 @@ rdf_file(wn,		 'wordnet_glossary-20010201.rdf').
 rdf_file(wn,		 'wordnet_hyponyms-20010201.rdf').
 rdf_file(wn,		 'wordnet_nouns-20010201.rdf').
 rdf_file(wn,		 'wordnet_similar-20010201.rdf').
-rdf_file(wn,		 'wnclass.rdfs').
+rdf_file(wnrdfs,	 'wnclass.rdfs').
 
 rdf_file(ic,		 'iconclass.rdfs').
 
@@ -66,6 +66,7 @@ requires(painting, owl).
 requires(aat,	   rdfs).
 requires(ulan,	   rdfs).
 requires(wn,	   rdfs).
+requires(wnrdfs,   wn).
 requires(ic,	   rdfs).
 
 requires(world,	   owl).
