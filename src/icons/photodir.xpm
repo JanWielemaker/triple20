@@ -1,0 +1,94 @@
+/* XPM */
+
+static char * copland photoshop_xpm[] = {
+
+"32 32 12 1 0 0",
+
+" 	c None",
+
+".	c black",
+
+"X	c #c0c0c0",
+
+"o	c white",
+
+"O	c blue1",
+
+"+	c NavyBlue",
+
+"@	c #808080",
+
+"#	c yellow1",
+
+"$	c #a0a0a4",
+
+"%	c #fffbf0",
+
+"&	c red1",
+
+"*	c #008000",
+
+"   ...                          ",
+
+"   .XX..                        ",
+
+" ...XXXX..                      ",
+
+" .oX..XXXX..                    ",
+
+" .XXoX..XXXX..  ..              ",
+
+" .XXXXoX..XXXX..XX..            ",
+
+" .XXXXXXoX..XXXXXXXX..          ",
+
+" .XXXXXXXXoX..XXXXXXXX.         ",
+
+" .XXXXXXXXXXoX.XXXXXXX.         ",
+
+" .XXXXXXXXXXXo.XXXXXXXX..       ",
+
+" .XXXXXXXXXXXoX..XXXXXXXX.      ",
+
+" .XXXXXXXXXXXXXoX..XX..XX.      ",
+
+" .XXOOOOO++@@@XXoo#o.X@.X.      ",
+
+" .XXoX$@@@@@@...@@#@Xo@.X.      ",
+
+" .XXX$@$XX$@@@...@#OXX@.X.      ",
+
+" .XXXXXXXX$@@@....X@XX@.X.      ",
+
+" .XXXXXX@.........#@XX@.X.      ",
+
+" .XXXX@@.@........X@XX@.X.      ",
+
+" .XX@$@...........%@XX@.X.      ",
+
+" .XX@@..@.@.......XOXX@.X.      ",
+
+" .@X@$@$%.....@..@X@XX@.X.      ",
+
+"  ..&%X$$$....@@@@XOXX@.X.      ",
+
+"    @%%X@@$@@@@@@X%@XX@.X.      ",
+
+"    &%%XX@@@@@@@XoXOXX@.X. @    ",
+
+"    &%%%%X$@@@$X%%%@XX@.X.@o@ @ ",
+
+"    &%%%%%XXXXX%%%%@XX@.X.o@o@o@",
+
+"    &XXX$$$*@*@****@XX@.X.@o@o@ ",
+
+"     @@@@@@@@@@@@@@@XX@.X.o@o@  ",
+
+"                ..@XXX@.X.@o@   ",
+
+"                  ..@X@.X. @    ",
+
+"                    ..@.X.      ",
+
+"                      ...       "};
+

@@ -1,0 +1,23 @@
+\BOOKMARK [1][-]{section.1}{Introduction}{}
+\BOOKMARK [1][-]{section.2}{Modules}{}
+\BOOKMARK [1][-]{section.3}{Module rdf\137db}{}
+\BOOKMARK [2][-]{subsection.3.1}{Query the RDF database}{section.3}
+\BOOKMARK [2][-]{subsection.3.2}{Modifying the database}{section.3}
+\BOOKMARK [2][-]{subsection.3.3}{Loading and saving to file}{section.3}
+\BOOKMARK [3][-]{subsubsection.3.3.1}{Partial save}{subsection.3.3}
+\BOOKMARK [3][-]{subsubsection.3.3.2}{Fast loading and saving}{subsection.3.3}
+\BOOKMARK [2][-]{subsection.3.4}{Namespace Handling}{section.3}
+\BOOKMARK [2][-]{subsection.3.5}{Miscellaneous predicates}{section.3}
+\BOOKMARK [2][-]{subsection.3.6}{Issues with rdf\137db}{section.3}
+\BOOKMARK [1][-]{section.4}{Module rdfs}{}
+\BOOKMARK [2][-]{subsection.4.1}{Hierarchy and class-individual relations}{section.4}
+\BOOKMARK [2][-]{subsection.4.2}{Collections and Containers}{section.4}
+\BOOKMARK [2][-]{subsection.4.3}{Labels and textual search}{section.4}
+\BOOKMARK [1][-]{section.5}{Module owl}{}
+\BOOKMARK [1][-]{section.6}{Module rdf\137edit}{}
+\BOOKMARK [2][-]{subsection.6.1}{Transaction management}{section.6}
+\BOOKMARK [2][-]{subsection.6.2}{Encapsulated predicates}{section.6}
+\BOOKMARK [2][-]{subsection.6.3}{High-level modification predicates}{section.6}
+\BOOKMARK [2][-]{subsection.6.4}{Undo}{section.6}
+\BOOKMARK [2][-]{subsection.6.5}{Journalling}{section.6}
+\BOOKMARK [2][-]{subsection.6.6}{Broadcasting change events}{section.6}

@@ -1,0 +1,7 @@
+#!/staff/jan/bin/pl -q -g main -s
+
+main([F1, F2, Out]) :-
+	new(X, image),
+	send(X, load, F1),
+	send(X, draw_in, bitmap(F2)),
+	send(X, save, Out, xpm).

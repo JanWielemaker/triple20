@@ -1,0 +1,67 @@
+Hierarchy rendering:
+
+	* Multiple inheritence
+
+	* Allow for hybrid hierarchies
+		- multiple relations
+		- multiple resource-types
+
+	* Root
+
+Need rules for
+
+	* What are the children of <Node>?
+
+	* What is the role of <Node>?
+		- Class
+		    - Abstract
+		    - Concrete
+		- Property
+		- Instance
+		- Virtual
+		    - <Orphan classes> (below rdfs:Resource/owl:Thing)
+		    - OWL restrictions
+		- Part/Whole
+
+	* Visualisation
+		- Graphical used
+		- Colour
+		- Background
+		- Font
+		- Icon
+
+	* How to add a new node?
+		- What is the principal parent of <resource>?
+		  (Needed for limited expansion)
+
+	* OWL restrictions, etc?
+
+Node is characterised by
+
+	* Represented resource
+	* Represented link to parent
+
+	* Yes/no having children
+
+Multiple inheritance
+
+	* Duplicate the node, add 
+	  
+
+
+:- module(mytree).
+
+root(rdfs:'Resource').
+
+role(Resource, Link, class) :-
+	rdfs_individual_of(X, rdfs:Class),
+	rdfs_subproperty_of(Link, rdfs:subClassOf).
+role(Resource, Link, property) :-
+	
+child(Resource, Link, Child-Link) :-
+	rdfs_individual_of(Resource, rdfs:'Property'),
+	(   rdfs_subproperty_of(Link, rdfs:subPropertyOf)
+	;   rdfs_subproperty_of(Link, rdf:type)
+	),
+	rdf_has(Child, rdfs:subPropertyOf, Resource).
+	

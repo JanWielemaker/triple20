@@ -1,0 +1,237 @@
+<?xml version="1.0" encoding="ISO-8859-1"?>
+<!DOCTYPE rdf:RDF [
+	<!ENTITY rdf "http://www.w3.org/1999/02/22-rdf-syntax-ns#">
+	<!ENTITY rdfs "http://www.w3.org/2000/01/rdf-schema#">
+	<!ENTITY owl "http://www.w3.org/2002/07/owl#">
+	<!ENTITY vra "http://www.swi.psy.uva.nl/mia/vra#">
+	<!ENTITY dc "http://purl.org/dc/elements/1.1/">
+	<!ENTITY aat "http://www.swi.psy.uva.nl/mia/aat#">
+	<!ENTITY ulan "http://www.swi.psy.uva.nl/mia/ulan#">
+	<!ENTITY wordnet "http://www.swi.psy.uva.nl/mia/wordnet#">
+	<!ENTITY wn "http://www.cogsci.princeton.edu/~wn/concept#">
+	<!ENTITY wns "http://www.cogsci.princeton.edu/~wn/schema/">
+	<!ENTITY iconclass "http://www.swi.psy.uva.nl/mia/iconclass#">
+	<!ENTITY ghs "http://www.swi.psy.uva.nl/mia/ghs#">
+	<!ENTITY xsd "http://www.w3.org/2001/XMLSchema#">
+]>
+<rdf:RDF xmlns:base="http://www.swi.psy.uva.nl/vra" xmlns="&vra;" xmlns:vra="&vra;" xmlns:dc="&dc;" xmlns:rdf="&rdf;" xmlns:rdfs="&rdfs;" xmlns:owl="&owl;" xmlns:aat="&aat;" xmlns:ulan="&ulan;" xmlns:wn="&wn;" xmlns:wns="&wns;" xmlns:iconclass="&iconclass;" xmlns:ghs="&ghs;">
+	
+	<owl:Ontology rdf:about="http://www.swi.psy.uva.nl/mia/aeneis">
+		<rdfs:comment>Ontology of the mythical figure Aeneas Version 1.5</rdfs:comment>
+		<dc:creator>Merijn Manders</dc:creator>
+	</owl:Ontology>
+
+	<!--To get a handle in the browser, should be in owl.owl-->
+
+	<rdf:Description rdf:about="&owl;Thing">
+	    <rdfs:subClassOf rdf:resource="&rdfs;Resource"/>
+	</rdf:Description>
+
+	<!--THE CLASSES: PEOPLE and GODS-->
+
+	<owl:Class rdf:ID="&ghs;being">
+		<rdfs:subClassOf  rdf:resource="&owl;Thing"/>
+	</owl:Class>
+
+	<owl:Class rdf:ID="&ghs;person">
+		<rdfs:label>person</rdfs:label>
+		<rdfs:comment>All members are humanlike figures, able to have children. Contains both humans and gods</rdfs:comment>
+		<owl:same_as rdf:resource="&aat;50024979"/>
+		<owl:same_as rdf:resource="&wn;100004123"/>
+		<owl:same_as rdf:resource="&wn;101969053"/>
+		<owl:same_as rdf:resource="&wn;106861622"/>
+		
+		<!-- a person has exactly 2 parents -->
+		<rdfs:subClassOf  rdf:resource="&ghs;being"/>
+		<rdfs:subClassOf>
+		<owl:Restriction>
+			<owl:onProperty rdf:resource="&ghs;has_parent"/>
+			<owl:cardinality rdf:datatype="&xsd;nonNegativeInteger">2</owl:cardinality>
+		</owl:Restriction>
+		</rdfs:subClassOf>
+	</owl:Class>
+
+	<!-- Define class gender, probably could be better expressed
+	     using complete, enumeration, union etc?-->	
+	<owl:Class rdf:ID="&ghs;gender">
+		<rdfs:subClassOf  rdf:resource="&owl;Thing"/>
+		<owl:sameAs rdf:resource="&wn;103910916"/>
+	</owl:Class>
+
+	<owl:Class rdf:ID="&ghs;male">
+	        <rdfs:subClassOf rdf:resource="&ghs;gender"/>
+	</owl:Class>
+	
+	<owl:Class rdf:ID="&ghs;female">
+	        <rdfs:subClassOf rdf:resource="&ghs;gender"/>
+	</owl:Class>
+
+	<owl:ObjectProperty rdf:ID="&ghs;has_gender">
+		<rdf:type rdf:resource="&owl;FunctionalProperty"/>
+		<rdfs:domain rdf:resource="&ghs;person"/>
+		<rdfs:range rdf:resource="&ghs;gender"/>
+	</owl:ObjectProperty>
+	
+	<!-- Define class man -->
+	<owl:Class rdf:ID="&ghs;man">
+		<owl:sameAs rdf:resource="&aat;50025928"/>
+		<owl:sameAs rdf:resource="&wn;106951621"/>
+		<owl:sameAs rdf:resource="&wn;107391044"/><!--man, adult male-->
+		<rdfs:subClassOf  rdf:resource="&ghs;person"/>
+		<rdfs:subClassOf>
+		<owl:Restriction>
+			<owl:onProperty rdf:resource="&ghs;has_gender"/>
+			<owl:allValuesFrom rdf:resource="&ghs;male"/>			</owl:Restriction>
+		</rdfs:subClassOf>
+	</owl:Class>
+
+	<!-- Define class woman -->
+	<owl:Class rdf:ID="&ghs;woman">
+		<owl:sameAs rdf:resource="&wn;107684780"/>
+		<rdfs:subClassOf  rdf:resource="&ghs;person"/>
+		<rdfs:subClassOf>
+		<owl:Restriction>
+			<owl:onProperty rdf:resource="&ghs;has_gender"/>
+			<owl:allValuesFrom rdf:resource="&ghs;female"/>			</owl:Restriction>
+		</rdfs:subClassOf>
+	</owl:Class>
+
+	<!-- Demi-god (Daemon) is defined by its by parents: at least one is a deity & at least one is a person -->
+	<owl:Class rdf:ID="&ghs;demi_god">
+		<owl:equivalentClass rdf:resource="&wn;106862378"/>
+		<rdfs:subClassOf>
+		        <owl:Restriction>
+			       <owl:onProperty rdf:resource="&ghs;has_parent"/>
+			       <owl:someValueOf rdf:resource="&wn;106861622"/>
+			</owl:Restriction>
+		</rdfs:subClassOf>
+		<rdfs:subClassOf>
+		        <owl:Restriction>
+			<owl:onProperty rdf:resource="&ghs;has_parent"/>
+			<owl:someValueOf rdf:resource="&ghs;person"/>
+			</owl:Restriction>
+		</rdfs:subClassOf>
+	</owl:Class>
+
+
+
+	<!--THE RELATIONS-->
+
+	<!--has_gender relationship-->
+	<owl:ObjectProperty rdf:ID="&ghs;has_gender">
+		<rdfs:domain rdf:resource="&ghs;person"/>
+		<rdfs:range rdf:resource="&ghs;gender"/>
+	</owl:ObjectProperty>
+
+
+
+	<!--has_ancestor relationship-->
+	<owl:TransitiveProperty rdf:ID="&ghs;has_ancestor">
+		<rdfs:domain rdf:resource="&ghs;person"/>
+		<rdfs:range rdf:resource="&ghs;person"/>
+	</owl:TransitiveProperty>
+
+	<!--has_parent relationship-->
+	<owl:ObjectProperty rdf:ID="&ghs;has_parent">
+		<rdfs:domain rdf:resource="&ghs;person"/>
+		<rdfs:range rdf:resource="&ghs;person"/>
+		<rdfs:subPropertyOf rdf:resource="&ghs;has_ancestor"/>
+	</owl:ObjectProperty>
+
+	<!--has_offspring relationship-->
+	<owl:ObjectProperty rdf:ID="&ghs;has_offspring">
+		<rdfs:domain rdf:resource="&ghs;person"/>
+		<rdfs:range rdf:resource="&ghs;person"/>
+		<rdfs:subPropertyOf rdf:resource="&ghs;family_relation"/>
+		<rdfs:inverseOf rdf:resource="&ghs;has_parent"/>
+	</owl:ObjectProperty>
+
+	<!-- has_father relationship -->
+	<owl:FunctionalProperty rdf:ID="&ghs;has_father">
+		<rdfs:domain rdf:resource="&ghs;person"/>
+		<rdfs:range rdf:resource="&ghs;man"/>
+		<rdfs:subPropertyOf rdf:resource="&ghs;has_parent"/>
+	</owl:FunctionalProperty>
+	
+	<!--has_mother relationship -->
+	<owl:FunctionalProperty rdf:ID="&ghs;has_mother">
+		<rdfs:domain rdf:resource="&ghs;person"/>
+		<rdfs:range rdf:resource="&ghs;woman"/>
+		<rdfs:subPropertyOf rdf:resource="&ghs;has_parent"/>
+	</owl:FunctionalProperty>
+
+	<!--has_son relationship -->
+	<owl:ObjectProperty rdf:ID="&ghs;has_son">
+		<rdfs:domain rdf:resource="&ghs;person"/>
+		<rdfs:range rdf:resource="&ghs;person"/>
+		<rdfs:subPropertyOf rdf:resource="&ghs;has_offspring"/>
+	</owl:ObjectProperty>
+
+	<!--is_son_of relationship -->
+	<owl:ObjectProperty rdf:ID="&ghs;is_son_of">
+		<rdfs:domain rdf:resource="&ghs;person"/>
+		<rdfs:range rdf:resource="&ghs;person"/>
+		<rdfs:subPropertyOf rdf:resource="&ghs;is_offspring_of"/>
+		<owl:inverseOf rdf:resource="&ghs;has_son"/>
+	</owl:ObjectProperty>
+
+
+	<!-- THE INDIVIDUALS -->
+
+	<!-- Anchises -->
+	<ghs:person rdf:ID="&ghs;Anchises"/>
+	
+	<!-- Aphrodite -->
+	<ghs:person rdf:ID="&ghs;Aphrodite">
+	        <owl:sameAs rdf:resource="&wn;106902559"/>
+	</ghs:person>
+	<!-- =wn:Aphrodite just for testing symmetry -->
+	<rdf:Description rdf:about="&wn;106902559">
+	        <owl:sameAs rdf:resource="&ghs;Aphrodite"/>
+	</rdf:Description>
+	<!-- Venus just for testing class equivalence -->
+	<rdf:Description rdf:about="&wn;106902723">
+	        <owl:equivalentClass rdf:resource="&ghs;Aphrodite"/>
+	</rdf:Description>
+	<rdf:Description rdf:about="&ghs;Aphrodite">
+	        <owl:equivalentClass rdf:resource="&wn;106902723"/>
+	</rdf:Description>
+
+	<!-- Ascanius -->
+	<ghs:person rdf:ID="&ghs;Ascanius"/>
+	
+	<!-- Aeneas -->
+	<ghs:person rdf:ID="&ghs;Aeneas">
+		<owl:sameAs rdf:resource="&wn;106933600"/>
+<!--		<ghs:has_gender rdf:resource="&ghs;male"/> -->
+		<ghs:has_gender><ghs:male/></ghs:has_gender>
+		<ghs:has_father rdf:resource="&ghs;Anchises"/>
+		<ghs:has_mother rdf:resource="&ghs;Aphrodite"/>
+		<ghs:has_son rdf:resource="&ghs;Ascanius"/>
+	</ghs:person>
+
+</rdf:RDF>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

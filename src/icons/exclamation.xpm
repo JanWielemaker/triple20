@@ -1,0 +1,33 @@
+/* XPM */
+static char * exclamation_xpm[] = {
+/* columns rows colors chars-per-pixel */
+"24 24 4 1 10 17",
+" 	c None",
+".	c black",
+"X	c #a0a0a4",
+"o	c yellow",
+/* pixels */
+"                        ",
+"         ...X           ",
+"        .ooo.X          ",
+"        .ooo.XX         ",
+"       .ooooo.XX        ",
+"       .ooooo.XX        ",
+"      .ooo..oo.XX       ",
+"      .oo....o.XX       ",
+"     .ooo....oo.XX      ",
+"     .ooo....oo.XX      ",
+"    .oooo....ooo.X      ",
+"    .oooo....ooo.XX     ",
+"   .oooooo..ooooo.XX    ",
+"   .oooooo..ooooo.XX    ",
+"  .ooooooooooooooo.X    ",
+"  .ooooooooooooooo.XX   ",
+" .oooooooo..ooooooo.XX  ",
+" .ooooooo....oooooo.XX  ",
+" .oooooooo..oooooooo.XX ",
+" .oooooooooooooooooo.XX ",
+" .oooooooooooooooooo.XX ",
+"  ..................XXX ",
+"    XXXXXXXXXXXXXXXXXXX ",
+"                        "};

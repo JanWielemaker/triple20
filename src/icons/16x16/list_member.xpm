@@ -1,0 +1,23 @@
+/* XPM */
+static char * list_member_xpm[] = {
+"15 15 5 1",
+" 	c white",
+".	c None",
+"X	c gray43",
+"o	c #a5bbdc",
+"O	c black",
+"           ....",
+"           ....",
+"  XXXXXXXXXXX..",
+"  XoooooooooX..",
+"  XoOOoooOOoX..",
+"  XoOOOoOOOoX..",
+"  XoOOOOOOOoX..",
+"  XoOOoOoOOoX..",
+"  XoOOoooOOoX..",
+"  XoOOoooOOoX..",
+"  XoOOoooOOoX..",
+"..XoooooooooX..",
+"..XXXXXXXXXXX..",
+"...............",
+"..............."};

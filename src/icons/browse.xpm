@@ -1,0 +1,22 @@
+/* XPM */
+static char * browse_xpm[] = {
+"16 16 3 1",
+" 	s None	c None",
+".	c black",
+"X	c gold",
+"                ",
+"  ...........   ",
+" .XX..XXXXXXX.  ",
+" .XX...XXXXXX.  ",
+" .XX....XXXXX.  ",
+" .XX....XXXXX.  ",
+" .XXX.XX.XXXX.  ",
+" .XXXX...XXXX.  ",
+" .XXXX....XXX.  ",
+" .XXX.XXXX.XX.  ",
+" .XX..XXXX..X.  ",
+" ..X...X...X..  ",
+" .X.XXX.XXX.X.  ",
+" .XXXXXXXXXXX.  ",
+"  ...........   ",
+"                "};

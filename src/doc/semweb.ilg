@@ -1,0 +1,7 @@
+This is makeindex, version 2.13 [07-Mar-1997] (using kpathsea).
+Scanning style file /staff/jan/lib/tex/makeindex.ist..done (2 attributes redefined, 0 ignored).
+Scanning input file semweb.idx....done (115 entries accepted, 0 rejected).
+Sorting entries....done (797 comparisons).
+Generating output file semweb.ind....done (139 lines written, 0 warnings).
+Output written in semweb.ind.
+Transcript written in semweb.ilg.
