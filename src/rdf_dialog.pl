@@ -33,11 +33,16 @@
 :- use_module(library(pce)).
 :- use_module(semweb(rdf_db)).
 :- use_module(library(lists)).
+:- use_module(rdf_util).
 
 
 /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 Provide some standard dialogs for ontology handling.
 - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
+
+		 /*******************************
+		 *	       SEARCH		*
+		 *******************************/
 
 :- pce_begin_class(rdf_search_dialog, dialog,
 		   "Search for resources based on textual attributes").
@@ -161,5 +166,73 @@ selection(TI, Selection:name) :<-
 	;   Selection = Typed
 	),
 	send(TI, selection, Selection).
+
+:- pce_end_class.
+
+
+		 /*******************************
+		 *	       FILE		*
+		 *******************************/
+
+%	@rdf_source_file_type
+%	
+%	This type enumerates all registered RDF sourcefiles.
+
+make_rdf_source_file_type :-
+	(   object(@rdf_source_file_type)
+	->  true
+	;   new(@rdf_source_file_type,
+		type(rdf_source_file, value_set,
+		     quote_function(@prolog?rdf_source_files),
+		     @nil))
+	).
+
+rdf_source_files(Chain) :-
+	new(Chain, chain),
+	forall(rdf_source(File), send(Chain, append, File)),
+	send(Chain, sort).
+
+:- initialization
+   make_rdf_source_file_type.
+
+:- pce_begin_class(rdf_merge_file_dialog, dialog,
+		   "Prompt for merging two files").
+
+initialise(D) :->
+	send_super(D, initialise, 'Merge files'),
+	send(D, append, new(From, text_item(from))),
+	send(D, append, button('->', @nil)),
+	send(D, append, new(Into, text_item(into))),
+	send_list([From, Into],
+		  [ type(@rdf_source_file_type),
+		    length(60)
+		  ]),
+	send(From, type, @rdf_source_file_type),
+	send(D, append, new(Merge, button(merge))),
+	send(Merge, active, @off),
+	send(Merge, default_button, @on),
+	send(D, append, button(cancel)).
+
+modified_item(D, _Gr:graphical, _M:bool) :->
+	get(D, member, merge, Button),
+	(   get(D, member, into, IntoItem),
+	    get(D, member, from, FromItem),
+	    pce_catch_error(_, get(IntoItem, selection, Into)),
+	    pce_catch_error(_, get(FromItem, selection, From)),
+	    Into \== From
+	->  send(Button, active, @on)
+	;   send(Button, active, @off)
+	).
+
+cancel(D) :->
+	send(D, destroy).
+
+merge(D) :->
+	get(D, member, into, IntoItem),
+	get(D, member, from, FromItem),
+	get(IntoItem, selection, Into),
+	get(FromItem, selection, From),
+	rdf_merge_files(Into, From),
+	send(D, destroy).
 
 :- pce_end_class.

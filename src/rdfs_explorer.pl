@@ -153,6 +153,7 @@ fill_tool_dialog(OV) :->
 				    message(OV, load_base_ontology, @arg1))),
 			
 		    menu_item(new_file),
+		    menu_item(merge_files),
 		    gap,
 		    new(SaveFile, popup(save_file,
 					message(OV, save_file, @arg1))),
@@ -330,6 +331,13 @@ new_file(_OV) :->
 	absolute_file_name(FileName, AbsName),
 	rdf_save(FileName, AbsName),
 	rdfe_transaction(rdfe_load(FileName), new_file(FileName)).
+
+merge_files(OV) :->
+	"Ask to merge sourcefiles"::
+	new(D, rdf_merge_file_dialog),
+	send(D, transient_for, OV),
+	send(D, modal, transient),
+	send(D, open_centered, OV?area?center).
 
 update_save_popup(_OV, Popup:popup) :->
 	"Update menu with all (modified) sources"::

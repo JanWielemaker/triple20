@@ -39,7 +39,8 @@
 	    rdf_add_object/3,		% +S, +P, +O
 	    rdf_new_property/2,		% +S, +P
 	    rdf_list_operation/3,	% +Action, +Triple, +Resource
-	    rdf_delete_hierarchy/3	% +Root, +Relation, +Options
+	    rdf_delete_hierarchy/3,	% +Root, +Relation, +Options
+	    rdf_merge_files/2		% +Into, +From
 	  ]).
 :- use_module(semweb(rdf_db)).
 :- use_module(semweb(rdfs)).
@@ -377,5 +378,23 @@ delete_hierarchy(Root, Property, Options) :-
 	),
 	forall(member(R, DelSet),
 	       rdfe_delete(R)).
+
 	
+		 /*******************************
+		 *	      FILES		*
+		 *******************************/
 	
+%	rdf_merge_files(Into, From)
+%	
+%	Merge all triple that have From as their payload into Into.
+
+rdf_merge_files(Into, From) :-
+	rdfe_transaction(merge_files(Into, From),
+			 merge_files(Into, From)).
+
+merge_files(Into, From) :-
+	(   rdf(S, P, O, From:Line),
+	    rdfe_update(S, P, O, From:Line, source(Into)),
+	    fail
+	;   true
+	).
