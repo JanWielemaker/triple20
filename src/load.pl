@@ -83,8 +83,7 @@ rdf_version('0.1, October 2003').
 		 *******************************/
 
 go :-
-	new(X, rdfs_explorer),
-	send(X, open).
+	go([]).
 
 %	go(+Argv)
 %	
