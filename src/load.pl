@@ -30,6 +30,15 @@
 */
 
 
+:- module(triple20,
+	  [ triple20/0,
+	    triple20/1,			% +Argv
+					% Maintenance
+	    t20_save/1			% +File
+	  ]).
+	    
+
+
 		 /*******************************
 		 *		PATHS		*
 		 *******************************/
@@ -41,11 +50,11 @@
 
 user:file_search_path(semweb,   library(semweb)).
 
-:- retractall(file_search_path(triple20, _)),
-   prolog_load_context(directory, Dir),
-   asserta(file_search_path(triple20, Dir)),
-   asserta(file_search_path(library,  triple20('.'))),
-   asserta(file_search_path(ontology_root, triple20('../Ontologies'))).
+:- user:(retractall(file_search_path(triple20, _)),
+	 prolog_load_context(directory, Dir),
+	 asserta(file_search_path(triple20, Dir)),
+	 asserta(file_search_path(library,  triple20('.'))),
+	 asserta(file_search_path(ontology_root, triple20('../Ontologies')))).
 
 :- load_files([ rdf_base,		% Info on base ontologies
 		rdf_file,		% Info on files we manage
@@ -105,10 +114,10 @@ user_version(N, Version) :-
 		 *	     TOPLEVEL		*
 		 *******************************/
 
-go :-
-	go([]).
+triple20 :-
+	triple20([]).
 
-%	go(+Argv)
+%	triple20(+Argv)
 %	
 %	Main entry.  Options:
 %	
@@ -117,18 +126,17 @@ go :-
 %		--base=Base		Load base ontology
 %		<file>.{rdf,rdfs,owl}	Load this file
 
-%go(_Argv) :-
+%triple20(_Argv) :-
 %	protocol('triple20.log'),
 %	gtrace,
 %	fail.
-go(Argv) :-
+triple20(Argv) :-
 	memberchk('--help', Argv), !,
 	usage,
 	halt(0).
-go(Argv) :-
+triple20(Argv) :-
 	debug(cache),
 	check_prolog_version,
-	rdf_prepare_ontology_dirs,
 	debug_options(Argv, Argv0),
 	(   select(OSJournal, Argv0, Argv1),
 	    file_name_extension(_, rdfj, OSJournal)
@@ -211,17 +219,26 @@ debug_options([H|T0], [H|T]) :-
 usage :-
 	print_message(informational, rdf(usage)).
 
+
+		 /*******************************
+		 *	    SETUP PATHS		*
+		 *******************************/
+
+:- initialization
+	rdf_prepare_ontology_dirs.
+
+
 		 /*******************************
 		 *	 TURN TO PROGRAM	*
 		 *******************************/
 
-save(X) :-
+t20_save(X) :-
 	qsave_program(X, []).
 
 winmain :-
 	current_prolog_flag(argv, Argv),
 	append(_, [--,Assoc], Argv),
-	go([Assoc]).
+	triple20([Assoc]).
 
 
 		 /*******************************

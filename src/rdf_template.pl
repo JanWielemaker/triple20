@@ -37,6 +37,8 @@
 :- use_module(library(pce_template)).
 :- use_module(rdf_rules).
 :- use_module(library(debug)).
+:- use_module(semweb(rdf_db)).
+:- use_module(semweb(rdfs)).
 
 :- pce_autoload(rdf_graph_frame,  rdf_graph).
 

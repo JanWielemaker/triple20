@@ -40,6 +40,8 @@
 :- use_module(semweb(rdfs)).
 :- use_module(rdf_template).
 :- use_module(rdf_rules).
+:- use_module(library(sgml_write)).
+:- use_module(library(memfile)).
 
 :- pce_autoload(editable_text, library(pce_editable_text)).
 :- pce_autoload(partof_hyper,  library(hyper)).
@@ -262,7 +264,23 @@ get_text(literal(X), Lang, Text) :- !,
 	get_text(X, Lang, Text).
 get_text(lang(Lang, Text), lang(Lang), Text) :- !.
 get_text(type(Type, Text), type(Type), Text) :- !.
-get_text(Text, -, Text).
+get_text(Text, -, Text) :-
+	atomic(Text).
+get_text(XML, -, Text) :-
+	is_xml(XML),
+	new_memory_file(MF),
+	open_memory_file(MF, write, Out),
+	xml_write(Out, XML, []),
+	close(Out),
+	memory_file_to_atom(MF, Text),
+	free_memory_file(MF).
+
+is_xml(0) :- !, fail.			% move to SGML library?
+is_xml([]).
+is_xml([H|T]) :-
+	is_xml(H), 
+	is_xml(T).
+is_xml(element(_, _, _)).
 
 set_type_or_lang(-, LT) :-
 	send(LT, slot, lang, @nil),
