@@ -570,14 +570,24 @@ Alternatively you may checkout the CVS module
 
 <H3><A NAME="sec:5.1">5.1 Finishing in MS-Windows</A></H3>
 
-<P>After installing Prolog, double click <CODE>src/setup.pl</CODE> to 
+<P>After installing Prolog, double click <CODE>setup.bat</CODE> to 
 register
 <CODE>.RDFJ</CODE> project files to start Triple20. Optionally also 
 associate <CODE>.RDF</CODE>, <CODE>.RDFS</CODE> and <CODE>.OWL</CODE> to 
 lauch Triple20 and load the file.
 
 <P>To make Triple20 accessible from the Windows desktop, create a
-<EM>shortcut</EM> from the desktop to <CODE>src/triple20.pl</CODE>.
+<EM>shortcut</EM> from the desktop to <CODE>src/triple20.pl</CODE> or 
+write a .BAT file by adjusting the template given below.
+
+<P><P><TABLE WIDTH="90%" ALIGN=center BORDER=6 BGCOLOR="#e0e0e0"><TR><TD NOWRAP>
+<PRE>
+
+@echo off
+
+"C:\Program Files\pl\bin\plwin.exe" "C:\Program Files\Triple20\src\triple20.pl"
+</PRE>
+</TABLE>
 
 <H3><A NAME="sec:5.2">5.2 Finishing in Unix</A></H3>
 
@@ -611,7 +621,9 @@ resources.
 
 <P>
 <LI><I>OWL</I><BR>
-Owl reasoning is very incomplete.
+The current system provides a simple subset of OWL/Full for deducing 
+property values and computing class extensions. More reasoning must be 
+provided, as well as the possibility to tailure the used inferencing.
 
 <P>
 <LI><I>Update</I><BR>

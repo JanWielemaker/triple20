@@ -479,13 +479,20 @@ Alternatively you may checkout the CVS module
 
 \subsection{Finishing in MS-Windows}
 
-After installing Prolog, double click \file{src/setup.pl} to register
+After installing Prolog, double click \file{setup.bat} to register
 \fileext{RDFJ} project files to start Triple20.  Optionally 
 also associate \fileext{RDF}, \fileext{RDFS} and \fileext{OWL} to
 lauch Triple20 and load the file.
 
 To make Triple20 accessible from the Windows desktop, create a
-\emph{shortcut} from the desktop to \file{src/triple20.pl}.
+\emph{shortcut} from the desktop to \file{src/triple20.pl} or
+write a .BAT file by adjusting the template given below.
+
+\begin{code}
+@echo off
+
+"C:\Program Files\pl\bin\plwin.exe" "C:\Program Files\Triple20\src\triple20.pl"
+\end{code}
 
 
 \subsection{Finishing in Unix}
@@ -518,7 +525,9 @@ We need an advanced search dialog to specify complex searches for
 resources.
 
     \item [OWL]
-Owl reasoning is very incomplete.
+The current system provides a simple subset of OWL/Full for deducing
+property values and computing class extensions.  More reasoning must
+be provided, as well as the possibility to tailure the used inferencing.
 
     \item [Update]
 Some scheduling and visual feedback is required to deal with maintaining
