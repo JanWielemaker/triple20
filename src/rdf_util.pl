@@ -35,6 +35,7 @@
 	    sort_by_label/2,		% +Resources, -Sorted
 	    rdf_default_file/2,		% +Resources, -File
 	    rdf_set_object/4,		% +S, +P, +O, +NewObject
+	    rdf_set_object/3,		% +S, +P, +Object
 	    rdf_add_object/3,		% +S, +P, +O
 	    rdf_new_property/2,		% +S, +P
 	    rdf_list_operation/3	% +Action, +Triple, +Resource
@@ -43,6 +44,32 @@
 :- use_module(semweb(rdfs)).
 :- use_module(semweb(rdf_edit)).
 :- use_module(owl).
+
+%	user:goal_expansion(+NSGoal, -Goal)
+%	
+%	This predicate allows for writing down rdf queries in a friendly
+%	name-space fashion.  
+
+:- multifile
+	user:goal_expansion/2.
+
+user:goal_expansion(rdf_set_object(Subj0, Pred0, Obj0),
+		    rdf_set_object(Subj, Pred, Obj)) :-
+	rdf_global_id(Subj0, Subj),
+	rdf_global_id(Pred0, Pred),
+	rdf_global_id(Obj0, Obj).
+user:goal_expansion(rdf_set_object(Subj0, Pred0, Obj0, New0),
+		    rdf_set_object(Subj, Pred, Obj, New)) :-
+	rdf_global_id(Subj0, Subj),
+	rdf_global_id(Pred0, Pred),
+	rdf_global_id(Obj0, Obj),
+	rdf_global_id(New0, New).
+user:goal_expansion(rdf_add_object(Subj0, Pred0, Obj0),
+		    rdf_add_object(Subj, Pred, Obj)) :-
+	rdf_global_id(Subj0, Subj),
+	rdf_global_id(Pred0, Pred),
+	rdf_global_id(Obj0, Obj).
+
 
 %	property_domain(+Subject, +Property, -Domain)
 %	
@@ -170,6 +197,33 @@ set_object(Subject, Predicate, '__not_filled', _New) :-
 set_object(Subject, Predicate, Old, New) :-
 	rdfe_update(Subject, Predicate, Old, object(New)).
 
+%	rdf_set_object(+Subject, +Predicate, +New)
+%	
+%	Remove all rdf(Subject, Predicate, _) and add rdf(Subject,
+%	Predicate, New).
+
+rdf_set_object(Subject, Predicate, Object) :-
+	property_domain(Subject, Predicate, Domain),
+	(   owl_satisfies(Domain, New)
+	->  rdfe_transaction(set_object(Subject, Predicate, Object),
+			     modify_property_value)
+	;   throw(error(domain_error(Domain, New), _))
+	).
+
+set_object(Subject, Predicate, Object) :-
+	findall(O-P, rdf_has(Subject, Predicate, O), Pairs0),
+	sort(Pairs0, Pairs),
+	(   Pairs = []
+	->  rdf_default_file(Subject, File),
+	    rdfe_assert(Subject, Predicate, Object, File)
+	;   Pairs = [Old-P|More]
+	->  rdfe_update(Subject, P, Old, object(Object)),
+	    (	member(OM-PM, More),
+		rdfe_retractall(Subject, PM, OM),
+		fail
+	    ;	true
+	    )
+	).
 
 %	rdf_add_object(Subject, Predicate, Object)
 %	
@@ -180,14 +234,13 @@ rdf_add_object(Subject, Predicate, Object) :-
 	property_domain(Subject, Predicate, Domain),
 	(   owl_satisfies(Domain, Object)
 	->  rdfe_transaction(add_object(Subject, Predicate, Object),
-			     modify_property_value)
+			     add_property_value)
 	;   throw(error(domain_error(Domain, Object), _))
 	).
 
 add_object(Subject, Predicate, Object) :-
 	rdf_default_file(Subject, File),
-	rdfe_transaction(rdfe_assert(Subject, Predicate, Object, File),
-			 add_property).
+	rdfe_assert(Subject, Predicate, Object, File).
 
 
 %	rdf_new_property(+Subject, +Property)

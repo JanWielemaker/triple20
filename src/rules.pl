@@ -410,18 +410,15 @@ drop(Command, Gr, V) :-
 	::drop_resource(Command, C, R).
 
 drop_resource(move_class, C, R) :- !,			% drop R on C
-	rdfe_retractall(R, rdfs:subClassOf, _),
-	rdfe_assert(R, rdfs:subClassOf, C).
+	rdf_set_object(R, rdfs:subClassOf, C).
 drop_resource(add_class, C, R) :- !,
-	rdfe_assert(R, rdfs:subClassOf, C).
+	rdf_add_object(R, rdfs:subClassOf, C).
 drop_resource(move_property, C, R) :- !,
-	rdfe_retractall(R, rdfs:subPropertyOf, _),
-	rdfe_assert(R, rdfs:subPropertyOf, C).
+	rdf_set_object(R, rdfs:subPropertyOf, C).
 drop_resource(change_type, C, R) :- !,
-	rdfe_retractall(R, rdf:type, _),
-	rdfe_assert(R, rdf:type, C).
+	rdf_set_object(R, rdf:type, C).
 drop_resource(add_type, C, R) :- !,
-	rdfe_assert(R, rdf:type, C).
+	rdf_add_object(R, rdf:type, C).
 drop_resource(Command, Graphical, Resource) :-
 	format('TBD: Drop ~w onto ~p: ~w~n',
 	       [Resource, Graphical, Command]).
