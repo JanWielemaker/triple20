@@ -416,11 +416,16 @@ parent(R, Parent, rdf_class_node) :-
 	;   rdf_has(R, rdfs:subClassOf, Parent)
 	).
 parent(R, Parent, Role) :-
-	rdf_has(R, rdf:type, Parent),
+	rdf_has(R, rdf:type, Type),
 	\+ rdfs_individual_of(R, rdfs:'Class'),
-	(   rdfs_subclass_of(Parent, rdf:'Property')
-	->  Role = rdf_property_node
-	;   Role = rdf_individual_node
+	(   rdfs_subclass_of(Type, rdf:'Property')
+	->  Role = rdf_property_node,
+	    (	rdf_has(R, rdfs:subPropertyOf, Parent)
+	    ->	true
+	    ;	Parent = Type
+	    )
+	;   Role = rdf_individual_node,
+	    Parent = Type
 	).
 parent(R, Parent, rdf_part_node) :-
 	rdf_has(Parent, erc:has_part, R).
