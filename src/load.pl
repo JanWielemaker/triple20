@@ -117,6 +117,10 @@ go :-
 %		--base=Base		Load base ontology
 %		<file>.{rdf,rdfs,owl}	Load this file
 
+%go(_Argv) :-
+%	protocol('triple20.log'),
+%	gtrace,
+%	fail.
 go(Argv) :-
 	memberchk('--help', Argv), !,
 	usage,
@@ -126,9 +130,10 @@ go(Argv) :-
 	check_prolog_version,
 	rdf_prepare_ontology_dirs,
 	debug_options(Argv, Argv0),
-	(   select(Journal, Argv0, Argv1),
-	    file_name_extension(_, rdfj, Journal)
-	->  (   select('--reset', Argv1, Argv2)
+	(   select(OSJournal, Argv0, Argv1),
+	    file_name_extension(_, rdfj, OSJournal)
+	->  prolog_to_os_filename(Journal, OSJournal),
+	    (   select('--reset', Argv1, Argv2)
 	    ->	Mode = write
 	    ;   Mode = append,
 		Argv2 = Argv1
