@@ -83,6 +83,7 @@ rdf_db:ns(gcl,     'http://www.govtalk.gov.uk/schemasstandards/gcl#').
 rdf_db:ns(skos,    'http://www.w3.org/2004/02/skos/core#').
 rdf_db:ns(skosm,   'http://www.w3.org/2004/02/skos/mapping#').
 rdf_db:ns(aeneas,  'http://www.swi.psy.uva.nl/mia/aeneas#').
+rdf_db:ns(mia2,  'http://www.swi.psy.uva.nl/mia/mia2#').
 %	load_base_ontology(+Identifier)
 
 load_base_ontology(Category) :-
