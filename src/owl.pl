@@ -419,7 +419,7 @@ owl_individual_of(_Resource, Nothing) :-
 	rdf_equal(Nothing, owl:'Nothing'), !,
 	fail.
 owl_individual_of(Resource, Description) :-
-	rdfs_individual_of(Description, owl:'Class'), !,
+	rdfs_individual_of(Description, owl:'Class'),
 	(   rdfs_individual_of(Description, owl:'Restriction')
 	->  owl_satisfies_restriction(Resource, Description)
 	;   rdf_has(Description, owl:unionOf, Set)
@@ -436,6 +436,12 @@ owl_individual_of(Resource, Description) :-
 owl_individual_of(Resource, Description) :-
 	rdfs_individual_of(Description, rdfs:'Class'),
 	rdfs_individual_of(Resource, Description).
+owl_individual_of(Resource, Description) :-
+	owl_individual_from_range(Resource, Description).
+
+owl_individual_from_range(Resource, Class) :-
+	rdf_has(P, rdfs:range, Class),
+	rdf_has(_, P, Resource).	% owl_has?
 
 intersection_of(List, Resource) :-
 	rdf_has(List, rdf:first, First),
@@ -479,6 +485,7 @@ owl_has_transitive(S, P, O) :-
 
 owl_has_transitive(S, P, O, Visited) :-
 	owl_has_equivalent(S, P, O1),
+	O1 \= literal(_),
 	\+ memberchk(O1, Visited),
 	(   O = O1
 	;   owl_has_transitive(O1, P, O, [O1|Visited])
@@ -508,6 +515,7 @@ owl_has_equivalent(S, P, O) :-
 %	
 %	True if X and Y are connected by the OWL identity relation.
 
+owl_same_as(literal(X), literal(X)) :- !.
 owl_same_as(X, Y) :-
 	nonvar(X), !,
 	owl_same_as(X, Y, [X]).
@@ -519,6 +527,7 @@ owl_same_as(X, Y, Visited) :-
 	(   rdf_has(X, owl:sameAs, X1)
 	;   rdf_has(X1, owl:sameAs, X)
 	),
+	X1 \= literal(_),
 	\+ memberchk(X1, Visited),
 	owl_same_as(X1, Y, [X1|Visited]).
 
@@ -535,7 +544,7 @@ owl_has_direct(S, P, O) :-
 	(   rdf_has(P, owl:inverseOf, P2)
 	;   rdf_has(P2, owl:inverseOf, P)
 	),
-	rdf(S, P2, O).
+	rdf_has(O, P2, S).		% TBD: must call owl_has_direct/3
 owl_has_direct(S, P, O) :-
 	rdfs_individual_of(P, owl:'SymetricProperty'),
 	rdf(O, P, S).

@@ -383,29 +383,6 @@ child_cache(R, Cache, rdf_part_node) :-	% TBD: move outside
 
 view_owl_class_extension.
 
-%	owl_subclass_of(-SubClass, +Class)
-%	owl_subclass_of(+SubClass, -Class)
-%	
-%	Returns both the RDFS subclasses and classes that have Class in
-%	their owl:intersectionOf attribute.  What to do with unionOf?
-
-owl_subclass_of(Class, R) :-
-	rdf_has(Class, rdfs:subClassOf, R).
-owl_subclass_of(Class, R) :-
-	(   nonvar(R)
-	->  rdf_has(List, rdf:first, R),
-	    list_head(List, Head),
-	    rdf_has(Class, owl:intersectionOf, Head)
-	;   rdf_has(Class, owl:intersectionOf, List),
-	    rdfs_member(R, List)
-	).
-	
-list_head(List, Head) :-
-	(   rdf_has(H, rdf:rest, List)
-	->  list_head(H, Head)
-	;   Head = List
-	).
-
 owl_inferred_member(R, Class) :-
 	owl_individual_of(R, Class),
 	\+ rdf_has(R, rdf:type, Class).
