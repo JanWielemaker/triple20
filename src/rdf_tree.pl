@@ -788,6 +788,98 @@ initialise(B, More:int) :->
 
 :- pce_end_class(more_button).
 
+		 /*******************************
+		 *	      SEARCH		*
+		 *******************************/
+
+:- pce_begin_class(rdf_more_search, text_item,
+		   "Search-based offset in result-set").
+
+variable(cache, int, get, "Associated cache").
+
+initialise(SI, Cache:int) :->
+	"Create from cache"::
+	send_super(SI, initialise, search),
+	send(SI, show_label, @off),
+	send(SI, length, 6),
+	send(SI, slot, cache, Cache).
+
+event(SI, Ev:event) :->
+	get(SI, value_text, VT),
+	get(VT?string, value, Old),
+	send_super(SI, event, Ev),
+	get(VT?string, value, New),
+	(   New \== Old
+	->  send(SI, search, New)
+	;   true
+	).
+
+search(SI, For:name) :->
+	"Search for For and invoke ->offset"::
+	get(SI, cache, Cache),
+	(   bfind_prefix(Cache, For, Offset)
+	->  send(SI, offset, Offset)
+	;   send(SI, offset, @nil)
+	).
+
+bfind_prefix(Cache, Prefix, Offset) :-
+	rdf_cache_result_set(Cache, Set),
+	functor(Set, _, Size),
+	Here is Size//2,
+	bfind_prefix(0, Here, Size, Set, Prefix, Offset).
+
+bfind_prefix(Low, Here, High, Set, Prefix, Offset) :-
+%	format('Low=~w, Here=~w, High=~w~n', [Low, Here, High]),
+	arg(Here, Set, R),
+	rdfs_label(R, Label0),
+	downcase_atom(Label0, Label),
+	(   sub_atom(Label, 0, _, _, Prefix)
+	->  (   Before is Here - 1,
+	        arg(Before, Set, R2),
+		rdfs_label(R2, LabelR20),
+		downcase_atom(LabelR20, LabelR2),
+		sub_atom(LabelR2, 0, _, _, Prefix)
+	    ->	Here2 is (Low+Here)//2,
+		bfind_prefix(Low, Here2, Here, Set, Prefix, Offset)
+	    ;	Offset = Here
+	    )
+	;   compare(Diff, Label, Prefix),
+	    (	Diff == (<)
+	    ->	Here2 is (Here+High)//2,
+		Here2 > Here,
+		bfind_prefix(Here, Here2, High, Set, Prefix, Offset)
+	    ;	Diff == (>)
+	    ->	Here2 is (Low+Here)//2,
+		(   Here2 > Low
+		->  Here3 = Here2
+		;   Low < High
+		->  Here3 is Low + 1
+		),
+	        bfind_prefix(Low, Here3, Here, Set, Prefix, Offset)
+	    ;	assume(fail)
+	    )
+	).
+
+offset(SI, Offset:int*) :->
+	"We found an offset"::
+	get(SI, cache, Cache),
+	End is Offset + 10,
+	rdf_cache_result_set(Cache, Set),
+	(   between(Offset, End, I),
+	    arg(I, Set, R),
+	    rdfs_ns_label(R, Label),
+	    format('~p~n', [Label]),
+	    fail
+	;   true
+	).
+
+:- pce_end_class.
+
+
+		 /*******************************
+		 *	  MORE GRAPHICAL	*
+		 *******************************/
+
 :- pce_begin_class(more_figure, figure,
 		   "Showing more ... buttons").
 

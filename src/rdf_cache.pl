@@ -8,6 +8,7 @@
 	  [ rdf_cache/3,		% +Var, :Goal, -Cache
 	    rdf_cache_cardinality/2,	% +Cache, -Cardinality
 	    rdf_cache_result/3,		% +Cache, ?Index, -Value
+	    rdf_cache_result_set/2,	% +Cache, -result(....)
 	    rdf_cache_empty/1,		% +Cache
 	    rdf_cache_clear/1,		% +Cache
 	    rdf_cache_clear/0,
@@ -110,6 +111,21 @@ rdf_update_empty(Cache, Modified) :-
 	;   assert(cache_empty(Cache, Generation, Empty)),
 	    Modified = new
 	).
+
+
+%	rdf_cache_result_set(+Cache, -Set)
+%	
+%	Get result-set as a compound term holding all results
+%	accessible through arg/3.
+
+rdf_cache_result_set(Cache, Set) :-
+	mutex_lock(rdf_cache),
+	call_cleanup(locked_rdf_cache_result_set(Cache, Set),
+		     mutex_unlock(rdf_cache)).
+
+locked_rdf_cache_result_set(Cache, Set) :-
+	rdf_update_cache(Cache, _Modified),
+	cache_result(Cache, Set).
 
 
 %	rdf_cache_result(+Cache, ?Index, ?Result)
