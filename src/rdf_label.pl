@@ -24,6 +24,7 @@ resource(untyped,     image, image('16x16/untyped.xpm')).
 resource(resource,    image, image('16x16/resource.xpm')).
 resource(restriction, image, image('16x16/restriction.xpm')).
 resource(description, image, image('16x16/description.xpm')).
+resource(wnclass,     image, image('16x16/wnclass.xpm')).
 
 
 		 /*******************************
@@ -236,3 +237,23 @@ update(L) :->
 	).
 
 :- pce_end_class(owl_restriction_label).
+
+
+:- pce_begin_class(wn_class_label, rdf_composite_label,
+		   "Represent a WordNet class").
+
+update(L) :->
+	get(L, resource, Resource),
+	send(L, icon, resource(wnclass)),
+	(   rdf_has(Resource, wns:wordForm, Label),
+	    send(L, append_resource, Label),
+	    send(L, print, ', '),
+	    fail
+	;   send(L?graphicals?tail, free)
+	).
+
+rdf_modified(L, _Obj:graphical, Old:prolog, New:prolog) :->
+	get(L, resource, Resource),
+	rdfe_transaction(rdfe_update(Resource, wns:wordForm, Old, object(New))).
+
+:- pce_end_class(wn_class_label).

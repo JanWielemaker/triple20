@@ -63,6 +63,7 @@ rdf_container(O, Container:visual) :<-
 
 rdf_container(N, Container:visual) :<-
 	(   get(N, parents, Parents),
+	    Parents \== @nil,
 	    get(Parents, head, Container)
 	->  true
 	;   get(N, tree, Container),
@@ -83,7 +84,7 @@ rdf_container(N, Container:visual) :<-
 
 call_rules(Obj, Goal) :-
 	container_with_particle(Obj, Particle),
-	current_predicate(_, Particle:Goal),
+	current_predicate(_, Particle:Goal), !,
 	Particle::Goal.
 
 container_with_particle(Obj, Particle) :-
@@ -95,7 +96,7 @@ container_with_particle(Obj, Particle) :-
 	;   get(Obj, create_context,
 		message(@arg1, instance_of, visual),
 		Context)
-	->  writeln(Context),
+	->  format(user_error, '~p~n', [Context]),
 	    container_with_particle(Context, Particle)
 	;   print_message(error, not_contained(Obj)),
 	    fail

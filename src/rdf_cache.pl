@@ -7,7 +7,10 @@
 :- module(rdf_cache,
 	  [ rdf_cache/3,		% +Var, :Goal, -Cache
 	    rdf_cache_cardinality/2,	% +Cache, -Cardinality
-	    rdf_cache_result/3		% +Cache, ?Index, -Value
+	    rdf_cache_result/3,		% +Cache, ?Index, -Value
+	    rdf_cache_empty/1,		% +Cache
+	    rdf_cache_clear/1,		% +Cache
+	    rdf_cache_clear/0
 	  ]).
 :- use_module(semweb(rdf_db)).
 :- use_module(semweb(rdfs)).
@@ -60,6 +63,18 @@ rdf_cache_cardinality(Cache, Cardinality) :-
 	rdf_update_cache(Cache),
 	cache_attributes(Cache, _Generation, Cardinality).
 
+%	rdf_cache_empty(+Cache)
+%	
+%	Succeeds if the goal associated cache is empty
+
+rdf_cache_empty(Cache) :-
+	cache_attributes(Cache, Generation, Size),
+	rdf_generation(Generation), !,
+	Size == 0.
+rdf_cache_empty(Cache) :-
+	cache_goal(Cache, _Var, Goal),
+	\+ Goal.
+
 %	rdf_cache_result(+Cache, ?Index, ?Result)
 %	
 %	Get nth result from the cache, sorted to the label-name.
@@ -77,7 +92,7 @@ rdf_update_cache(Cache) :-
 	retractall(cache_attributes(Cache, _, _)),
 	retractall(cache_result(Cache, _)),
 	cache_goal(Cache, Var, Goal),
-	findall(Label-Var, (Goal, rdfs_ns_label(Var, Label)), Values0),
+	findall(Label-Var, (Goal, (rdfs_label(Var, Label)->true)), Values0),
 	keysort(Values0, Values1),
 	unique_unkey(Values1, Values),
 	Result =.. [values|Values],
@@ -95,3 +110,20 @@ unique_unkey([H0|T0], [H|T]) :-
 remove_dups(H, [H|T0], T) :- !,
 	remove_dups(H, T0, T).
 remove_dups(_, L, L).
+
+
+%	rdf_cache_clear(+Cache)
+%
+%	Empty the cache with given id.
+
+rdf_cache_clear(Cache) :-
+	retractall(cache_attributes(Cache, _, _)),
+	retractall(cache_result(Cache, _)).
+
+rdf_cache_clear :-
+	(   retract(cache_attributes(Cache, _Generation, _Size)),
+	    retractall(cache_result(Cache, _)),
+	    fail
+	;   true
+	).
+	

@@ -12,6 +12,7 @@
 :- use_module(semweb(rdfs)).
 :- use_module(particle).
 :- use_module(rdf_template).
+:- use_module(rdf_cache).
 
 resource(class,       image, image('16x16/class.xpm')).
 resource(metaclass,   image, image('16x16/Metaclass.gif')).
@@ -54,7 +55,8 @@ initialise(H, Root:[name]) :->
 	),
 	send(H, direction, list),
 	send(H, level_gap, 20),
-	call_rules(H, root_node(TheRoot, RootNode)),
+	new(RootNode, rdf_node(TheRoot)),
+%	call_rules(H, root_node(TheRoot, RootNode)),
 	send(H, root, RootNode).
 
 expand_root(H) :->
@@ -135,14 +137,22 @@ open_node(OT, Node:rdf_node) :->
 :- pce_begin_class(rdf_node, node,
 		   "Node of an RDF hierarchy").
 
-variable(resource, name,   get,	"Represented resource").
-variable(cache,	   int,    get, "Cache for child result-set").
+variable(resource,   name,                get,
+	 "Represented resource").
+variable(caches, sheet := new(sheet), get,
+	 "Cached relations").
 
 initialise(N, Resource:name) :->
 	send(N, slot, resource, Resource),
 	call_rules(N, label(Resource, Label)),
 	send_super(N, initialise, Label),
+	(   call_rules(N, child_cache(Resource, Cache, Role)),
+	    send(N?caches, value, Role, Cache),
+	    fail
+	;   true
+	),
 	send(N, update_can_expand).
+
 
 update_can_expand(N) :->
 	"Update expansion-state"::
@@ -156,78 +166,69 @@ update_can_expand(N) :->
 collapsed(N, V:bool*) :->
 	(   V == @on
 	->  send(N?sons, for_all, message(@arg1, delete_tree))
-	;   send(N, expand)
+	;   send(@display, busy_cursor),
+	    call_cleanup(send(N, expand),
+			 send(@display, busy_cursor, @nil))
 	),
 	send_super(N, collapsed, V).
 
 can_expand(N) :->
 	"Test whether this node has childs"::
-	get(N, resource, Resource),
-	call_rules(N, child(Resource, _)), !.
+	get(N?caches?members, find,
+	    message(N, can_expand_cache, @arg1?value),
+	    _).
+
+can_expand_cache(_N, Cache:int) :->
+	\+ rdf_cache_empty(Cache).
 
 expand(N) :->
 	"Expand this node"::
-	send(@display, busy_cursor),
-	send(N?sons, for_all, message(@arg1, delete_tree)),
-	send(VN?children, for_all,
-	     message(N, expand_role, @arg1?name, @arg1?value, 10)),
-	send(@display, busy_cursor, @nil).
+	send(N?caches?members, for_all,
+	     message(N, expand_role, @arg1?name, @arg1?value)).
 
-expand_role(N, Role:name, Children:rdf_vnodeset, ShowMax:'[0..]') :->
-	"Add sub-nodes for a role"::
-	get(Children, members, Chain),
-	(   ShowMax == @default
-	->  send(Chain, for_all,
-		 message(N, add_child, @arg1))
-	;   new(Max, number(ShowMax)),
-	    (   send(Chain, for_all,
-		     and(message(Max, minus, 1),
-			 message(Max, larger_equal, 0),
-			 message(N, add_child, @arg1)))
-	    ->  true
-	    ;   get(Max, value, -1),
-		get(Chain, size, Size),
-		send(N, son, rdf_more_node(Role, Size, ShowMax))
+expand_role(N, Role:name, Cache:int) :->
+	"Expand a cache"::
+	rdf_cache_cardinality(Cache, SetSize),
+	(   SetSize < 15
+	->  forall(rdf_cache_result(Cache, I, Value),
+		   send(N, add_child, Value, Role))
+	;   rdf_cache_result(Cache, I, Value),
+	    (	I == 11
+	    ->	!,
+		send(N, son, rdf_more_node(Role, SetSize, 11))
+	    ;	send(N, add_child, Value, Role),
+		fail
 	    )
+	;   true
 	).
 
-add_child(N, Resource:name, Son:rdf_node) :<-
-	"Create child for resource"::
-	call_rules(N, child_node(Resource, Son)),
-	send(N, son, Son).
-
-add_child(N, Resource:name, Before:[node]) :->
-	"Create child for virtual node"::
-	get(N, add_child, Resource, Son),
+add_child(N, Resource:name, Role:name, Before:[node], Son:rdf_node) :<-
+	"Create node for resource in role"::
+	NewTerm =.. [Role, Resource],
+	new(Son, NewTerm),
 	send(N, son, Son, Before).
+
+add_child(N, Resource:name, Role:name, Before:[node]) :->
+	"Create node for resource in Role"::
+	get(N, add_child, Resource, Role, Before, _Son).
 	
 show_more(N, MoreNode:rdf_more_node, Role:name, Count:int) :->
 	"Show next Count nodes on Role"::
-	get(N, virtual, VN),
-	get(VN?children, value, Role, Set),
-	get(Set, members, Chain),
+	get(N?caches, value, Role, Cache),
 	get(MoreNode, here, Here),
-	send(Chain, current_no, Here+1),
-	(   next_member(Chain, Count, New),
-	    send(N, add_child, New, MoreNode),
+	End is Here + Count,
+	(   between(Here, End, I),
+	    rdf_cache_result(Cache, I, Value),
+	    send(N, add_child, Value, Role, MoreNode),
 	    fail
 	;   true
 	),
-	(   get(Chain, current_no, NewHere),
-	    NewHere \== 0		% For xpce =< 6.2.1
-	->  send(MoreNode, here, NewHere-1)
+	rdf_cache_cardinality(Cache, Cardinality),
+	(   End < Cardinality
+	->  send(MoreNode, here, End)
 	;   send(MoreNode, destroy)
 	).
 	
-next_member(Chain, Max, Next) :-
-	between(1, Max, _),
-	get(Chain, next, Next).
-
-update(N) :->
-	"Check for modifications"::
-	get(N, virtual, VN),
-	send(VN, update).
-
 :- pce_group(event).
 
 :- pce_global(@rdf_node_recogniser, make_rdf_node_recogniser).
@@ -274,7 +275,7 @@ clicked(N, _:graphical) :->
 
 on_double_left_click(N) :->
 	"Select the current node"::
-	get(N, role, Role),
+	get(N, class_name, Role),
 	get(N?tree, selectable, Roles),
 	(   (	Roles == @nil
 	    ;	send(Roles, member, Role)
@@ -284,6 +285,15 @@ on_double_left_click(N) :->
 	).
 
 :- pce_end_class(rdf_node).
+
+
+:- pce_begin_class(rdf_class_node, rdf_node).
+:- pce_end_class.
+
+
+:- pce_begin_class(rdf_individual_node, rdf_node).
+:- pce_end_class.
+
 
 
 		 /*******************************

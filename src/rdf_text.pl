@@ -250,14 +250,13 @@ delete(T) :->
 
 forward(T) :->
 	"Set new value"::
-	get(T, subject, Subject),
-	get(T, predicate, Predicate),
-	get(T, object, Object),
 	get(T?string, value, NewText),
-	New = literal(NewText),
-	(   New \== Object
-	->  rdfe_transaction(rdfe_update(Subject, Predicate,
-					 Object, object(New)))
+	get(T, literal, OldText),
+	(   OldText == NewText
+	->  true
+	;   get(T, device, Dev),
+	    send(Dev, has_send_method, rdf_modified)
+	->  send(Dev, rdf_modified, T, literal(OldText), literal(NewText))
 	;   true
 	).
 

@@ -11,6 +11,7 @@
 :- use_module(semweb(rdfs)).
 :- use_module(rdf_text).
 :- use_module(rdf_label).
+:- use_module(rdf_cache).
 
 
 		 /*******************************
@@ -32,8 +33,10 @@ label(Resource, Label) :-
 %	Class is the XPCE class to use.
 
 label_class(literal(_), rdf_literal_text) :- !.
-label_class(Obj, ulan_timestamp_object_item) :-
+label_class(Obj, ulan_timestamp_label) :-
 	rdfs_individual_of(Obj, ulan:'TimeStamp').
+label_class(Obj, wn_class_label) :-
+	rdfs_individual_of(Obj, wns:'LexicalConcept').
 label_class(Obj, rdf_property_label) :-
 	rdfs_individual_of(Obj, rdf:'Property').
 label_class(Obj, owl_restriction_label) :-
@@ -72,8 +75,13 @@ owl_description_attribute(X) :- rdf_equal(owl:intersectionOf, X).
 
 :- begin_particle(class_hierarchy, []).
 
-child(Resource, Child) :-
-	rdfs_subclass_of(Child, Resource).
+child_cache(R, Cache, Class) :-
+	rdfs_individual_of(R, rdfs:'Class'),
+	(   rdf_cache(V, rdf_has(V, rdfs:subClassOf, R), Cache),
+	    Class = rdf_class_node
+	;   rdf_cache(V, rdf_has(V, rdf:type, R), Cache),
+	    Class = rdf_individual_node
+	).
 
 :- end_particle.
 
