@@ -259,10 +259,45 @@ drop(Gr, R) :-
 	),
 	rdfe_transaction(::drop(Cmd, Gr, R)).
 
-drop_command(_Gr, _R, _Command) :- fail.
+drop(Command, Gr, R) :-
+	send(Gr, has_get_method, resource),
+	get(Gr, resource, C),
+	::drop_resource(Command, C, R).
 
-drop(Command, Graphical, Resource) :-
-	format('TBD: Drop ~w onto ~p: ~w~n', [Resource, Graphical, Command]).
+drop_resource(move_class, C, R) :- !,			% drop R on C
+	rdfe_retractall(R, rdfs:subClassOf, _),
+	rdfe_assert(R, rdfs:subClassOf, C).
+drop_resource(add_class, C, R) :- !,
+	rdfe_assert(R, rdfs:subClassOf, C).
+drop_resource(move_property, C, R) :- !,
+	rdfe_retractall(R, rdfs:subPropertyOf, _),
+	rdfe_assert(R, rdfs:subPropertyOf, C).
+drop_resource(change_type, C, R) :- !,
+	rdfe_retractall(R, rdf:type, _),
+	rdfe_assert(R, rdf:type, C).
+drop_resource(add_type, C, R) :- !,
+	rdfe_assert(R, rdf:type, C).
+drop_resource(Command, Graphical, Resource) :-
+	format('TBD: Drop ~w onto ~p: ~w~n',
+	       [Resource, Graphical, Command]).
+
+drop_command(Gr, R, Command) :-
+	send(Gr, has_get_method, resource),
+	get(Gr, resource, C),
+	::drop_resource_command(C, R, Command).
+
+drop_resource_command(C, R, move_property) :-
+	rdfs_individual_of(C, rdf:'Property'),
+	rdfs_individual_of(R, rdf:'Property'), !.
+drop_resource_command(C, R, move_class) :-
+	rdfs_individual_of(C, rdfs:'Class'),
+	rdfs_individual_of(R, rdfs:'Class').
+drop_resource_command(C, R, add_class) :-
+	rdfs_individual_of(C, rdfs:'Class'),
+	rdfs_individual_of(R, rdfs:'Class').
+drop_resource_command(C, R, change_type) :-
+	rdfs_individual_of(C, rdfs:'Class'),
+	\+ rdfs_individual_of(R, rdfs:'Class').
 
 :- end_particle.
 

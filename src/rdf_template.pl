@@ -20,12 +20,30 @@
 
 :- pce_group(event).
 
+define_event(Name, Parent) :-
+	(   get(@event_tree, node, Name, Node)
+	->  (   get(Node?parent, value, Parent)
+	    ->	true
+	    ;	print_message(error, format('Redefined event ~w', [Name]))
+	    )
+	;   new(_, event_node(Name, Parent))
+	).
+
+:- pce_global(@arm_recogniser,
+	      new(handler(arm, message(@event?window, arm_object,
+				       @event?receiver)))).
+:- initialization
+   define_event(arm, user).
+
 event(W, Ev:event) :->
 	(   get(W, focus, Gr),
 	    Gr \== @nil
 	->  true
 	;   send(Ev, is_a, loc_move)
-	->  send(W, check_arm, Ev)
+	->  (   send_super(W, event, event(arm))
+	    ->	true
+	    ;	send(W, arm_object, @nil)
+	    )
 	;   send(Ev, is_a, area_exit)
 	->  send(W, arm_object, @nil)
 	;   true
@@ -33,14 +51,6 @@ event(W, Ev:event) :->
 	send_super(W, event, Ev).
 
 :- pce_group(arm).
-
-check_arm(W, Ev:event) :->
-	(   get(W, find, Ev,
-		message(@arg1, has_send_method, arm),
-		Gr)
-	->  send(W, arm_object, Gr)
-	;   send(W, arm_object, @nil)
-	).
 
 arm_object(W, Gr:graphical*) :->
 	(   get(W, hypered, arm, Old)

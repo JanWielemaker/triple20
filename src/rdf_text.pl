@@ -72,7 +72,7 @@ make_resource_text_recogniser(G) :-
 	send(DG2, cursor, @default),	% copy from graphical
 	new(AE, handler(area_enter, message(@receiver, entered, @on))),
 	new(AX, handler(area_exit, message(@receiver, entered, @off))),
-	new(G, handler_group(CG, DG1, PG, DG2, AE, AX)).
+	new(G, handler_group(@arm_recogniser, CG, DG1, PG, DG2, AE, AX)).
 
 popup(T, Popup:popup) :<-
 	call_rules(T, popup(T, Popup)).
@@ -89,7 +89,6 @@ arm(TF, Arm:bool) :->
 	->  send(TF, report, status, TF?resource)
 	;   send(TF, report, status, '')
 	).
-	
 
 entered(TF, Enter:bool) :->
 	(   Enter == @on,
@@ -178,7 +177,8 @@ obtain_focus(T) :->
 	).
 
 :- pce_global(@rdf_literal_text_recogniser,
-	      new(popup_gesture(@receiver?popup))).
+	      new(handler_group(@arm_recogniser,
+				popup_gesture(@receiver?popup)))).
 
 
 popup(T, Popup:popup) :<-

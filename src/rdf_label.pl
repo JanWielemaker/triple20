@@ -26,6 +26,7 @@
 
 variable(resource,  name,  get, "Represented resource").
 variable(wrap,      {extend,wrap,wrap_fixed_width,clip}, get, "Wrapping mode").
+variable(opaque,    bool := @on, both, "Hide parts from event-handling").
 
 initialise(T, Resource:name) :->
 	send_super(T, initialise),
@@ -62,7 +63,8 @@ append_resource(T, Value:prolog) :->
 :- pce_group(event).
 
 event(T, Ev:event) :->
-	(   send_super(T, event, Ev)
+	(   get(T, opaque, @off),
+	    send_super(T, event, Ev)
 	->  true
 	;   send(@rdf_resource_text_recogniser, event, Ev)
 	).
@@ -95,6 +97,8 @@ is_anonymous(TF) :->
 	->  !, fail
 	;   sub_atom(Resource, _, _, _, '__')
 	), !.
+
+:- pce_group(layout).
 
 margin(T, Width:int*, How:[{wrap,wrap_fixed_width,clip}]) :->
 	"Wrap items to indicated width"::
