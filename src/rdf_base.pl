@@ -71,6 +71,7 @@ rdf_db:ns(cyc,     'http://www.cyc.com/cyc#').
 rdf_db:ns(cyc03,   'http://www.cyc.com/2003/04/01/cyc#').
 rdf_db:ns(sumo,	   'http://reliant.teknowledge.com/DAML/SUMO.daml#').
 rdf_db:ns(erc,	   'http://www.swi.psy.uva.nl/mia/cml/erc#').
+rdf_db:ns(dolce,   'http://ontology.ip.rm.cnr.it/ontologies/DOLCE-Lite#').
 
 %	load_base_ontology(+Identifier)
 
