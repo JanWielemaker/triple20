@@ -104,6 +104,7 @@ current_base_ontology(Id) :-
 
 rdf_file(rdfs,	 	 ontology('rdfs.rdfs')).
 rdf_file(owl,		 ontology('owl.owl')).
+rdf_file(owlfull,        ontology('owlfull.owl')).
 rdf_file(dc,	 	 ontology('dc.rdfs')).
 rdf_file(dc,	 	 ontology('eor.rdfs')).
 rdf_file(vra,	 	 ontology('vra.owl')).
@@ -143,6 +144,7 @@ requires(wnrdfs,   wn).
 requires(ic,	   rdfs).
 requires(cyc,	   owl).
 requires(sumo,	   owl).
+requires(owlfull,  owl).
 
 requires(world,	   owl).
 requires(world,	   aat).
