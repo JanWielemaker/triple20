@@ -248,7 +248,8 @@ update_class_particle(ClassName, Particle) :-
 	current_particle(Particle), !,
 	assert(class_particle(ClassName, Particle)).
 update_class_particle(ClassName, _) :-
-	assert(class_particle(ClassName, [])).
+	assert(class_particle(ClassName, [])),
+	fail.
 
 :- multifile
 	user:message_hook/3.
