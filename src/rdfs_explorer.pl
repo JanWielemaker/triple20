@@ -539,7 +539,7 @@ display_title(AL, Class:name) :->
 	send(AL, append, rdf_resource_text(Class), colspan := 2),
 	send(AL, next_row),
 	send(AL, append, 'Meta Class', bold, right),
-	send(AL, append_resource, Meta, colspan := 2),
+	send(AL, append_resource, Meta, rdf_object_cell, colspan := 2),
 	send(AL, next_row),
 	send(AL, append_owl_properties, Class),
 	(   rdf_has(Class, rdfs:comment, literal(Comment))
@@ -564,9 +564,9 @@ append_owl_properties(AL, Class:name) :->
 	    send(AL, next_row),
 	    (   owl_property(P2),
 		setof(Value, rdf_has(Class, P2, Value, Prop), Values),
-		send(AL, append_resource, Prop),
+		send(AL, append_resource, Prop, rdf_predicate_cell),
 		Values = [First|Rest],
-		send(AL, append_resource, First, colspan := 2),
+		send(AL, append_resource, First, rdf_object_cell, colspan := 2),
 		send(AL, next_row),
 		(   member(Next, Rest),
 		    send(AL, append_continuation_value, Next),
@@ -589,7 +589,7 @@ owl_property(P) :- rdf_equal(owl:complementOf, P).
 append_continuation_value(AL, V:prolog) :->
 	"Append value in the 2nd column"::
 	send(AL, append, new(graphical)),
-	send(AL, append_resource, V, colspan := 2),
+	send(AL, append_resource, V, rdf_object_cell, colspan := 2),
 	send(AL, next_row).
 
 append_slots_of(AL, Class:name) :->
@@ -602,7 +602,7 @@ append_slots_of(AL, Class:name) :->
 
 append_slot(AL, Slot:name, Class:[name]) :->
 	"Display append a slot"::
-	send(AL, append_resource, Slot),
+	send(AL, append_resource, Slot, rdf_predicate_cell),
 	(   Class == @default
 	->  get(AL, class, TheClass)
 	;   TheClass = Class
@@ -613,12 +613,12 @@ append_slot(AL, Slot:name, Class:[name]) :->
 	;   (   rdfs_subproperty_of(DomainProperty, rdfs:domain),
 	        rdf(Slot, DomainProperty, Base),
 	        Base \== TheClass
-	    ->  send(AL, append_resource, Base)
+	    ->  send(AL, append_resource, Base, rdf_object_cell)
 	    ;	send(AL, append, '<self>', italic)
 	    ),
 	    (   rdfs_subproperty_of(RangeProperty, rdfs:range),
 		rdf(Slot, RangeProperty, Range)
-	    ->	send(AL, append_resource, Range)
+	    ->	send(AL, append_resource, Range, rdf_object_cell)
 	    ;	send(AL, append, '-')
 	    )
 	),
@@ -720,25 +720,14 @@ append_slots(AL) :->
 	get(AL, resource, I),
 	(   bagof(Value, rdf(I, Property, Value), [V1|Values]),
 	    \+ reserved_instance_slot(Property),
-	    send(AL, append_resource, Property),
-	    send(AL, append_resource, V1),
+	    send(AL, append_resource, Property, rdf_predicate_cell),
+	    send(AL, append_resource, V1, rdf_object_cell),
 	    send(AL, next_row),
 	    forall(member(V, Values),
 		   send(AL, append_continuation_value, V)),
 	    fail
 	;   true
 	).
-
-
-append_property(AL, Property:name) :->
-	"Append slot and its values"::
-	get(AL, resource, R),
-	bagof(Value, rdf(R, Property, Value), [V1|Values]),
-	send(AL, append_resource, Property),
-	send(AL, append_resource, V1),
-	send(AL, next_row),
-	forall(member(V, Values),
-	       send(AL, append_continuation_value, V)).
 
 
 reserved_instance_slot(Type) :-
@@ -748,16 +737,21 @@ reserved_instance_slot(Label) :-
 reserved_instance_slot(Label) :-
 	rdfs_subproperty_of(Label, rdfs:comment).
 
+append_property(AL, Property:name) :->
+	"Append slot and its values"::
+	get(AL, resource, R),
+	bagof(Value, rdf(R, Property, Value), [V1|Values]),
+	send(AL, append_resource, Property, rdf_predicate_cell),
+	send(AL, append_resource, V1, rdf_object_cell),
+	send(AL, next_row),
+	forall(member(V, Values),
+	       send(AL, append_continuation_value, V)).
 
-append_predicate(AL, P:name) :->
-	"Append property name"::
-	rdfs_label(P, Label),
-	send(AL, append, Label).
 
 append_continuation_value(AL, V:prolog) :->
 	"Append value in the 2nd column"::
 	send(AL, append, new(graphical)),
-	send(AL, append_resource, V),
+	send(AL, append_resource, V, rdf_object_cell),
 	send(AL, next_row).
 
 :- pce_group(edit).

@@ -179,6 +179,31 @@ rdf_container(O, Container:visual) :<-
 
 :- pce_end_class.
 
+:- pce_extend_class(graphical).
+
+rdf_container(Gr, Container:object) :<-
+	(   get(Gr, layout_interface, Container),
+	    Container \== @nil
+	->  true
+	;   get(Gr, contained_in, Container)
+	).
+
+:- pce_end_class.
+
+:- pce_extend_class(layout_interface).
+
+rdf_container(O, Container:layout_manager) :<-
+	get(O, layout_manager, Container).
+
+:- pce_end_class.
+
+:- pce_extend_class(layout_manager).
+
+rdf_container(O, Container:device) :<-
+	get(O, device, Container).
+
+:- pce_end_class.
+
 :- pce_extend_class(node).
 
 rdf_container(N, Container:visual) :<-

@@ -458,7 +458,6 @@ drop(move_class, C, R) :-				% drop R on C
 	rdfe_retractall(R, rdfs:subClassOf, _),
 	rdfe_assert(R, rdfs:subClassOf, C).
 drop(add_class, C, R) :-
-	rdfe_retractall(R, rdfs:subClassOf, _),
 	rdfe_assert(R, rdfs:subClassOf, C).
 drop(move_property, C, R) :-
 	rdfe_retractall(R, rdfs:subPropertyOf, _),

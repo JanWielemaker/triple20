@@ -59,14 +59,16 @@ clear(AL) :->
 
 :- pce_group(append).
 
-append_resource(AL, Resource:prolog, ColSpan:colspan=[int],
+append_resource(AL, Resource:prolog, Role:name, ColSpan:colspan=[int]) :->
+	"Append a general resource"::
+	get(AL, append_resource, Resource, Role, ColSpan, _Label).
+
+append_resource(AL, Resource:prolog, Role:name, ColSpan:colspan=[int],
 		Label:graphical) :<-
 	"Append a general resource"::
 	call_rules(AL, label(Resource, Label)),
-	send(AL, append, Label, colspan := ColSpan).
-append_resource(AL, Resource:prolog, ColSpan:colspan=[int]) :->
-	"Append a general resource"::
-	get(AL, append_resource, Resource, ColSpan, _Label).
+	CellTerm =.. [Role, Label],
+	send(AL, append, CellTerm, colspan := ColSpan).
 
 :- pce_group(edit).
 
@@ -149,6 +151,20 @@ adjust_restriction(R, R).
 :- pce_end_class(rdf_tabular).
 
 
+:- pce_begin_class(rdf_subject_cell, table_cell).
+:- pce_end_class.
+
+:- pce_begin_class(rdf_predicate_cell, table_cell).
+:- pce_end_class.
+
+:- pce_begin_class(rdf_object_cell, table_cell).
+
+modify(Cell) :->
+	format('Request to modify ~p~n', [Cell]).
+
+:- pce_end_class.
+
+
 		 /*******************************
 		 *     SIMPLE TRIPLE TABLE	*
 		 *******************************/
@@ -186,9 +202,9 @@ triples(T, Triples:prolog) :->
 
 triple(T, Subject:name, Predicate:name, Object:prolog) :->
 	"Append a row with a triple"::
-	send(T, append_resource, Subject),
-	send(T, append_resource, Predicate),
-	send(T, append_resource, Object),
+	send(T, append_resource, Subject, rdf_subject_cell),
+	send(T, append_resource, Predicate, rdf_predicate_cell),
+	send(T, append_resource, Object, rdf_object_cell),
 	send(T, next_row).
 
 :- pce_end_class(rdf_triple_table).

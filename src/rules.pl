@@ -264,6 +264,10 @@ root_property(Class, P) :-
 :- end_particle.
 
 
+		 /*******************************
+		 *	     HIERARCHY		*
+		 *******************************/
+
 :- begin_particle(rdf_node, display).
 
 menu_item(Gr, Group, Item, Receiver) :-
@@ -300,3 +304,14 @@ child_cache(R, Cache, rdf_property_node) :-
 :- end_particle.
 
 
+		 /*******************************
+		 *	      TABLE		*
+		 *******************************/
+
+:- begin_particle(rdf_object_cell, display).
+
+menu_item(Group, Item) :-
+	super::menu_item(Group, Item).
+menu_item(edit, modify).
+
+:- end_particle.
