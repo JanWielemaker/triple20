@@ -261,7 +261,7 @@ standard_predicate(Resource, Pred) :-
 	;   rdf_equal(Pred, rdf:object)
 	).
 standard_predicate(Resource, Pred) :-
-	rdfs_individual_of(Resource, rdfs:'Property'), !,
+	rdfs_individual_of(Resource, rdf:'Property'), !,
 	(   rdf_equal(Pred, rdfs:range)
 	;   rdf_equal(Pred, rdfs:domain)
 	).
@@ -324,7 +324,10 @@ child_cache(R, Cache, Class) :-
 child_cache(R, Cache, rdf_individual_node) :-
 	rdfs_individual_of(R, rdf:'List'), !,
 	rdf_cache(lsorted(V), rdfs_member(V, R), Cache).
-child_cache(R, Cache, rdf_part_node) :- % BJW
+child_cache(R, Cache, rdf_part_node) :-		% erc:Class has_part relations
+	rdf_has(erc:has_part, rdfs:domain, Domain),
+	rdf_has(R, rdf:type, Class),
+	rdfs_subclass_of(Class, Domain),
 	rdf_cache(lsorted(V), rdf_has(R, erc:has_part, V), Cache).
 
 ordered_restriction(R, Class) :-

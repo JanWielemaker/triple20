@@ -589,15 +589,69 @@ scroll_vertical(TW,
 		 *	      CLASSES		*
 		 *******************************/
 
-:- pce_begin_class(rdfs_class_sheet, rdf_tabular,
-		   "Show attributes of a class").
+:- pce_begin_class(rdf_resource_tabular, rdf_tabular,
+		   "Table showing aspects of a resource").
 
 variable(resource,	  name*,	get, "Displayed class").
+variable(object_colspan,  int := 1,	get, "# columns for object").
+
+display_resource(AL, As:name) :->
+	"Display the resource"::
+	send(AL, append, As?label_name, bold, right),
+	get(AL, resource, Resource),
+	get(AL, object_colspan, ColSpan),
+	send(AL, append, rdf_resource_text(Resource), colspan := ColSpan),
+	send(AL, next_row).
+
+display_label(AL) :->
+	"Display the label (if any)"::
+	rdf_equal(rdfs:label, Property),
+	ignore(send(AL, append_property, Property)).
+
+append_property(AL, Property:name) :->
+	"Append slot and its values"::
+	get(AL, resource, R),
+	get(AL, object_colspan, ColSpan),
+	(   bagof(Value, ordered_has(R, Property, Value, P), [V1|Values]),
+	    send(AL, append, rdf_predicate_cell(P)),
+	    send(AL, append, rdf_object_cell(V1, P), colspan := ColSpan),
+	    send(AL, next_row),
+	    forall(member(V, Values),
+		   send(AL, append_continuation_value, V, P)),
+	    fail
+	;   true
+	).
+
+%	ordered_has(+Resource, +Predicate, -Object, -SubPred)
+%
+%	As rdf_has/4, but returns solutions with SubPred == Pred first
+
+ordered_has(R, P, O, P) :-
+	rdf(R, P, O).
+ordered_has(R, P, O, SP) :-
+	rdf_has(R, P, O, SP),
+	SP \== P.
+
+append_continuation_value(AL, V:prolog, Property:[name]) :->
+	"Append value in the 2nd column"::
+	send(AL, append, new(graphical)),
+	get(AL, object_colspan, ColSpan),
+	send(AL, append, rdf_object_cell(V, Property), colspan := ColSpan),
+	send(AL, next_row).
+
+:- pce_end_class(rdf_resource_tabular).
+
+
+
+:- pce_begin_class(rdfs_class_sheet, rdf_resource_tabular,
+		   "Show attributes of a class").
+
 variable(show_properties, {all,self},	get, "Which properties to show").
 
 initialise(AL, Class:[name]) :->
 	"Create from ontology and class"::
 	send_super(AL, initialise),
+	send(AL, slot, object_colspan, 2),
 	(   Class \== @default
 	->  send(AL, resource, Class)
 	;   true
@@ -666,9 +720,8 @@ update(AL, _Cache:[int]) :->
 
 display_title(AL, Class:name) :->
 	"Display the title row"::
-	send(AL, append, 'Class', bold, right),
-	send(AL, append, rdf_resource_text(Class), colspan := 2),
-	send(AL, next_row),
+	send(AL, display_resource, class),
+	send(AL, display_label),
 	send(AL, display_comment),
 	send(AL, display_type),
 	send(AL, append_owl_properties, Class),
@@ -739,12 +792,6 @@ owl_property(P) :- rdf_equal(owl:hasValue, P).
 owl_property(P) :- rdf_equal(owl:cardinality, P).
 
 
-append_continuation_value(AL, V:prolog, Pred:[name]) :->
-	"Append value in the 2nd column"::
-	send(AL, append, new(graphical)),
-	send(AL, append, rdf_object_cell(V, Pred), colspan := 2),
-	send(AL, next_row).
-
 append_slots_of(AL, Class:name) :->
 	"Append normal properties"::
 	(   call_rules(AL, class_predicate(Class, Property)),
@@ -774,29 +821,6 @@ append_class_property(AL, Slot:name, Class:[name]) :->
 	send(AL, next_row).
 
 
-:- pce_group(object_property).
-
-append_property(AL, Property:name) :->
-	"Append slot and its values"::
-	get(AL, resource, R),
-	bagof(Value, rdf_has(R, Property, Value, P), [V1|Values]),
-	(   send(AL, append, rdf_predicate_cell(P)),
-	    send(AL, append, rdf_object_cell(V1, P), colspan := 2),
-	    send(AL, next_row),
-	    forall(member(V, Values),
-		   send(AL, append_continuation_value, V, P)),
-	    fail
-	;   true
-	).
-
-
-append_continuation_value(AL, V:prolog, Pred:[name]) :->
-	"Append value in the 2nd column"::
-	send(AL, append, new(graphical)),
-	send(AL, append, rdf_object_cell(V, Pred), colspan := 2),
-	send(AL, next_row).
-
-
 %	<-triple_from_part: graphical --> rdf(S,P,O)
 %	
 %	Compute the triple of which graphical is a part.
@@ -822,10 +846,8 @@ triple_from_part(AL, Part:graphical, Triple:prolog) :<-
 		 *	     INSTANCES		*
 		 *******************************/
 
-:- pce_begin_class(rdfs_instance_sheet, rdf_tabular,
+:- pce_begin_class(rdfs_instance_sheet, rdf_resource_tabular,
 		   "Show attributes of an instance").
-
-variable(resource,	name*,		get, "Displayed Instance").
 
 initialise(AL, Instance:[name]) :->
 	"Create from instance"::
@@ -871,21 +893,10 @@ update(AL, _Cache:[int]) :->
 
 display_title(AL) :->
 	"Display common information"::
-	send(AL, display_resource),
+	send(AL, display_resource, resource),
 	send(AL, display_label),
 	send(AL, display_type),
 	send(AL, display_comment).
-
-display_label(AL) :->
-	"Display the label (if any)"::
-	rdf_equal(rdfs:label, Property),
-	ignore(send(AL, append_property, Property)).
-
-display_resource(AL) :->
-	get(AL, resource, I),
-	send(AL, append, 'Resource', bold, right),
-	send(AL, append, I),
-	send(AL, next_row).
 
 display_type(AL) :->
 	"Display class(es) I belong to"::
@@ -942,26 +953,6 @@ reserved_instance_slot(Label) :-
 	rdfs_subproperty_of(Label, rdfs:label).
 reserved_instance_slot(Label) :-
 	rdfs_subproperty_of(Label, rdfs:comment).
-
-append_property(AL, Property:name) :->
-	"Append slot and its values"::
-	get(AL, resource, R),
-	bagof(Value, rdf_has(R, Property, Value, P), [V1|Values]),
-	(   send(AL, append, rdf_predicate_cell(P)),
-	    send(AL, append, rdf_object_cell(V1, P)),
-	    send(AL, next_row),
-	    forall(member(V, Values),
-		   send(AL, append_continuation_value, V, P)),
-	    fail
-	;   true
-	).
-
-
-append_continuation_value(AL, V:prolog, Property:[name]) :->
-	"Append value in the 2nd column"::
-	send(AL, append, new(graphical)),
-	send(AL, append, rdf_object_cell(V, Property)),
-	send(AL, next_row).
 
 :- pce_group(edit).
 

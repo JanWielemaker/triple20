@@ -94,7 +94,13 @@ do_create_resource(D, Resource:name, Label:name) :->
 	;   File = user
 	),
 	(   get(D, role, rdf_class_node) 		% TBD: generalise!
-	->  rdfe_assert(Resource, rdf:type, rdfs:'Class', File),
+	->  (   (   rdf_has(Super, rdf:type, MetaClass, Type)
+		*-> rdfe_assert(Resource, Type, MetaClass, File)
+		;   rdfe_assert(Resource, rdf:type, rdfs:'Class', File)
+		),
+		fail
+	    ;	true
+	    ),
 	    rdfe_assert(Resource, rdfs:subClassOf, Super, File)
 	;   rdfe_assert(Resource, rdf:type, Super, File)
 	),
