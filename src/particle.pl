@@ -61,8 +61,9 @@ begin_particle(Name, Super0) :-
 	    assert(current_particle(Name, Supers)),
 	    set_import_modules(Name, Supers)
 	),
-	prolog_load_context(file, SourceFile),
-	'$declare_module'(Name, SourceFile),
+	source_location(File, Line),
+	catch('$declare_module'(Name, File, Line), _,
+	      '$declare_module'(Name, File)), 	% =< 5.2.8
 	'$set_source_module'(Old, Name),
 	asserta(loading_particle(Name, Old)).
 

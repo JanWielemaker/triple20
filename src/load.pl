@@ -118,6 +118,10 @@ go :-
 %		<file>.{rdf,rdfs,owl}	Load this file
 
 go(Argv) :-
+	memberchk('--help', Argv), !,
+	usage,
+	halt(0).
+go(Argv) :-
 	(   select(Journal, Argv, Argv1),
 	    file_name_extension(_, rdfj, Journal)
 	->  (   select('--reset', Argv1, Argv2)
@@ -166,17 +170,44 @@ parse_argv([File|T]) :-
 	rdf_file_extension(Ext), !,
 	rdfe_load(File),
 	parse_argv(T).
-parse_argv([File]) :-
-	file_name_extension(_Base, rdfj, File),
-	rdfe_open_journal(File, append).
+parse_argv(_) :-
+	usage,
+	halt(1).
 
-select :-
-	use_module(rdfs_resource_item),
-	new(D, dialog('Select')),
-	send(D, append,
-	     rdfs_resource_item(test)),
-	send(D, open).
-
+usage :-
+	print_message(informational, rdf(usage)).
 
 save(X) :-
 	qsave_program(X, []).
+
+
+		 /*******************************
+		 *	      MESSAGES		*
+		 *******************************/
+
+:- multifile
+	prolog:message/3.
+
+prolog:message(rdf(usage)) -->
+	[ 'Usage: ~w [option ...] file ...'-[Me], nl, nl,
+	  '  Options:', nl,
+	  '    --help              Print usage', nl,
+	  '    --reset             Overwrite journal instead of append', nl,
+	  '    --nobase            Do NOT load rdfs.rdfs and owl.owl', nl,
+	  '    --world             Load the whole world', nl,
+	  '    --aat               Load AAT', nl,
+	  '    --wn                Load WordNet', nl,
+	  '    --ulan              Load ULAN', nl, nl,
+	  '  Files:', nl,
+	  '    file.rdf            Load RDF file', nl,
+	  '    file.rdfs           Load RDFS file', nl,
+	  '    file.owl            Load OWL file', nl,
+	  '    file.rdfj           Append/overwrite journal file'
+	],
+	{ current_prolog_flag(argv, Argv),
+	  (   append(_, ['-s',Path|_], Argv)
+	  ->  true
+	  ;   Argv = [Path|_]
+	  ),
+	  file_base_name(Path, Me)
+	}.
