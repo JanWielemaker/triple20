@@ -50,7 +50,7 @@ event(W, Ev:event) :->
 
 :- pce_group(arm).
 
-arm(W, For:[name], Target:graphical) :<-
+arm(W, For:[name|code], Target:graphical) :<-
 	(   get(@event, position, W, point(X, Y)),
 	    get(W, slot, scroll_offset, point(OX, OY)),
 	    AX is X + OX, AY is Y+OY,
@@ -73,7 +73,10 @@ arm(W, For:[name], Target:graphical) :<-
 
 try_arm(W, Gr:graphical) :->
 	(   get(@event, attribute, arm_for, For)
-	->  send(Gr, has_send_method, For)
+	->  (   atom(For)
+	    ->	send(Gr, has_send_method, For)
+	    ;	send(For, forward_receiver, Gr)
+	    )
 	;   true
 	),
 	send(W, arm_object, Gr).
