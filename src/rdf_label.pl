@@ -435,18 +435,17 @@ update(L) :->
 :- pce_end_class(owl_restriction_label).
 
 
-:- pce_begin_class(wn_class_label, rdf_composite_label,
+:- pce_begin_class(wn_class_label, rdf_icon_label,
 		   "Represent a WordNet class").
 
-update(L) :->
-	send(L, clear),
+display_resource(L) :->
 	get(L, resource, Resource),
-	call_rules(L, icon(Resource, Icon)),
-	send(L, icon, Icon),
-	(   rdf_has(Resource, wns:wordForm, Label),
-	    send(L, append_resource, Label),
-	    send(L, print, ', '),
-	    fail
+	(   (   rdf_has(Resource, wns:wordForm, Label)
+	    *->	send(L, append_resource, Label),
+		send(L, print, ', '),
+		fail
+	    ;	send_super(L, display_resource)
+	    )
 	;   send(L?graphicals?tail, free)
 	).
 
