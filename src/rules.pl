@@ -718,6 +718,9 @@ orphan_resource(Resource) :-
 	rdf_subject(Resource),
 	\+ rdf_has(Resource, rdf:type, _).
 orphan_resource(Resource) :-
+	rdf(_, Resource, _),
+	\+ rdf_has(Resource, rdf:type, _).
+orphan_resource(Resource) :-
 	rdf(_, _, Resource),
 	atom(Resource),
 	\+ rdf_has(Resource, rdf:type, _).
