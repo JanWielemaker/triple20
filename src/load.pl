@@ -182,6 +182,11 @@ parse_argv([File|T]) :-
 	file_name_extension(_, Ext, File),
 	rdf_file_extension(Ext, _Name),
 	Ext \== rdfj, !,
+	(   \+ access_file(File, exist)
+	->  absolute_file_name(File, AbsName),
+	    rdf_save(File, AbsName)
+	;   true
+	),
 	rdfe_load(File, [namespaces(NSList)]),
 	register_default_ns(NSList),
 	(   access_file(File, write)
