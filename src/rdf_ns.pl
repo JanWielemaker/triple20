@@ -81,7 +81,7 @@ new_namespace(F) :->
 	->  (   Reply == ok
 	    ->  get(IDItem, selection, ID),
 		get(URIItem, selection, URI),
-		catch(rdfe_transaction(rdfe_register_ns(ID, URI),
+		catch(rdfe_transaction(register_ns(ID, URI),
 				       define_namespace),
 		      E, true),
 		(   var(E)
@@ -94,6 +94,20 @@ new_namespace(F) :->
 	    )
 	;   !
 	).
+
+register_ns(ID, URI) :-
+	(   xml_name(ID)
+	->  true
+	;   throw(error(type_error(xml_name, ID), _))
+	),
+	(   (   sub_atom(URI, _, _, 0, #)
+	    ;	sub_atom(URI, _, _, 0, /)
+	    )
+	->  true
+	;   throw(error(type_error(namespace, URI),
+			context(_, 'Namespace URI must end in # or /')))
+	),
+	rdfe_register_ns(ID, URI).
 
 
 :- pce_end_class(rdf_namespace_window).
