@@ -72,8 +72,6 @@ load(C, Category) :-				% load the whole world
 	concurrent(C, Goals).
 
 % :- rdf_debug(1).		% Print messages
-:- load(base(rdfs)).
-:- load(base(owl)).
 
 world :-
 	load(_).
@@ -106,32 +104,37 @@ go :-
 	new(X, rdfs_explorer),
 	send(X, open).
 
-go(['--world'|T]) :-
-	world,
-	go(T).
-go(['--aat'|T]) :-
-	aat,
-	go(T).
-go(['--wn'|T]) :-
-	wn,
-	go(T).
-go(['--ulan'|T]) :-
-	load(ulan),
-	go(T).
-go([File|T]) :-
-	file_name_extension(_, Ext, File),
-	rdf_file_extension(Ext), !,
-	rdf_load(File),
-	go(T).
-go([]) :-
-	new(X, rdfs_explorer),
-	send(X, open).
-go([File]) :-
-	file_name_extension(_Base, rdfj, File),
-	rdfe_open_journal(File, append),
+go(Argv) :-
+	(   select('--nobase', Argv, Av)
+	->  parse_argv(Av)
+	;   load(base(rdfs)),
+	    load(base(owl)),
+	    parse_argv(Argv)
+	),
 	new(X, rdfs_explorer),
 	send(X, open).
 
+parse_argv([]).
+parse_argv(['--world'|T]) :-
+	world,
+	parse_argv(T).
+parse_argv(['--aat'|T]) :-
+	aat,
+	parse_argv(T).
+parse_argv(['--wn'|T]) :-
+	wn,
+	parse_argv(T).
+parse_argv(['--ulan'|T]) :-
+	load(ulan),
+	parse_argv(T).
+parse_argv([File|T]) :-
+	file_name_extension(_, Ext, File),
+	rdf_file_extension(Ext), !,
+	rdf_load(File),
+	parse_argv(T).
+parse_argv([File]) :-
+	file_name_extension(_Base, rdfj, File),
+	rdfe_open_journal(File, append).
 
 select :-
 	use_module(rdfs_resource_item),
@@ -142,4 +145,4 @@ select :-
 
 
 save(X) :-
-	qsave_program(X, [class(development)]).
+	qsave_program(X, []).

@@ -84,7 +84,7 @@ is_anonymous(TF) :->
 	(   rdf_has(Resource, rdfs:label, _)
 	->  !, fail
 	;   sub_atom(Resource, _, _, _, '__')
-	).
+	), !.
 
 :- pce_end_class(rdf_composite_label).
 
