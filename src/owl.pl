@@ -241,6 +241,9 @@ merge_values_from(all, C1, all, C2, all, C) :-
 %	
 %	Deduces the minimum and maximum cardinality for a property of a
 %	resource.  This predicate may fail if no information is available.
+%	
+%	NOTE: used to use rdf_subclass_of.  Will owl_subclass_of lead to
+%	cycles?
 
 owl_cardinality_on_subject(Subject, Predicate, Cardinality) :-
 	findall(C, cardinality_on_subject(Subject, Predicate, C), L),
@@ -248,7 +251,7 @@ owl_cardinality_on_subject(Subject, Predicate, Cardinality) :-
 
 cardinality_on_subject(Subject, Predicate, cardinality(Min, Max)) :-
 	rdf_has(Subject, rdf:type, Class),
-	rdfs_subclass_of(Class, RestrictionID),
+	owl_subclass_of(Class, RestrictionID),
 	rdfs_individual_of(RestrictionID, owl:'Restriction'),
 	rdf_has(RestrictionID, owl:onProperty, Predicate),
 	restriction_facet(RestrictionID, cardinality(Min, Max)).
@@ -258,7 +261,7 @@ owl_cardinality_on_class(Class, Predicate, Cardinality) :-
 	join_decls(L, [Cardinality]).
 
 cardinality_on_class(Class, Predicate, cardinality(Min, Max)) :-
-	rdfs_subclass_of(Class, RestrictionID),
+	owl_subclass_of(Class, RestrictionID),
 	rdfs_individual_of(RestrictionID, owl:'Restriction'),
 	rdf_has(RestrictionID, owl:onProperty, Predicate),
 	restriction_facet(RestrictionID, cardinality(Min, Max)).
@@ -705,9 +708,8 @@ owl_use_has_value(S, P, O) :-
 
 owl_subclass_of(Class, R) :-
 	rdf_has(Class, rdfs:subClassOf, R).
-owl_subclass_of(Class, R) :-		% added BJW
-	rdf_has(Class, owl:equivalentClass, E),
-	owl_subclass_of(E,R).
+owl_subclass_of(Class, R) :-		% added BJW (hack for symetry)
+	rdf_has(R, owl:equivalentClass, Class).
 owl_subclass_of(Class, R) :-
 	rdf_has(Class, rdfs:subClassOf, D),
 	\+ rdf_has(D, rdfs:label, _),	% anonymous class
