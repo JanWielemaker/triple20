@@ -251,16 +251,19 @@ add_object(Subject, Predicate, Object) :-
 %	TBD: Check cardinality
 
 rdf_new_property(Subject, Predicate) :-
-	rdf_default_file(Subject, Source),
 	property_type(Subject, Predicate, Type),
-	default_object(Type, Object),
+	default_object(Type, Object, Source),
+	(   var(Source)
+	->  rdf_default_file(Subject, Source)
+	;   true
+	),
 	rdfe_transaction(rdfe_assert(Subject, Predicate, Object, Source),
 			 new_property).
 
-default_object(resource, '__not_filled').
-default_object(list, Nil) :-
+default_object(resource, '__not_filled', user).
+default_object(list, Nil, _) :-
 	rdf_equal(Nil, rdf:nil).
-default_object(literal, literal('')).
+default_object(literal, literal(''), _).
 
 
 %	rdf_list_operation(+Action, +Triple, +Resource)
