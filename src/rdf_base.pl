@@ -122,6 +122,8 @@ register_def_ns(NS=URL, File) :-
 					% register non-standard namespaces
 	(   rdf_file(_, NS, _)
 	->  true
+	;   NS == rdf
+	->  true
 	;   broadcast(rdf_set_default_ns(File, NS))
 	).
 

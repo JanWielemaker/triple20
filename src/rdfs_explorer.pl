@@ -61,6 +61,7 @@
 :- pce_autoload(rdf_statistics_dialog, library(rdf_statistics)).
 :- pce_autoload(rdf_namespace_window,  rdf_ns).
 :- pce_autoload(finder,		       library(find_file)).
+:- pce_autoload(rdf_property_on_class_dialog, rdf_create).
 :- pce_global(@finder, new(finder)).
 
 
@@ -1072,6 +1073,9 @@ display_predicates_title(AL) :->
 		 click_gesture(left, '', single,
 			       message(AL, show_properties, all)))
 	),
+	send(D, display, image_button(resource(new_icon),
+				      message(AL, add_property, @receiver),
+				      'Add property to class')),
 	send(AL, append, D,
 	     halign := center, colspan := 3, background := khaki1),
 	send(AL, next_row).
@@ -1160,6 +1164,14 @@ triple_from_part(AL, Part:graphical, Triple:prolog) :<-
 	),
 	Triple = rdf(S, P, O).
 
+
+:- pce_group(edit).
+
+add_property(AL, For:graphical) :->
+	"Add a new property to the class"::
+	get(AL, resource, S),
+	send(rdf_property_on_class_dialog(S, For), open).
+	
 :- pce_end_class(rdf_class_sheet).
 
 

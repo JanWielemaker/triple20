@@ -31,6 +31,7 @@
 
 :- module(rdfs_resource_item, []).
 :- use_module(library(pce)).
+:- use_module(library(lists)).
 :- use_module(rdfs_hierarchy).
 :- use_module(semweb(rdf_db)).
 :- use_module(semweb(rdfs)).
@@ -474,11 +475,11 @@ clear_relations(F) :->
 
 show_relations(F, Term:name) :->
 	"Show related objects"::
-	rdfs_label(Term, Label),
+	findall(Label, rdfs_label(Term, Label), Labels),
+	list_to_set(Labels, [Label|Synonyms]),
 	get(F, member, browser, Browser),
 	send(Browser, clear),
-	(   rdf_has(Term, rdfs:label, literal(Synonym)),
-	    Synonym \== Label,
+	(   member(Synonym, Synonyms),
 	    send(Browser, append, dict_item(Synonym, style := synonym)),
 	    fail
 	;   true

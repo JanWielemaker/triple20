@@ -36,9 +36,11 @@
 :- use_module(semweb(rdf_edit)).
 :- use_module(library(lists)).
 :- use_module(library(url)).
+:- use_module(rdf_rules).
 :- use_module(rdf_util).
 
 :- pce_autoload(identifier_item, library(pce_identifier_item)).
+:- pce_autoload(rdfs_resource_item, rdfs_resource_item).
 
 :- pce_begin_class(rdf_create_dialog, dialog,
 		   "Create instance or class").
@@ -188,3 +190,59 @@ typed(Id, Ev:event) :->
 
 :- pce_end_class(rdf_id_item).
 
+
+		 /*******************************
+		 *	PROPERTY ON CLASS	*
+		 *******************************/
+
+:- pce_begin_class(rdf_property_on_class_dialog, rdf_dialog,
+		   "Create a property for a class").
+
+variable(resource, name, get, "Class to make a property for").
+
+initialise(D, Class:name, For:[graphical]) :->
+	send(D, slot, resource, Class),
+	call_rules(D, label_text(Class, Label)),
+	send_super(D, initialise, For,
+		   string('Define property for %s', Label)),
+	rdf_default_file(Class, File, NS),
+	send(D, append, new(rdf_file_menu(File))),
+	send(D, append, new(rdf_ns_menu(NS))), % TBD: update if file changes
+	send(D, append, new(ID, rdf_id_item), right),
+	send(ID, alignment, left),
+	send(D, add_select_item, type, rdf:type, rdf:'Property'),
+	send(D, add_select_item, range, rdf:range, rdfs:'Resource'),
+					   
+	send(D, append, new(C, button(create, message(D, create_resource)))),
+	send(D, append, button(cancel)),
+	send(C, default_button, @on).
+
+add_select_item(D, Name:name, Prop:prolog, Root:prolog) :->
+	rdf_global_id(Prop, PropRes),
+	rdf_global_id(Root, RootRes),
+	send(D, append, new(I, rdfs_resource_item(PropRes, RootRes, @nil,
+						  class(RootRes)))),
+	send(I, name, Name).
+
+create_resource(D) :->
+	rdfe_transaction(send(D, do_create_resource), create_property).
+
+do_create_resource(D) :->
+	get(D, resource, Domain),
+	get(D, item_selection, namespace, NSId),
+	get(D, item_selection, id, Label),
+	get(D, item_selection, type, Type),
+	get(D, item_selection, range, Range),
+	get(D, item_selection, file, File),
+	rdf_db:ns(NSId, NS),
+	uri_from_label(NS, Label, Resource),
+	
+	rdfe_assert(Resource, rdf:type, Type, File),
+	rdfe_assert(Resource, rdfs:label, literal(Label)),
+	rdfe_assert(Resource, rdfs:domain, Domain, File),
+	rdfe_assert(Resource, rdfs:range, Range, File),
+
+	send(D, destroy).
+
+
+:- pce_end_class(rdf_property_on_class_dialog).
