@@ -328,8 +328,12 @@ completions(OI, From:char_array, Labels:chain) :<-
 	send(Display, busy_cursor, @nil).
 
 complete_label_in_domain(Prefix, Domain, Label) :-
-	rdf_has(Resource, rdfs:label, literal(prefix(Prefix), Label)),
+	rdf_has(Resource, rdfs:label, literal(prefix(Prefix), Label0)),
+	label_text(Label0, Label),
 	owl_satisfies(Domain, Resource).
+
+label_text(lang(_, Label), Label) :- !.
+label_text(Label, Label).
 
 :- pce_end_class(rdfs_resource_item).
 
