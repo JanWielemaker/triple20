@@ -22,7 +22,29 @@ initialise(H, Domain:[prolog]) :->
 	).
 
 expand_domain(H) :->
+	"Show the starting points for the domain"::
+	get(H, domain, Domain),
+	expand_domain(Domain, H).
+
+expand_domain(Domain, H) :-
+	rdf_equal(Domain, rdfs:'Resource'), !,
 	send(H, expand_root).
+expand_domain(union_of(List), H) :- !,
+	forall(member(D, List),
+	       expand_domain(D, H)).
+expand_domain(class(C), H) :- !,
+	send(H, add, C, rdf_class_node).
+expand_domain(all_values_from(C), H) :- !,
+	get(H, add, C, rdf_class_node, Node),
+	send(Node, collapsed, @off).
+expand_domain(some_values_from(C), H) :- !,
+	expand_domain(all_values_from(C), H).
+expand_domain(one_of(List), H) :- !,
+	forall(member(D, List),
+	       send(H, add, D, rdf_individual_node)).
+expand_domain(D, _) :-
+	format('expand_domain: failed to handle ~p~n', [D]).
+
 
 collapse_domain(H) :->
 	send(H?root, collapsed, @on).

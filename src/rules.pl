@@ -626,10 +626,15 @@ menu_item(edit, delete_class_hierarchy).
 menu_item(Gr, edit, new(Role), Node) :-
 	(   rdf_resource_menu:container_with_method(Gr, new, Node),
 	    send(Node, instance_of, rdf_node)
-	->  get(Node?caches, attribute_names, Roles),
-	    chain_list(Roles, List),
-	    member(Role, List),
-	    Role \== rdf_orphan_node
+	->  (   get(Node?caches, attribute_names, Roles),
+	        chain_list(Roles, List),
+		member(Role, List),
+		Role \== rdf_orphan_node
+	    ;	get(Node, resource, Resource),
+		rdfs_subclass_of(Resource, rdfs:'Class'),
+		\+ rdfs_subclass_of(Resource, owl:'Restriction'),
+		Role = rdf_individual_node
+	    )
 	).
 menu_item(Gr, Group, Item, Receiver) :-
 	outer::menu_item(Gr, Group, Item, Receiver),
