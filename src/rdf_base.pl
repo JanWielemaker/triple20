@@ -75,7 +75,8 @@ rdf_db:ns(erc,	   'http://www.swi.psy.uva.nl/mia/cml/erc#').
 rdf_db:ns(dolce,   'http://ontology.ip.rm.cnr.it/ontologies/DOLCE-Lite#').
 rdf_db:ns(fam,     'http://swi.psy.uva.nl/family#').
 rdf_db:ns(swrl,	   'http://www.w3.org/2003/11/swrl#').
-
+rdf_db:ns(mesh,    'http://www.nlm.nih.gov/mesh/2004#').
+rdf_db:ns(galen,    'http://example.org/factkb#').
 
 %	load_base_ontology(+Identifier)
 
