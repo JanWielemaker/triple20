@@ -95,7 +95,8 @@ add(OT, Resource:name, _Role:[name], Node:rdf_node) :<-
 	;   get(OT?root, resource, Root),
 	    once(path(Resource, Root, OT, Path))
 	->  display_path(Path, OT, Node)
-	;   send(OT, report, warning, 'Cannot find path to %s', Resource)
+	;   send(OT, report, warning, 'Cannot find path to %s', Resource),
+	    fail
 	).
 	
 %	path(+Resource, +Root, +Tree, -Path)
@@ -105,12 +106,13 @@ add(OT, Resource:name, _Role:[name], Node:rdf_node) :<-
 %	(=class) to be used for the node.
 
 path(Resource, Root, Tree, Path) :-
-	path(Resource, Root, Tree, [], Path).
+	path(Resource, Root, Tree, [Resource], Path).
 
 path(Resource, Resource, _, _, [Resource-[]]) :- !.
 path(Resource, Root, Tree, Visited, [Resource-Role|T]) :-
-	\+ memberchk(Resource, Visited),
-	call_rules(Tree, parent(Resource, Parent, Role)), !,
+	call_rules(Tree, parent(Resource, Parent, Role)),
+	\+ memberchk(Parent, Visited), !,
+	debug(path, 'Trying parent ~p, role ~w', [Parent, Role]),
 	path(Parent, Root, Tree, [Resource|Visited], T).
 
 display_path([H-Role|_], OT, Node) :-
