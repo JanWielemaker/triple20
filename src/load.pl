@@ -4,9 +4,26 @@
     Purpose: Load demo version of the tool
 */
 
-user:file_search_path(semweb, library(semweb)).
-:- asserta(file_search_path(library, '.')).
+		 /*******************************
+		 *		PATHS		*
+		 *******************************/
 
+:- multifile
+	user:file_search_path/2.
+:- dynamic
+	user:file_search_path/2.
+
+user:file_search_path(semweb, library(semweb)).
+
+:- retractall(file_search_path(ontoshow, _)),
+   prolog_load_context(directory, Dir),
+   asserta(file_search_path(ontoshow, Dir)),
+   asserta(file_search_path(library, '.')).
+
+
+		 /*******************************
+		 *    PREDEFINED NAMESPACES	*
+		 *******************************/
 :- dynamic
 	rdf_db:ns/2.
 :- multifile
@@ -58,9 +75,15 @@ dbg :-
 
 :- catch(['~/.xpcerc'], _, true).
 
-rdf_file_extension(rdf).
-rdf_file_extension(rdfs).
-rdf_file_extension(owl).
+
+		 /*******************************
+		 *	    FILE TYPES		*
+		 *******************************/
+
+rdf_file_extension(rdf,  'RDF file').
+rdf_file_extension(rdfs, 'RDF Schema file').
+rdf_file_extension(owl,  'OWL ontology file').
+rdf_file_extension(rdfj, 'OntoShow project file').
 
 
 		 /*******************************
@@ -137,7 +160,8 @@ parse_argv(['--ulan'|T]) :-
 	parse_argv(T).
 parse_argv([File|T]) :-
 	file_name_extension(_, Ext, File),
-	rdf_file_extension(Ext), !,
+	rdf_file_extension(Ext, _Name),
+	Ext \== rdfj, !,
 	rdfe_load(File),
 	parse_argv(T).
 parse_argv(_) :-
@@ -147,8 +171,17 @@ parse_argv(_) :-
 usage :-
 	print_message(informational, rdf(usage)).
 
+		 /*******************************
+		 *	 TURN TO PROGRAM	*
+		 *******************************/
+
 save(X) :-
 	qsave_program(X, []).
+
+winmain :-
+	current_prolog_flag(argv, Argv),
+	append(_, [--,Assoc], Argv),
+	go([Assoc]).
 
 
 		 /*******************************
