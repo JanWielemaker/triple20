@@ -13,6 +13,8 @@
 :- use_module(particle).
 :- use_module(library(debug)).
 
+:- pce_autoload(rdf_explorer,  rdf_explorer).
+
 :- pce_begin_class(rdf_arm, template,
 		   "(Un)arm objects in a window").
 
@@ -75,6 +77,81 @@ on_left_click(V) :->
 variable(show_namespace, bool := @on,  get, "Do (not) show namespace").
 
 :- pce_end_class(rdf_container).
+
+
+:- pce_begin_class(rdf_resource_template, template,
+		   "RDF visual providing <-resource").
+
+
+:- pce_group(edit).
+
+show_details(T, How:{hierarchy,table}) :->
+	"Show details in format"::
+	(   get(T, frame, Frame),
+	    send(Frame, has_send_method, show_resource)
+	->  get(T, resource, Resource),
+	    send(Frame, show_resource, Resource, How)
+	).
+
+hierarchy_location(T) :->
+	send(T, show_details, hierarchy).
+details(T) :->
+	send(T, show_details, table).
+
+can_show_details(T, _How:{hierarchy,table}) :->
+	"Test if we are embedded in a context that can show details"::
+	get(T, frame, Frame),
+	send(Frame, has_send_method, show_resource).
+
+
+view_rdf_source(T) :->
+	"Open Prolog editor on RDF source"::
+	get(T, resource, Id),
+	(   rdf_source_location(Id, File:Line)
+	->  edit(file(File, line(Line)))
+	;   send(T, report, warning, 'Cannot find source for %s', Id)
+	).
+
+copy(T, As:[{resource,xml_identifier,xml_attribute}]) :->
+	"Copy resource to clipboard"::
+	get(T, resource, Resource),
+	(   As == xml_identifier
+	->  rdf_global_id(NS:Local, Resource),
+	    new(Copy, string('%s:%s', NS, Local))
+	;   As == xml_attribute
+	->  rdf_global_id(NS:Local, Resource),
+	    new(Copy, string('&%s;%s', NS, Local))
+	;   Copy = Resource
+	),
+	send(@display, copy, Copy).
+
+copy_id(T)                :-> send(T, copy, resource).
+copy_as_xml_identifier(T) :-> send(T, copy, xml_identifier).
+copy_as_xml_attribute(T)  :-> send(T, copy, xml_attribute).
+
+
+:- pce_group(diagram).
+
+diagram_(T) :->
+	"Open triple diagram from resource Id"::
+	get(T, resource, Resource),
+	get(T, rdf_diagram, Diagram),
+	send(Diagram, resource, Resource),
+	send(Diagram, expose).
+
+rdf_diagram(T, Diagram:rdf_explorer) :<-
+	"Get associated RDF explorer"::
+	get(T, frame, Frame),
+	(   get(Frame, hypered, rdf_explorer, Diagram)
+	->  true
+	;   new(Diagram, rdf_explorer),
+	    new(_, partof_hyper(Frame, Diagram, rdf_explorer, hierarchy))
+	).
+
+
+:- pce_end_class(rdf_resource_template).
+
+
 
 
 		 /*******************************

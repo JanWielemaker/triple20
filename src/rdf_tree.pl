@@ -231,16 +231,6 @@ show_more(N, MoreNode:rdf_more_node, Role:name, Count:int) :->
 :- pce_group(event).
 
 :- pce_global(@rdf_node_recogniser, make_rdf_node_recogniser).
-:- pce_global(@rdf_node_popop, make_rdf_node_popup).
-
-make_rdf_node_popup(Popup) :-
-	Node = @arg1,
-	new(Popup, popup(options)),
-	send_list(Popup, append,
-		  [ menu_item(delete,
-			      message(Node, delete_resource))
-		  ]).
-
 
 make_rdf_node_recogniser(G) :-
 	new(P, popup_gesture(@receiver?popup)),
@@ -254,8 +244,8 @@ make_rdf_node_recogniser(G) :-
 	new(G, handler_group(P, C1, C2)).
 			      
 
-popup(_, Popup:popup) :<-
-	Popup = @rdf_node_popop.
+popup(N, Popup:popup) :<-
+	call_rules(N, popup(N, Popup)).
 
 event(N, Ev:event) :->
 	"Handle node-event"::

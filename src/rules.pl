@@ -110,6 +110,33 @@ icon(_, Icon) :-
 :- end_particle.
 
 
+:- begin_particle(rdf_resource_menu, []).
+
+popup(Gr, Popup) :-
+	new(Popup, popup(options,
+			 message(@arg2, @arg1))),
+	(   ::menu_item(Gr, Item),
+	    send(Popup, append, Item),
+	    fail
+	;   true
+	).
+
+menu_item(Gr, Item) :-
+	::menu_item(Item),
+	send(Gr, has_send_method, Item).
+
+menu_item(hierarchy_location).
+menu_item(details).
+menu_item(show_id).
+menu_item(copy_id).
+menu_item(copy_as_xml_identifier).
+menu_item(copy_as_xml_attribute).
+menu_item(view_rdf_source).
+menu_item(diagram_).
+
+:- end_particle.
+
+
 		 /*******************************
 		 *	      HIERARCHY		*
 		 *******************************/
@@ -175,7 +202,8 @@ root_property(Class, P) :-
 :- begin_particle(display,
 		  [ rdf_label_rules,
 		    rdf_icon_rules,
-		    class_hierarchy
+		    class_hierarchy,
+		    rdf_resource_menu
 		  ]).
 :- end_particle.
 

@@ -22,6 +22,7 @@
 :- pce_begin_class(rdf_composite_label, figure,
 		   "Create labels from parts").
 :- use_class_template(rdf_container).
+:- use_class_template(rdf_resource_template).
 
 variable(resource,  name,  get, "Represented resource").
 
@@ -65,8 +66,10 @@ event(T, Ev:event) :->
 arm(TF, Val:bool) :->
 	"Preview activiity"::
 	(   Val == @on
-	->  send(TF, pen, 1)
-	;   send(TF, pen, 0)
+	->  send(TF, pen, 1),
+	    send(TF, report, status, TF?resource)
+	;   send(TF, pen, 0),
+	    send(TF, report, status, '')
 	).
 
 entered(TF, Entered:bool) :->
@@ -75,6 +78,9 @@ entered(TF, Entered:bool) :->
 	->  send(@unclip_window, attach, TF)
 	;   true
 	).
+
+popup(P, Popup:popup) :<-
+	call_rules(P, popup(P, Popup)).
 
 :- pce_group(test).
 

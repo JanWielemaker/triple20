@@ -13,12 +13,12 @@
 :- use_module(particle).
 
 :- pce_autoload(editable_text, library(pce_editable_text)).
-:- pce_autoload(rdf_explorer,  rdf_explorer).
 :- pce_autoload(partof_hyper,  library(hyper)).
 
 :- pce_begin_class(rdf_resource_text, text,
 		   "Visualize a resource as a text object").
 :- use_class_template(rdf_visual).
+:- use_class_template(rdf_resource_template).
 
 variable(resource,  name,  get, "Represented resource").
 class_variable(colour, colour, blue).
@@ -43,39 +43,8 @@ resource(T, Resource:name) :->
 	    send(T, string, Label)
 	).
 
-:- pce_global(@rdf_resource_text_popup,
-	      make_resource_text_popup).
 :- pce_global(@rdf_resource_text_recogniser,
 	      make_resource_text_recogniser).
-
-make_resource_text_popup(P) :-
-	new(P, popup),
-	Text = @arg1,
-	send_list(P, append,
-		  [ menu_item(hierarchy_location,
-			      message(Text, show_details, hierarchy),
-			      condition := message(Text,
-						   can_show_details,
-						   hierarchy)),
-		    menu_item(details,
-			      message(Text, show_details, table),
-			      condition := message(Text,
-						   can_show_details,
-						   table)),
-		    menu_item(show_id,
-			      message(Text, report, inform, Text?resource)),
-		    menu_item(copy_id_to_clipboard,
-			      message(Text, copy)),
-		    menu_item(copy_as_xml_identifier,
-			      message(Text, copy, xml_identifier)),
-		    menu_item(copy_as_xml_attribute,
-			      message(Text, copy, xml_attribute)),
-		    menu_item(view_rdf_source,
-			      message(Text, view_rdf_source)),
-		    menu_item(diagram_,
-			      message(Text, open_diagram))
-		  ]).
-
 
 make_resource_text_recogniser(G) :-
 	new(CG, click_gesture(left, '', single,
@@ -85,8 +54,8 @@ make_resource_text_recogniser(G) :-
 	new(AX, handler(area_exit, message(@receiver, entered, @off))),
 	new(G, handler_group(CG, PG, AE, AX)).
 
-popup(_T, Popup:popup) :<-
-	Popup = @rdf_resource_text_popup.
+popup(T, Popup:popup) :<-
+	call_rules(T, popup(T, Popup)).
 
 event(T, Ev:event) :->
 	(   send_super(T, event, Ev)
@@ -95,7 +64,11 @@ event(T, Ev:event) :->
 	).
 
 arm(TF, Arm:bool) :->
-	send(TF, underline, Arm).
+	send(TF, underline, Arm),
+	(   Arm == @on
+	->  send(TF, report, status, TF?resource)
+	;   send(TF, report, status, '')
+	).
 	
 
 entered(TF, Enter:bool) :->
@@ -103,61 +76,6 @@ entered(TF, Enter:bool) :->
 	    send(TF, clipped_by_window)
 	->  send(@unclip_window, attach, TF)
 	;   true
-	).
-
-:- pce_group(edit).
-
-show_details(T, How:{hierarchy,table}) :->
-	"Show details in format"::
-	(   get(T, frame, Frame),
-	    send(Frame, has_send_method, show_resource)
-	->  get(T, resource, Resource),
-	    send(Frame, show_resource, Resource, How)
-	).
-
-can_show_details(T, _How:{hierarchy,table}) :->
-	"Test if we are embedded in a context that can show details"::
-	get(T, frame, Frame),
-	send(Frame, has_send_method, show_resource).
-
-
-view_rdf_source(T) :->
-	"Open Prolog editor on RDF source"::
-	get(T, resource, Id),
-	(   rdf_source_location(Id, File:Line)
-	->  edit(file(File, line(Line)))
-	;   send(T, report, warning, 'Cannot find source for %s', Id)
-	).
-
-copy(T, As:[{resource,xml_identifier,xml_attribute}]) :->
-	"Copy resource to clipboard"::
-	get(T, resource, Resource),
-	(   As == xml_identifier
-	->  rdf_global_id(NS:Local, Resource),
-	    new(Copy, string('%s:%s', NS, Local))
-	;   As == xml_attribute
-	->  rdf_global_id(NS:Local, Resource),
-	    new(Copy, string('&%s;%s', NS, Local))
-	;   Copy = Resource
-	),
-	send(@display, copy, Copy).
-
-:- pce_group(diagram).
-
-open_diagram(T) :->
-	"Open triple diagram from resource Id"::
-	get(T, resource, Resource),
-	get(T, rdf_diagram, Diagram),
-	send(Diagram, resource, Resource),
-	send(Diagram, expose).
-
-rdf_diagram(T, Diagram:rdf_explorer) :<-
-	"Get associated RDF explorer"::
-	get(T, frame, Frame),
-	(   get(Frame, hypered, rdf_explorer, Diagram)
-	->  true
-	;   new(Diagram, rdf_explorer),
-	    new(_, partof_hyper(Frame, Diagram, rdf_explorer, hierarchy))
 	).
 
 :- pce_group(edit).

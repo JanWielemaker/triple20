@@ -522,26 +522,39 @@ display_title(AL, Class:name) :->
 
 append_owl_properties(AL, Class:name) :->
 	(   owl_property(P),
-	    rdf_has(Class, P, Set, Prop)
+	    rdf_has(Class, P, _Set, _Prop)
 	->  send(AL, append, 'OWL Description facets', bold, center,
 		 colspan := 3, background := khaki1),
 	    send(AL, next_row),
-	    (   owl_property(P),
-		rdf_has(Class, P, Set, Prop),
+	    (   owl_property(P2),
+		setof(Value, rdf_has(Class, P2, Value, Prop), Values),
 		send(AL, append_resource, Prop),
-		send(AL, append_resource, Set, colspan := 2),
+		Values = [First|Rest],
+		send(AL, append_resource, First, colspan := 2),
 		send(AL, next_row),
+		(   member(Next, Rest),
+		    send(AL, append_continuation_value, Next),
+		    fail
+		;   true
+		),
 		fail
 	    ;   true
 	    )
 	;   true
 	).
 
+owl_property(P) :- rdf_equal(rdfs:subClassOf, P).
 owl_property(P) :- rdf_equal(owl:oneOf, P).
 owl_property(P) :- rdf_equal(owl:intersectionOf, P).
 owl_property(P) :- rdf_equal(owl:unionOf, P).
 owl_property(P) :- rdf_equal(owl:complementOf, P).
 
+
+append_continuation_value(AL, V:prolog) :->
+	"Append value in the 2nd column"::
+	send(AL, append, new(graphical)),
+	send(AL, append_resource, V, colspan := 2),
+	send(AL, next_row).
 
 append_slots_of(AL, Class:name) :->
 	"Append normal properties"::
