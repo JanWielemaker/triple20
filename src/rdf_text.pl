@@ -8,6 +8,7 @@
 :- use_module(library(pce)).
 :- use_module(library(debug)).
 :- use_module(library(pce_util)).
+:- use_module(library(dragdrop)).
 :- use_module(owl).
 :- use_module(semweb(rdf_edit)).
 :- use_module(semweb(rdfs)).
@@ -64,10 +65,12 @@ resource(T, Resource:name) :->
 make_resource_text_recogniser(G) :-
 	new(CG, click_gesture(left, '', single,
 			      message(@receiver, on_left_click))),
+	new(DG, drag_and_drop_gesture(left, get_source := @arg1?resource)),
+	send(DG, cursor, @default),	% copy from graphical
 	new(PG, popup_gesture(@receiver?popup)),
 	new(AE, handler(area_enter, message(@receiver, entered, @on))),
 	new(AX, handler(area_exit, message(@receiver, entered, @off))),
-	new(G, handler_group(CG, PG, AE, AX)).
+	new(G, handler_group(CG, DG, PG, AE, AX)).
 
 popup(T, Popup:popup) :<-
 	call_rules(T, popup(T, Popup)).
