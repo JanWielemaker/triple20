@@ -1,205 +1,250 @@
 <?xml version='1.0' encoding='ISO-8859-1'?>
 <!DOCTYPE rdf:RDF [
-    <!ENTITY rdf 	"http://www.w3.org/1999/02/22-rdf-syntax-ns#">
-    <!ENTITY rdfs 	"http://www.w3.org/2000/01/rdf-schema#">
-    <!ENTITY owl  	"http://www.w3.org/2002/07/owl#" >
-    <!ENTITY vra 	"http://www.swi.psy.uva.nl/mia/vra#">
-    <!ENTITY dc 	"http://purl.org/dc/elements/1.1/">
-    <!ENTITY aat 	"http://www.swi.psy.uva.nl/mia/aat#">
-    <!ENTITY ulan 	"http://www.swi.psy.uva.nl/mia/ulan#">
+    <!ENTITY aat 'http://www.swi.psy.uva.nl/mia/aat#'>
+    <!ENTITY dc 'http://purl.org/dc/elements/1.1/'>
+    <!ENTITY owl 'http://www.w3.org/2002/07/owl#'>
+    <!ENTITY rdf 'http://www.w3.org/1999/02/22-rdf-syntax-ns#'>
+    <!ENTITY rdfs 'http://www.w3.org/2000/01/rdf-schema#'>
+    <!ENTITY ulan 'http://www.swi.psy.uva.nl/mia/ulan#'>
+    <!ENTITY vra 'http://www.swi.psy.uva.nl/mia/vra#'>
 ]>
 
-<rdf:RDF 
-    xml:base		="http://www.swi.psy.uva.nl/mia/vra"
-    xmlns		="&vra;"
-    xmlns:vra		="&vra;"
-    xmlns:dc		="&dc;"
-    xmlns:rdf		="&rdf;"
-    xmlns:rdfs		="&rdfs;"
-    xmlns:owl		="&owl;"
-    xmlns:aat		="&aat;"
-    xmlns:ulan		="&ulan;">
-
+<rdf:RDF
+    xmlns:aat="&aat;"
+    xmlns:dc="&dc;"
+    xmlns:owl="&owl;"
+    xmlns:rdf="&rdf;"
+    xmlns:rdfs="&rdfs;"
+    xmlns:ulan="&ulan;"
+    xmlns:vra="&vra;"
+>
 <owl:Ontology rdf:about="http://www.swi.psy.uva.nl/mia/vra.rdf">
-  <rdfs:comment>
-  Ontology of the VRA Core Categories version 3.0, together with 
-  range specifications for values in AAT and ULAN. 
-  For information about VRA Core Categories 3.0 see:
-  http://www.vraweb.org/vracore3.html
-  </rdfs:comment>
+  <rdfs:comment>Ontology of the VRA Core Categories version 3.0, together with range specifications for values in AAT and ULAN. For information about VRA Core Categories 3.0 see: http://www.vraweb.org/vracore3.html</rdfs:comment>
 </owl:Ontology>
 
-<rdfs:Class rdf:ID="VisualResource">
+<rdfs:Class rdf:about="&vra;VisualResource"
+    rdfs:label="VisualResource">
   <rdfs:subClassOf>
-    <owl:Restriction>
-      <owl:onProperty rdf:resource="#recordType"/>
-      <owl:cardinality>1</owl:cardinality>
-    </owl:Restriction> 
+    <owl:Restriction
+        owl:cardinality="1">
+      <owl:onProperty rdf:resource="&vra;recordType"/>
+    </owl:Restriction>
   </rdfs:subClassOf>
 </rdfs:Class>
 
-<rdf:Property rdf:ID="recordType">
+<rdf:Property rdf:about="&vra;recordType"
+    rdfs:label="recordType">
+  <rdfs:domain rdf:resource="&vra;VisualResource"/>
+  <rdfs:range rdf:resource="&vra;RecordType"/>
   <rdfs:subPropertyOf rdf:resource="&dc;type"/>
-  <rdfs:domain rdf:resource="#VisualResource"/>
-  <rdfs:range rdf:resource="#RecordType"/>
 </rdf:Property>
 
-<rdfs:Class rdf:ID="RecordType">
-  <owl:oneOf rdf:parseType="Collection">
-    <rdf:Class rdf:resource="#Work"/>
-    <rdf:Class rdf:resource="#Image"/>
+<rdfs:Class rdf:about="&vra;RecordType"
+    rdfs:label="RecordType">
+  <owl:oneOf rdf:parseType=Collection>
+
+    <rdf:Class
+        rdf:resource="#Work"/>
+
+    <rdf:Class
+        rdf:resource="#Image"/>
   </owl:oneOf>
 </rdfs:Class>
 
-<RecordType rdf:ID="Work"/>
-<RecordType rdf:ID="Image"/>
+<vra:RecordType rdf:about="&vra;Work"
+    rdfs:label="Work"/>
 
-<rdf:Property rdf:ID="type">
+<vra:RecordType rdf:about="&vra;Image"
+    rdfs:label="Image"/>
+
+<rdf:Property rdf:about="&vra;type"
+    rdfs:label="type">
+  <rdfs:domain rdf:resource="&vra;VisualResource"/>
+  <rdfs:range rdf:resource="&vra;Type"/>
   <rdfs:subPropertyOf rdf:resource="&dc;type"/>
-  <rdfs:domain rdf:resource="#VisualResource"/>
-  <rdfs:range rdf:resource="#Type"/>
 </rdf:Property>
 
-<rdfs:Class rdf:ID="Type"/>
+<rdfs:Class rdf:about="&vra;Type"
+    rdfs:label="Type"/>
 
-<Type rdf:about="&aat;50191086"/>
+<vra:Type rdf:about="&aat;50191086"
+    rdfs:label="50191086"/>
 
-<rdf:Property rdf:ID="title">
+<rdf:Property rdf:about="&vra;title"
+    rdfs:label="title">
+  <rdfs:domain rdf:resource="&vra;VisualResource"/>
   <rdfs:subPropertyOf rdf:resource="&dc;title"/>
-  <rdfs:domain rdf:resource="#VisualResource"/>
 </rdf:Property>
 
-<rdf:Property rdf:ID="measurements">
+<rdf:Property rdf:about="&vra;measurements"
+    rdfs:label="measurements">
+  <rdfs:domain rdf:resource="&vra;VisualResource"/>
   <rdfs:subPropertyOf rdf:resource="&dc;format"/>
-  <rdfs:domain rdf:resource="#VisualResource"/>
 </rdf:Property>
 
-<rdf:Property rdf:ID="material.medium">
+<rdf:Property rdf:about="&vra;material.medium"
+    rdfs:label="material.medium">
+  <rdfs:domain rdf:resource="&vra;VisualResource"/>
+  <rdfs:range rdf:resource="&vra;MaterialMedium"/>
   <rdfs:subPropertyOf rdf:resource="&dc;format"/>
-  <rdfs:domain rdf:resource="#VisualResource"/>
-  <rdfs:range rdf:resource="#MaterialMedium"/>
 </rdf:Property>
 
-<rdfs:Class rdf:ID="MaterialMedium"/>
+<rdfs:Class rdf:about="&vra;MaterialMedium"
+    rdfs:label="MaterialMedium"/>
 
-<rdf:Description rdf:about="&aat;50015030">
-  <rdfs:subClassOf rdf:resource="#MaterialMedium"/>
-</rdf:Description>
-<rdf:Description rdf:about="&aat;50015069">
-  <rdfs:subClassOf rdf:resource="#MaterialMedium"/>
-</rdf:Description>
-<rdf:Description rdf:about="&aat;50015073">
-  <rdfs:subClassOf rdf:resource="#MaterialMedium"/>
-</rdf:Description>
-<rdf:Description rdf:about="&aat;50187729">
-  <rdfs:subClassOf rdf:resource="#MaterialMedium"/>
-</rdf:Description>
-<rdf:Description rdf:about="&aat;50187730">
-  <rdfs:subClassOf rdf:resource="#MaterialMedium"/>
-</rdf:Description>
-<rdf:Description rdf:about="&aat;50187732">
-  <rdfs:subClassOf rdf:resource="#MaterialMedium"/>
+<rdf:Description rdf:about="&aat;50015030"
+    rdfs:label="50015030">
+  <rdfs:subClassOf rdf:resource="&vra;MaterialMedium"/>
 </rdf:Description>
 
-<rdf:Property rdf:ID="material.support">
+<rdf:Description rdf:about="&aat;50015069"
+    rdfs:label="50015069">
+  <rdfs:subClassOf rdf:resource="&vra;MaterialMedium"/>
+</rdf:Description>
+
+<rdf:Description rdf:about="&aat;50015073"
+    rdfs:label="50015073">
+  <rdfs:subClassOf rdf:resource="&vra;MaterialMedium"/>
+</rdf:Description>
+
+<rdf:Description rdf:about="&aat;50187729"
+    rdfs:label="50187729">
+  <rdfs:subClassOf rdf:resource="&vra;MaterialMedium"/>
+</rdf:Description>
+
+<rdf:Description rdf:about="&aat;50187730"
+    rdfs:label="50187730">
+  <rdfs:subClassOf rdf:resource="&vra;MaterialMedium"/>
+</rdf:Description>
+
+<rdf:Description rdf:about="&aat;50187732"
+    rdfs:label="50187732">
+  <rdfs:subClassOf rdf:resource="&vra;MaterialMedium"/>
+</rdf:Description>
+
+<rdf:Property rdf:about="&vra;material.support"
+    rdfs:label="material.support">
+  <rdfs:domain rdf:resource="&vra;VisualResource"/>
+  <rdfs:range rdf:resource="&vra;MaterialSupport"/>
   <rdfs:subPropertyOf rdf:resource="&dc;format"/>
-  <rdfs:domain rdf:resource="#VisualResource"/>
-  <rdfs:range rdf:resource="#MaterialSupport"/>
 </rdf:Property>
 
-<rdfs:Class rdf:ID="MaterialSupport"/>
+<rdfs:Class rdf:about="&vra;MaterialSupport"
+    rdfs:label="MaterialSupport"/>
 
-<rdf:Description rdf:about="&aat;50010358">
-  <rdfs:subClassOf rdf:resource="#MaterialSupport"/>
-</rdf:Description>
-<rdf:Description rdf:about="&aat;50014844">
-  <rdfs:subClassOf rdf:resource="#MaterialSupport"/>
+<rdf:Description rdf:about="&aat;50010358"
+    rdfs:label="50010358">
+  <rdfs:subClassOf rdf:resource="&vra;MaterialSupport"/>
 </rdf:Description>
 
-<rdf:Property rdf:ID="technique">
+<rdf:Description rdf:about="&aat;50014844"
+    rdfs:label="50014844">
+  <rdfs:subClassOf rdf:resource="&vra;MaterialSupport"/>
+</rdf:Description>
+
+<rdf:Property rdf:about="&vra;technique"
+    rdfs:label="technique">
+  <rdfs:domain rdf:resource="&vra;VisualResource"/>
+  <rdfs:range rdf:resource="&vra;Technique"/>
   <rdfs:subPropertyOf rdf:resource="&dc;formay"/>
-  <rdfs:domain rdf:resource="#VisualResource"/>
-  <rdfs:range rdf:resource="#Technique"/>
 </rdf:Property>
 
-<rdfs:Class rdf:ID="Technique"/>
+<rdfs:Class rdf:about="&vra;Technique"
+    rdfs:label="Technique"/>
 
-<rdf:Description rdf:about="&aat;50053159">
-  <rdfs:subClassOf rdf:resource="#Technique"/>
+<rdf:Description rdf:about="&aat;50053159"
+    rdfs:label="50053159">
+  <rdfs:subClassOf rdf:resource="&vra;Technique"/>
 </rdf:Description>
 
-<rdf:Property rdf:ID="creator">
-  <rdfs:subPropertyOf rdf:resource="&dc;creator"/>
+<rdf:Property rdf:about="&vra;creator"
+    rdfs:label="creator">
   <rdfs:subPropertyOf rdf:resource="&dc;contributor"/>
-  <rdfs:domain rdf:resource="#VisualResource"/>
+  <rdfs:subPropertyOf rdf:resource="&dc;creator"/>
+  <rdfs:domain rdf:resource="&vra;VisualResource"/>
   <rdfs:range rdf:resource="&ulan;Artist"/>
 </rdf:Property>
 
-<rdf:Property rdf:ID="date">
-  <rdfs:subPropertyOf rdf:resource="&dc;date"/>
+<rdf:Property rdf:about="&vra;date"
+    rdfs:label="date">
   <rdfs:subPropertyOf rdf:resource="&dc;coverage"/>
-  <rdfs:domain rdf:resource="#VisualResource"/>
+  <rdfs:subPropertyOf rdf:resource="&dc;date"/>
+  <rdfs:domain rdf:resource="&vra;VisualResource"/>
 </rdf:Property>
 
-<rdf:Property rdf:ID="location">
+<rdf:Property rdf:about="&vra;location"
+    rdfs:label="location">
   <rdfs:subPropertyOf rdf:resource="&dc;contributor"/>
   <rdfs:subPropertyOf rdf:resource="&dc;coverage"/>
-  <rdfs:domain rdf:resource="#VisualResource"/>
+  <rdfs:domain rdf:resource="&vra;VisualResource"/>
 </rdf:Property>
 
-<rdf:Property rdf:ID="idNumber">
+<rdf:Property rdf:about="&vra;idNumber"
+    rdfs:label="idNumber">
+  <rdfs:domain rdf:resource="&vra;VisualResource"/>
   <rdfs:subPropertyOf rdf:resource="&dc;identifier"/>
-  <rdfs:domain rdf:resource="#VisualResource"/>
 </rdf:Property>
 
-<rdf:Property rdf:ID="style/period">
+<rdf:Property rdf:about="&vra;style/period"
+    rdfs:label="style/period">
   <rdfs:subPropertyOf rdf:resource="&dc;coverage"/>
   <rdfs:subPropertyOf rdf:resource="&dc;subject"/>
-  <rdfs:domain rdf:resource="#VisualResource"/>
-  <rdfs:range rdf:resource="#StyleOrPeriod"/>
+  <rdfs:domain rdf:resource="&vra;VisualResource"/>
+  <rdfs:range rdf:resource="&vra;StyleOrPeriod"/>
 </rdf:Property>
 
-<rdfs:Class rdf:ID="StyleOrPeriod"/>
+<rdfs:Class rdf:about="&vra;StyleOrPeriod"
+    rdfs:label="StyleOrPeriod"/>
 
-<StyleOrPeriod rdf:about="&aat;50111078"/>
-<StyleOrPeriod rdf:about="&aat;50111079"/>
+<vra:StyleOrPeriod rdf:about="&aat;50111078"
+    rdfs:label="50111078"/>
 
-<rdf:Property rdf:ID="culture">
+<vra:Culture rdf:about="&aat;50111079"
+    rdfs:label="50111079">
+  <rdf:type rdf:resource="&vra;StyleOrPeriod"/>
+</vra:Culture>
+
+<rdf:Property rdf:about="&vra;culture"
+    rdfs:label="culture">
+  <rdfs:domain rdf:resource="&vra;VisualResource"/>
+  <rdfs:range rdf:resource="&vra;Culture"/>
   <rdfs:subPropertyOf rdf:resource="&dc;coverage"/>
-  <rdfs:domain rdf:resource="#VisualResource"/>
-  <rdfs:range rdf:resource="#Culture"/>
 </rdf:Property>
 
-<rdfs:Class rdf:ID="Culture"/>
+<rdfs:Class rdf:about="&vra;Culture"
+    rdfs:label="Culture"/>
 
-<Culture rdf:about="&aat;50111079"/>
-
-<rdf:Property rdf:ID="subject">
+<rdf:Property rdf:about="&vra;subject"
+    rdfs:label="subject">
+  <rdfs:domain rdf:resource="&vra;VisualResource"/>
   <rdfs:subPropertyOf rdf:resource="&dc;subject"/>
-  <rdfs:domain rdf:resource="#VisualResource"/>
 </rdf:Property>
 
-<rdf:Property rdf:ID="relation">
+<rdf:Property rdf:about="&vra;relation"
+    rdfs:label="relation">
+  <rdfs:domain rdf:resource="&vra;VisualResource"/>
   <rdfs:subPropertyOf rdf:resource="&dc;relation"/>
-  <rdfs:domain rdf:resource="#VisualResource"/>
 </rdf:Property>
 
-<rdf:Property rdf:ID="description">
+<rdf:Property rdf:about="&vra;description"
+    rdfs:label="description">
+  <rdfs:domain rdf:resource="&vra;VisualResource"/>
+  <rdfs:range rdf:resource="&rdfs;Literal"/>
   <rdfs:subPropertyOf rdf:resource="&dc;description"/>
-  <rdfs:domain rdf:resource="#VisualResource"/>
-  <rdfs:range rdf:resource="&rdfs;Literal"/>
 </rdf:Property>
 
-<rdf:Property rdf:ID="source">
+<rdf:Property rdf:about="&vra;source"
+    rdfs:label="source">
+  <rdfs:domain rdf:resource="&vra;VisualResource"/>
+  <rdfs:range rdf:resource="&rdfs;Literal"/>
   <rdfs:subPropertyOf rdf:resource="&dc;source"/>
-  <rdfs:domain rdf:resource="#VisualResource"/>
-  <rdfs:range rdf:resource="&rdfs;Literal"/>
 </rdf:Property>
 
-<rdf:Property rdf:ID="rights">
-  <rdfs:subPropertyOf rdf:resource="&dc;rights"/>
-  <rdfs:domain rdf:resource="#VisualResource"/>
+<rdf:Property rdf:about="&vra;rights"
+    rdfs:label="rights">
+  <rdfs:domain rdf:resource="&vra;VisualResource"/>
   <rdfs:range rdf:resource="&rdfs;Literal"/>
+  <rdfs:subPropertyOf rdf:resource="&dc;rights"/>
 </rdf:Property>
 
 </rdf:RDF>

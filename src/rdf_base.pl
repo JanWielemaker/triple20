@@ -63,6 +63,7 @@ current_base_ontology(Id) :-
 rdf_file(rdfs,	 	 'rdfs.rdfs').
 rdf_file(owl,		 'owl.owl').
 rdf_file(dc,	 	 'dc.rdfs').
+rdf_file(dc,	 	 'eor.rdfs').
 rdf_file(vra,	 	 'vra.owl').
 rdf_file(painting, 	 'subject.owl').
 rdf_file(painting,	 'painting.owl').
@@ -111,11 +112,12 @@ requires(world,	   ic).
 %	
 %	Deduce the required base ontologies from expressions used in the
 %	document.  This is heuristic and far from complete.
+%	
+%	Note we first check for  the  high   level  bases  as  this will
+%	automatically include the more primitive ones.
 
-required_base_ontology(rdfs) :-
-	(   rdf(_, rdfs:subClassOf, _)
-	;   rdf(_, rdf:first, _)
-	;   rdf(_, rdf:rest, _)
+required_base_ontology(dc) :-
+	(   rdf(_, _, dc:title)
 	) -> true.
 required_base_ontology(owl) :-
 	(   rdf(_, owl:oneOf, _)
@@ -125,6 +127,11 @@ required_base_ontology(owl) :-
 	;   rdf(_, _, owl:'Restriction')
 	;   rdf(_, _, owl:'Class')
 	;   rdf(_, _, owl:'Thing')
+	) -> true.
+required_base_ontology(rdfs) :-
+	(   rdf(_, rdfs:subClassOf, _)
+	;   rdf(_, rdf:first, _)
+	;   rdf(_, rdf:rest, _)
 	) -> true.
 
 

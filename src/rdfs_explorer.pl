@@ -50,6 +50,7 @@
 :- use_module(pce_history).
 :- use_module(library(broadcast)).
 :- use_module(rdf_template).
+:- use_module(rdf_tools).
 :- use_module(library(tabbed_window)).
 :- use_module(window).
 
@@ -134,8 +135,9 @@ fill_tool_dialog(OV) :->
 	send(D, gap, size(0,1)),
 	send(D, border, size(0,0)),
 	send_list(D, append,
-		  [ new(File, popup(file)),
-		    new(View, popup(view))
+		  [ new(File,  popup(file)),
+		    new(View,  popup(view)),
+		    new(Tools, popup(tools))
 		  ]),
 
 	send_list(File, append,
@@ -164,6 +166,10 @@ fill_tool_dialog(OV) :->
 	send_list(View, append,
 		  [ new(Label, popup(label,
 				     message(OV, view_label_as, @arg1)))
+		  ]),
+
+	send_list(Tools, append,
+		  [ add_missing_labels
 		  ]),
 
 	send(Label, show_current, @on),
@@ -460,6 +466,13 @@ view_label_as(OV, As:name) :->
 	->  send(Popup, selection, As)
 	;   true
 	).
+
+:- pce_group(tools).
+
+add_missing_labels(_OV) :->
+	"Add labels to objects that have no label"::
+	rdf_equal(rdfs:label, Property),
+	rdf_add_missing_labels(Property).
 
 :- pce_group(edit).
 
@@ -903,10 +916,15 @@ display_predicates_title(AL) :->
 	send(BM1, recogniser,
 	     click_gesture(left, '', single,
 			   message(AL, add_predicate, @receiver))),
-	send(D, display, new(BM2, bitmap(resource(new_multiple)))),
-	send(BM2, recogniser,
-	     click_gesture(left, '', single,
-			   message(AL, add_standard_predicates))),
+	send(BM1, help_message, tag, 'Add property'),
+	(   has_standard_predicates(AL)
+	->  send(D, display, new(BM2, bitmap(resource(new_multiple)))),
+	    send(BM2, recogniser,
+		 click_gesture(left, '', single,
+			       message(AL, add_standard_predicates))),
+	    send(BM2, help_message, tag, 'Add standard properties')
+	;   true
+	),
 	send(AL, append, D,
 	     halign := center, colspan := 2, background := khaki1),
 	send(AL, next_row).
@@ -1067,6 +1085,11 @@ add_standard_predicates(AL) :-
 	    fail
 	;   true
 	).
+
+has_standard_predicates(AL) :-
+	get(AL, resource, Subject),
+	call_rules(AL, standard_predicate(Subject, Predicate)),
+	\+ rdf(Subject, Predicate, _), !.
 
 :- pce_end_class(rdfs_instance_sheet).
 
