@@ -1,0 +1,24 @@
+/* XPM */
+static char * orphanres_xpm[] = {
+/* columns rows colors chars-per-pixel */
+"15 15 4 1",
+" 	c None",
+".	c gray43",
+"X	c #ff8a8a",
+"o	c black",
+/* pixels */
+"       .       ",
+"      .X.      ",
+"     .XXX.     ",
+"    .XXXXX.    ",
+"   .XoooooX.   ",
+"  .XXXXoXXXX.  ",
+" .XXXXXoXXXXX. ",
+".XXXXXXoXXXXXX.",
+" .XXXXXoXXXXX. ",
+"  .XXXXoXXXX.  ",
+"   .XoooooX.   ",
+"    .XXXXX.    ",
+"     .XXX.     ",
+"      .X.      ",
+"       .       "};
