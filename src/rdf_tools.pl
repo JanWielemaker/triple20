@@ -33,6 +33,7 @@
 	  [ rdf_add_missing_labels/1	% +Property
 	  ]).
 :- use_module(semweb(rdf_db)).
+:- use_module(semweb(rdfs)).
 :- use_module(semweb(rdf_edit)).
 :- use_module(rdf_util).
 
@@ -50,7 +51,16 @@ add_missing_labels(Predicate) :-
 	(   rdf_subject(Subject),
 	    \+ rdf_has(Subject, rdfs:label, _),
 	    \+ anonymous_subject(Subject),
-	    rdf_global_id(_:Label, Subject),
+	    rdf_global_id(_:Local, Subject),
+	    replace(Local,
+		    [ "-" = " ",
+		      "_" = " "
+		    ], Label0),
+	    (	rdfs_individual_of(Subject, rdfs:'Class')
+	    ->	get(Label0, capitalise, Label1)
+	    ;	Label1 = Label0
+	    ),
+	    get(Label1, strip, Label),
 	    rdf_default_file(Subject, File),
 	    rdfe_assert(Subject, Predicate, literal(Label), File),
 	    fail
@@ -61,3 +71,23 @@ add_missing_labels(Predicate) :-
 
 anonymous_subject(S) :-
 	sub_atom(S, 0, _, _, '__'), !.
+
+%	replace(+In, +[From=To, ...], -Out)
+
+replace(In, Map, Out) :-
+	atom_codes(In, Codes),
+	replace_codes(Map, Codes, OutCodes),
+	atom_codes(Out, OutCodes).
+
+replace_codes([], L, L).
+replace_codes([In=Out|T], L0, L) :-
+	replace1(L0, In, Out, L1),
+	replace_codes(T, L1, L).
+
+replace1([], _, _, []).
+replace1(In, From, To, Out) :-
+	append(From, After, In), !,
+	replace1(After, From, To, Out0),
+	append(To, Out0, Out).
+replace1([H|T0], From, To, [H|T]) :-
+	replace1(T0, From, To, T).

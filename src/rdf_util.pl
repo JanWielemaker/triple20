@@ -216,16 +216,29 @@ same_label(L-_, L-_).
 %	rdf_default_file(+Resource, -File)
 %	
 %	Where to store facts about Resource? Should be extended to
-%	include triples (or at least relations).
+%	include triples (or at least relations).  Default rules:
+%	
+%		File of the rdf:type declaration
+%		File of any property on subject
+%		File of resource as object
+%		File of resource as property
 
 rdf_default_file(_, File) :-
 	rdfe_get_file_property(File, default(all)), !.
 rdf_default_file(Resource, File) :-
 	rdf_has(Resource, rdf:type, Object, P),
-	rdf(Resource, P, Object, File:_), !,
+	Object \== '__not_filled',
+	rdf(Resource, P, Object, File:_),
 	\+ rdfe_get_file_property(File, access(ro)), !.
 rdf_default_file(Resource, File) :-
-	rdf(Resource, _, _, File:_), !,
+	rdf(Resource, _, Object, File:_),
+	Object \== '__not_filled',
+	\+ rdfe_get_file_property(File, access(ro)), !.
+rdf_default_file(Resource, File) :-
+	rdf(_, _, Resource, File:_),
+	\+ rdfe_get_file_property(File, access(ro)), !.
+rdf_default_file(Resource, File) :-
+	rdf(_, Resource, _, File:_),
 	\+ rdfe_get_file_property(File, access(ro)), !.
 rdf_default_file(_, File) :-
 	rdfe_get_file_property(File, default(fallback)).

@@ -1242,7 +1242,10 @@ new_predicate(AL, Predicate:name, Value:any, Type:{resource,literal}) :->
 
 missing_subject_predicate(AL, Property) :-
 	get(AL, resource, Subject),
-	rdf_has(Subject, rdf:type, Class),
+	(   rdf_has(Subject, rdf:type, Class)
+	->  true
+	;   rdf_equal(Class, rdfs:'Resource')
+	),
 	rdfs_individual_of(Property, rdf:'Property'),
 	rdf_has(Property, rdfs:domain, Domain),
 	rdfs_subclass_of(Class, Domain),
