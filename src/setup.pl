@@ -76,7 +76,7 @@ cancel(D) :->
 %		plwin.exe -s load.pl -g winmain -- <file.ext>
 
 win_register(Ext, Name) :-
-	absolute_file_name(image('32x32/owl.ico'), IconFile),
+	absolute_file_name(image('32x32/triple20.ico'), IconFile),
 	atom_concat(IconFile, ',0', Icon),
 	current_prolog_flag(executable, Exe),
 	absolute_file_name(triple20(load),
@@ -84,7 +84,7 @@ win_register(Ext, Name) :-
 			     access(read)
 			   ],
 			   LoadFile),
-	sformat(Command, '"~w" -s "~w" -g winmain -- "%1"',
+	sformat(Command, '"~w" -s "~w" -L16m -G32m -T32m -g winmain -- "%1"',
 		[Exe, LoadFile]),
 	shell_register_file_type(Ext, 'triple20.type', Name, Command, Icon).
 
