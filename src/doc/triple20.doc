@@ -20,7 +20,7 @@
 	SWI, \\
 	University of Amsterdam \\
 	The Netherlands \\
-	E-mail: \email{jan@swi.psy.uva.nl}}
+	E-mail: \email{wielemak@science.uva.nl}}
 
 \maketitle
 
@@ -478,7 +478,70 @@ loading exactly the same file.  If this fails Triple20 tries to locate
 the ontology file itself.
 
 
-\section{Downloading and Installation}
+\section{Triple20 as a library}
+
+Triple20 can be used in two modes: as a stand-alone applicationn and as
+a Prolog library. \Secref{install} discusses installation as a
+stand-alone executable. This section discusses the steps to use Triple20
+as a GUI in another Prolog program. This usage aims at non-GUI RDF
+applications based on the \pllib{rdf_db.pl} library that wish to have a
+GUI for exploring the triple-set.  Note that it is possible to load
+and Triple20 only in a debugging version.
+
+
+\subsection{Making Triple20 known}
+
+Triple20 uses the file-search path \const{triple20} for locating its
+components. Add the following to your project load-file, adjusting the
+path to reflect local installation:
+
+\begin{code}
+:- multifile
+	user:file_search_path/2.
+:- dynamic
+	user:file_search_path/2.
+
+user:file_search_path(triple20, '/staff/jan/src/Triple20/src').
+\end{code}
+
+Now, Triple20 can be loaded using the directive
+
+\begin{code}
+:- use_module(triple20(load)).
+\end{code}
+ 
+
+\subsection{Interacting with Triple20}
+
+Triple20 provides the following predicates:
+
+\begin{description}
+    \predicate{triple20}{1}{+Argv}
+Start the Triple20 GUI using options from \arg{Argv}.  \arg{Argv} is
+a list of atoms, each atom providing a commandline argument.
+
+    \predicate{triple20}{0}{}
+Equivalent to \exam{triple20([])}, starting the default Triple20 GUI.
+
+    \predicate{t20}{1}{+Action}
+Utility predicate telling the Triple20 GUI to perform some action.
+It uses the broadcasting service to send a message to all open
+Triple20 GUI windows.  Typical actions are:
+
+    \begin{description}
+	\termitem{refresh}{}
+Propagate changes to the database to Triple20.  Normally Triple20
+gets update messages from the \pllib{rdf_edit.pl} library.  Applications
+using \pllib{rdf_db.pl} directly should inform Triple20 that the
+database has changes, forcing Triple20 to flush its caches.
+	\termitem{open_resource}{+URI, +How}
+Open resource \arg{URI} according to \arg{How} in the \const{table}
+or \const{hierarchy}.
+    \end{description}
+\end{description}
+
+
+\section{Downloading and Installation}		\label{sec:install}
 
 The current snapshot of the Triple20 toolkit can be downloaded from
 \url[SWI-Prolog CVS server]{http://www.swi-prolog.org/cvs.html}.  As
@@ -487,16 +550,16 @@ often unstable.	We use the symbolic (sticky) tag \emph{STABLE} to
 reflect the latest usable version.  The CVS download commands are:
 
 \begin{code}
-% cvs -d :pserver:pl@gollem.swi.psy.uva.nl:/usr/local/cvspl login
-Logging in to :pserver:pl@gollem.swi.psy.uva.nl:2401/usr/local/cvspl
+% cvs -d :pserver:pl@gollem.science.uva.nl:/usr/local/cvspl login
+Logging in to :pserver:pl@gollem.science.uva.nl:2401/usr/local/cvspl
 CVS password: prolog
 
-% cvs -z 9 -d :pserver:pl@gollem.swi.psy.uva.nl:/usr/local/cvspl co -r STABLE Triple20
+% cvs -z 9 -d :pserver:pl@gollem.science.uva.nl:/usr/local/cvspl co -r STABLE Triple20
 \end{code}
 
 This command both downloads the software and the basic ontologies.
-Alternatively you may checkout the CVS module
-\textbf{Triple20-Full}, which also download RDF versions of
+Alternatively you may checkout the CVS module \textbf{Triple20-Full},
+which also download RDF versions of
 \url[WordNet]{http://www.cogsci.princeton.edu/~wn/},
 \url[OpenCyc]{http://www.opencyc.org/} and
 \url[SUMO]{http://suo.ieee.org/} (total $\pm$~47~Mb).

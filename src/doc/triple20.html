@@ -20,7 +20,7 @@
 SWI, <BR>
 University of Amsterdam <BR>
 The Netherlands <BR>
-E-mail: <A HREF="mailto:jan@swi.psy.uva.nl">jan@swi.psy.uva.nl</A></I>
+E-mail: <A HREF="mailto:wielemak@science.uva.nl">wielemak@science.uva.nl</A></I>
 </CENTER>
 <HR>
 </BLOCKQUOTE>
@@ -69,12 +69,17 @@ is why we only explain the basics in this document.
 <LI><A HREF="#sec:5.2">5.2 Namespaces</A>
 <LI><A HREF="#sec:5.3">5.3 Project files and snapshots</A>
 </UL>
-<LI><A HREF="#sec:6"><B>6 Downloading and Installation</B></A>
+<LI><A HREF="#sec:6"><B>6 Triple20 as a library</B></A>
 <UL>
-<LI><A HREF="#sec:6.1">6.1 Finishing in MS-Windows</A>
-<LI><A HREF="#sec:6.2">6.2 Finishing in Unix</A>
+<LI><A HREF="#sec:6.1">6.1 Making Triple20 known</A>
+<LI><A HREF="#sec:6.2">6.2 Interacting with Triple20</A>
 </UL>
-<LI><A HREF="#sec:7"><B>7 Bugs and other issues</B></A>
+<LI><A HREF="#sec:7"><B>7 Downloading and Installation</B></A>
+<UL>
+<LI><A HREF="#sec:7.1">7.1 Finishing in MS-Windows</A>
+<LI><A HREF="#sec:7.2">7.2 Finishing in Unix</A>
+</UL>
+<LI><A HREF="#sec:8"><B>8 Bugs and other issues</B></A>
 </UL>
 
 <H2><A NAME="sec:1">1 Introduction</A></H2>
@@ -571,7 +576,86 @@ first try to locate the snapshot from the MD5 digest and name, loading
 exactly the same file. If this fails Triple20 tries to locate the 
 ontology file itself.
 
-<H2><A NAME="sec:6">6 Downloading and Installation</A></H2>
+<H2><A NAME="sec:6">6 Triple20 as a library</A></H2>
+
+<P>Triple20 can be used in two modes: as a stand-alone applicationn and 
+as a Prolog library. <A HREF="#sec:install">Section 7</A> discusses 
+installation as a stand-alone executable. This section discusses the 
+steps to use Triple20 as a GUI in another Prolog program. This usage 
+aims at non-GUI RDF applications based on the <CODE>library(rdf_db.pl)</CODE> 
+library that wish to have a GUI for exploring the triple-set. Note that 
+it is possible to load and Triple20 only in a debugging version.
+
+<H3><A NAME="sec:6.1">6.1 Making Triple20 known</A></H3>
+
+<P>Triple20 uses the file-search path <CODE>triple20</CODE> for locating 
+its components. Add the following to your project load-file, adjusting 
+the path to reflect local installation:
+
+<P><P><TABLE WIDTH="90%" ALIGN=center BORDER=6 BGCOLOR="#e0e0e0"><TR><TD NOWRAP>
+<PRE>
+
+:- multifile
+        user:file_search_path/2.
+:- dynamic
+        user:file_search_path/2.
+
+user:file_search_path(triple20, '/staff/jan/src/Triple20/src').
+</PRE>
+</TABLE>
+
+<P>Now, Triple20 can be loaded using the directive
+
+<P><P><TABLE WIDTH="90%" ALIGN=center BORDER=6 BGCOLOR="#e0e0e0"><TR><TD NOWRAP>
+<PRE>
+
+:- use_module(triple20(load)).
+</PRE>
+</TABLE>
+
+<H3><A NAME="sec:6.2">6.2 Interacting with Triple20</A></H3>
+
+<P>Triple20 provides the following predicates:
+
+<DL>
+
+<P>
+<DT><A NAME="triple20/1"><STRONG>triple20</STRONG>(<VAR>+Argv</VAR>)</A><DD>
+Start the Triple20 GUI using options from <VAR>Argv</VAR>. <VAR>Argv</VAR> 
+is a list of atoms, each atom providing a commandline argument.
+
+<P>
+<DT><A NAME="triple20/0"><STRONG>triple20</STRONG></A><DD>
+Equivalent to <CODE>triple20([])</CODE>, starting the default Triple20 
+GUI.
+
+<P>
+<DT><A NAME="t20/1"><STRONG>t20</STRONG>(<VAR>+Action</VAR>)</A><DD>
+Utility predicate telling the Triple20 GUI to perform some action. It 
+uses the broadcasting service to send a message to all open Triple20 GUI 
+windows. Typical actions are:
+
+<DL>
+
+<P>
+<DT><STRONG>refresh</STRONG><DD>
+Propagate changes to the database to Triple20. Normally Triple20 gets 
+update messages from the <CODE>library(rdf_edit.pl)</CODE> library. 
+Applications using <CODE>library(rdf_db.pl)</CODE> directly should 
+inform Triple20 that the database has changes, forcing Triple20 to flush 
+its caches.
+
+<P>
+<DT><STRONG>open_resource</STRONG>(<VAR>+URI, +How</VAR>)<DD>
+Open resource <VAR>URI</VAR> according to <VAR>How</VAR> in the <CODE>table</CODE> 
+or <CODE>hierarchy</CODE>.
+</DL>
+
+</DL>
+
+<H2><A NAME="sec:7">7 Downloading and Installation</A></H2>
+
+<A NAME="sec:install"></A>
 
 <P>The current snapshot of the Triple20 toolkit can be downloaded from
 <A HREF="http://www.swi-prolog.org/cvs.html">SWI-Prolog CVS server</A>. 
@@ -582,22 +666,22 @@ reflect the latest usable version. The CVS download commands are:
 <P><P><TABLE WIDTH="90%" ALIGN=center BORDER=6 BGCOLOR="#e0e0e0"><TR><TD NOWRAP>
 <PRE>
 
-% cvs -d :pserver:pl@gollem.swi.psy.uva.nl:/usr/local/cvspl login
-Logging in to :pserver:pl@gollem.swi.psy.uva.nl:2401/usr/local/cvspl
+% cvs -d :pserver:pl@gollem.science.uva.nl:/usr/local/cvspl login
+Logging in to :pserver:pl@gollem.science.uva.nl:2401/usr/local/cvspl
 CVS password: prolog
 
-% cvs -z 9 -d :pserver:pl@gollem.swi.psy.uva.nl:/usr/local/cvspl co -r STABLE Triple20
+% cvs -z 9 -d :pserver:pl@gollem.science.uva.nl:/usr/local/cvspl co -r STABLE Triple20
 </PRE>
 </TABLE>
 
 <P>This command both downloads the software and the basic ontologies. 
-Alternatively you may checkout the CVS module
-<B>Triple20-Full</B>, which also download RDF versions of
+Alternatively you may checkout the CVS module <B>Triple20-Full</B>, 
+which also download RDF versions of
 <A HREF="http://www.cogsci.princeton.edu/~wn/">WordNet</A>,
 <A HREF="http://www.opencyc.org/">OpenCyc</A> and
 <A HREF="http://suo.ieee.org/">SUMO</A> (total <VAR>&#177;</VAR>&nbsp;47&nbsp;Mb).
 
-<H3><A NAME="sec:6.1">6.1 Finishing in MS-Windows</A></H3>
+<H3><A NAME="sec:7.1">7.1 Finishing in MS-Windows</A></H3>
 
 <P>After installing Prolog, double click <CODE>setup.bat</CODE> to 
 register
@@ -618,7 +702,7 @@ write a .BAT file by adjusting the template given below.
 </PRE>
 </TABLE>
 
-<H3><A NAME="sec:6.2">6.2 Finishing in Unix</A></H3>
+<H3><A NAME="sec:7.2">7.2 Finishing in Unix</A></H3>
 
 <P>Edit <CODE>triple20.pl</CODE>, adjust <CODE>#!</CODE> path to point 
 to the SWI-Prolog executable and <A NAME="idx:filesearchpath2:1"></A><B>file_search_path/2</B> 
@@ -630,7 +714,7 @@ environment variable as <CODE>triple20</CODE>.
 Using
 <CODE>triple20 --help</CODE> for a list of commandline options.
 
-<H2><A NAME="sec:7">7 Bugs and other issues</A></H2>
+<H2><A NAME="sec:8">8 Bugs and other issues</A></H2>
 
 <P>Although the current system is in active use for browsing ontologies 
 for some time and the first users start to edit ontologies with it, it 
@@ -702,7 +786,7 @@ modify the visualization rule-set and extend the tool.
 <DT><A HREF="#menu:File/Savefile">File/Save file</A><DD>
 <A HREF="#sec:5.1">5.1</A>
 <DT>file_search_path/2<DD>
-<A HREF="#idx:filesearchpath2:1">6.2</A>
+<A HREF="#idx:filesearchpath2:1">7.2</A>
 <DT><A HREF="#menu:File/Statistics">File/Statistics</A><DD>
 <A HREF="#sec:2.3">2.3</A> <A HREF="#sec:5.1">5.1</A>
 <DT><STRONG>H</STRONG><DD>
@@ -720,11 +804,14 @@ modify the visualization rule-set and extend the tool.
 <DT><STRONG>R</STRONG><DD>
 <DT><A HREF="#menu:Renameresource">Rename resource</A><DD>
 <DT><STRONG>T</STRONG><DD>
+<DT><A HREF="#t20/1">t20/1</A><DD>
 <DT><A HREF="#menu:Tools/Addmissinglabels">Tools/Add missing labels</A><DD>
 <DT><A HREF="#menu:Tools/Maintenance/Deletecachedontologies">Tools/Maintenance/Delete 
 cached ontologies</A><DD>
 <DT><A HREF="#menu:Tools/Maintenance/Deletesnapshots">Tools/Maintenance/Delete 
 snapshots</A><DD>
+<DT><A HREF="#triple20/0">triple20/0</A><DD>
+<DT><A HREF="#triple20/1">triple20/1</A><DD>
 <DT><STRONG>U</STRONG><DD>
 <DT><A HREF="#menu:Unrelate">Unrelate</A><DD>
 <DT><STRONG>V</STRONG><DD>
