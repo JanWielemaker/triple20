@@ -65,6 +65,28 @@ clear(I) :->
 	"Clear the item"::
 	send(I, selection, '').
 
+message(OI, Msg:[code]*) :->		% added BJW
+	get(OI, member, text_item, TI),
+	send(TI, message, Msg).
+message(OI, Msg:[code]*) :<-		% added BJW
+	get(OI, member, text_item, TI),
+	get(TI, message, Msg).
+
+apply(OI, Always:[bool]) :->		% added BJW
+	"Execute <-message"::
+	(   (   Always == @on
+	    ;   get(OI, modified, @on)
+	    )
+	->  (   get(OI, selection, Value),
+	        get(OI, message, Message),
+		send(Message, instance_of, code)
+	    ->	send(Message, forward_receiver, OI, Value)
+	    ;	true
+	    )
+	).
+
+
+
 :- pce_group(buttons).
 
 append_button(I, Name:name) :->
