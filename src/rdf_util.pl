@@ -298,6 +298,12 @@ rdf_set_default_ns(File, NS) :-
 	),
 	broadcast(rdf_default_ns(File, NS)).
 	    
+%	pick messages from load_base_ontology/2.
+
+:- initialization
+   listen(rdf_set_default_ns(Path, NS),
+	  rdf_set_default_ns(Path, NS)).
+
 
 		 /*******************************
 		 *	  EDIT OPERATIONS	*

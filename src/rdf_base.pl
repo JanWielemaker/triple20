@@ -106,7 +106,7 @@ register_def_ns([], _) :- !.
 register_def_ns([NS=URL|T], File) :- !,
 	register_def_ns(NS=URL, File),
 	register_def_ns(T, File).
-register_def_ns(NS=URL, _File) :-
+register_def_ns(NS=URL, File) :-
 	(   rdf_db:ns(NS, URL)
 	->  true
 	;   rdf_db:ns(NS, _)
@@ -114,6 +114,11 @@ register_def_ns(NS=URL, _File) :-
 	;   rdf_db:ns(_, URL)
 	->  true			% redefined URL
 	;   rdf_register_ns(NS, URL)
+	),
+					% register non-standard namespaces
+	(   rdf_file(_, NS, _)
+	->  true
+	;   broadcast(rdf_set_default_ns(File, NS))
 	).
 
 
@@ -127,28 +132,20 @@ load_base_ontology(Category) :-
 	load_base_ontology(Category, []).
 
 load_base_ontology(Category, Options) :-
-	findall(load_base(X, Options),
-		expand_category(Category, X),
+	findall(load_base(File, Options),
+		expand_category(Category, File),
 		Goals0),
 	list_to_set(Goals0, Goals),
 	maplist(call, Goals).
 
-%	current_base_ontology(-Identifier)
-%	
-%	Enemate defined base-ontologies
-
-current_base_ontology(Id) :-
-	findall(X, (rdf_file(X, _);requires(X, _)), Xs),
-	sort(Xs, List),
-	member(Id, List),
-	forall(expand_category(Id, FileSpec),		% check existence
-	       absolute_file_name(FileSpec,
-				  [ access(read),
-				    file_errors(fail)
-				  ],
-				  _File)).
-
-load_base(File, Options) :-
+load_base(File:NS, Options) :- !,
+	absolute_file_name(File,
+			   [ access(read),
+			     extensions([rdf,rdfs,owl,''])
+			   ], Path),
+	load_base(Path, Options),
+	broadcast(rdf_set_default_ns(Path, NS)).
+load_base(File, Options) :- 
 	absolute_file_name(File,
 			   [ access(read),
 			     extensions([rdf,rdfs,owl,''])
@@ -159,38 +156,54 @@ load_base(File, Options) :-
 	    rdfe_set_file_property(Path, access(ro))
 	).
 
+%	current_base_ontology(-Identifier)
+%	
+%	Enemate defined base-ontologies
 
-%	rdf_file(+Identifier, -File)
+current_base_ontology(Id) :-
+	findall(X, (rdf_file(X, _);requires(X, _)), Xs),
+	sort(Xs, List),
+	member(Id, List),
+	forall(expand_category(Id, FileSpec:_NS), 	% check existence
+	       absolute_file_name(FileSpec,
+				  [ access(read),
+				    file_errors(fail)
+				  ],
+				  _File)).
+
+
+rdf_file(Id, File) :-
+	rdf_file(Id, _DefNS, File).
+
+%	rdf_file(+Identifier, -DefNS, -File)
 %	
 %	Register the file that belong to a base ontology
 
-rdf_file(rdfs,	 	 ontology('rdfs.rdfs')).
-rdf_file(owl,		 ontology('owl.owl')).
-rdf_file(owlfull,        ontology('owlfull.owl')).
-rdf_file(dc,	 	 ontology('dc.rdfs')).
-rdf_file(dc,	 	 ontology('eor.rdfs')).
-rdf_file(vra,	 	 ontology('vra.owl')).
-rdf_file(skos,		 ontology('skos-core.rdfs')).
-rdf_file(painting, 	 ontology('subject.owl')).
-rdf_file(painting,	 ontology('painting.owl')).
+rdf_file(rdfs,	 	 rdfs, ontology('rdfs.rdfs')).
+rdf_file(owl,		 owl,  ontology('owl.owl')).
+rdf_file(owlfull,        owl,  ontology('owlfull.owl')).
+rdf_file(dc,	 	 dc,   ontology('dc.rdfs')).
+rdf_file(dc,	 	 eor,  ontology('eor.rdfs')).
+rdf_file(vra,	 	 vra,  ontology('vra.owl')).
+rdf_file(skos,		 skos, ontology('skos-core.rdfs')).
 
-rdf_file(aat,		 ontology('aatmeta.rdfs')).
-rdf_file(aat,		 ontology('aat.rdfs')).
+rdf_file(aat,		 aat,  ontology('aatmeta.rdfs')).
+rdf_file(aat,		 aat,  ontology('aat.rdfs')).
 
-rdf_file(ulan,		 ontology('ulan.rdfs')).
-rdf_file(ulan,		 ontology('ulan.rdf')).
+rdf_file(ulan,		 ulan, ontology('ulan.rdfs')).
+rdf_file(ulan,		 ulan, ontology('ulan.rdf')).
 
-rdf_file(wn,		 ontology('wordnet-20000620.rdfs')).
-rdf_file(wn,		 ontology('wordnet_glossary-20010201.rdf')).
-rdf_file(wn,		 ontology('wordnet_hyponyms-20010201.rdf')).
-rdf_file(wn,		 ontology('wordnet_nouns-20010201.rdf')).
-rdf_file(wn,		 ontology('wordnet_similar-20010201.rdf')).
-rdf_file(wnrdfs,	 ontology('wnclass.rdfs')).
+rdf_file(wn,		 wns,  ontology('wordnet-20000620.rdfs')).
+rdf_file(wn,		 wn,   ontology('wordnet_glossary-20010201.rdf')).
+rdf_file(wn,		 wn,   ontology('wordnet_hyponyms-20010201.rdf')).
+rdf_file(wn,		 wn,   ontology('wordnet_nouns-20010201.rdf')).
+rdf_file(wn,		 wn,   ontology('wordnet_similar-20010201.rdf')).
+rdf_file(wnrdfs,	 wns,  ontology('wnclass.rdfs')).
 
-rdf_file(ic,		 ontology('iconclass.rdfs')).
+rdf_file(ic,		 ic,   ontology('iconclass.rdfs')).
 
-rdf_file(cyc,		 ontology('cyc03.rdfs')).
-rdf_file(sumo,		 ontology('sumo.rdfs')).
+rdf_file(cyc,		 cyc,  ontology('cyc03.rdfs')).
+rdf_file(sumo,		 sumo, ontology('sumo.rdfs')).
 
 %	requires(+Id1, -Id2)
 %	
@@ -266,7 +279,8 @@ required_by_ext(owl, owl).
 		 *******************************/
 
 expand_category(C, F) :-
-	(   rdf_file(C, F)
+	(   rdf_file(C, NS, File),
+	    F = File:NS
 	;   requires(C, R),
 	    expand_category(R, F)
 	).
