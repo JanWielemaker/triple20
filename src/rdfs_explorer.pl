@@ -290,7 +290,7 @@ show_resource(OV, Resource:name, How:name) :->
 	    send(Tree?window, normalise, Node?image, y)
 	;   How == table
 	->  get(OV, member, rdfs_sheet, Sheet),
-	    send(Sheet, selection, Resource)
+	    send(Sheet, resource, Resource)
 	).
 
 
@@ -410,7 +410,7 @@ variable(history,	 history,     get, "Location history").
 
 initialise(OS) :->
 	send_super(OS, initialise),
-	send(OS, slot, history, history(message(OS, selection, @arg1))),
+	send(OS, slot, history, history(message(OS, resource, @arg1))),
 	send(OS, size, size(500,350)),
 	send(OS, hor_stretch, 100),
 	send(OS, ver_stretch, 100),
@@ -425,7 +425,7 @@ sheet(OS, Name:{class,instance}, Table:rdf_tabular) :<-
 	get(OS, member, Name, Window),
 	get(Window?graphicals, head, Table).
 
-selection(OS, Resource:name) :->
+resource(OS, Resource:name) :->
 	"Show the indicated object"::
 	get(OS, sheet, instance, InstanceSheet),
 	get(OS, sheet, class, ClassSheet),

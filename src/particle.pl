@@ -15,7 +15,7 @@
 :- op(600, fy,  user:(::)).
 
 /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-Extremly lightweight package to do  use   modules  more like classes. It
+Extremely lightweight package to do use modules more like classes. It
 allows of defining multiple modules in a single file between:
 
 	:- begin_particle(Name, Super).
@@ -48,15 +48,21 @@ calling primitives are provided:
 		 *	    DECLARATION		*
 		 *******************************/
 
+begin_particle(Name, _) :-
+	current_module(Name),
+	\+ current_particle(Name, _),
+	throw(error(permission_error(create_particle, Name),
+		    'Existing module')).
 begin_particle(Name, Super0) :-
 	canonical_super(Super0, Supers),
 	(   current_particle(Name, Supers)
 	->  true
 	;   retractall(current_particle(Name, _)),
-	    unimport(Name),
 	    assert(current_particle(Name, Supers)),
 	    set_import_modules(Name, Supers)
 	),
+	prolog_load_context(file, SourceFile),
+	'$declare_module'(Name, SourceFile),
 	'$set_source_module'(Old, Name),
 	asserta(loading_particle(Name, Old)).
 
@@ -71,24 +77,9 @@ canonical_super(X, [X]).
 set_import_modules(Module, Imports) :-
 	findall(I, import_module(Module, I), IL),
 	forall(member(I, IL), delete_import_module(Module, I)),
-	forall(import_module(Module, I), writeln(I)),
 	forall(member(I, Imports), add_import_module(Module, I, end)),
 	'$set_source_module'(Context, Context),
 	add_import_module(Module, Context, end).
-
-%	unimport(+Module)
-%	
-%	Remove all predicates that have been auto-imported, so the
-%	links can be restored from the proper module on the next call.
-
-unimport(Module) :-
-	(   predicate_property(M:Head, imported_from(I)),
-	    import_module(Module, I),
-	    functor(Head, Name, Arity),
-	    abolish(M:Name/Arity),
-	    fail
-	;   true
-	).
 
 
 		 /*******************************

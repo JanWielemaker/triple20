@@ -17,8 +17,8 @@ link_root :-
 			 true)).
 
 cyc :-
-	go(['cyc.rdfj', 'cyc.rdfs']),
-	link_root.
+	go(['cyc.rdfj', 'cyc.rdfs']).
+%	link_root.
 
 :- cyc.
 

@@ -28,6 +28,9 @@ owl_description_attribute(X) :- rdf_equal(owl:intersectionOf, X).
 
 :- begin_particle(rdf_label_rules, []).
 
+label_text(Resource, Text) :-
+	rdfs_ns_label(Resource, Text).
+
 label(Resource, Label) :-
 	::label_class(Resource, Class), !,
 	Term =.. [Class, Resource],
@@ -73,6 +76,7 @@ label_class(_, rdf_resource_text).
 resource(class,       image, image('16x16/class.xpm')).
 resource(metaclass,   image, image('16x16/Metaclass.gif')).
 resource(orphanclass, image, image('16x16/orphanclass.xpm')).
+resource(orphanres,   image, image('16x16/orphanres.xpm')).
 resource(individual,  image, image('16x16/Instance.gif')).
 resource(property,    image, image('16x16/SlotDirect.gif')).
 resource(list,        image, image('16x16/list.xpm')).
@@ -225,6 +229,13 @@ parent(R, Parent, rdf_property_node) :-
 	rdf_has(R, rdfs:subPropertyOf, Parent), !.
 parent(R, Parent, rdf_individual_node) :-
 	rdf_has(R, rdf:type, Parent), !.
+parent('__orphan_classes', Root, rdf_orphan_node) :- !,
+	rdf_equal(Root, rdfs:'Resource').
+parent('__orphan_resources', Root, rdf_orphan_node) :- !,
+	rdf_equal(Root, rdfs:'Resource').
+parent(R, '__orphan_classes', rdf_class_node) :-
+	rdfs_individual_of(R, rdfs:'Class'), !.
+parent(_, '__orphan_resources', rdf_individual_node).
 
 %	root_property(+Class, -Property)
 %	
@@ -330,7 +341,20 @@ clicked(V) :-
 		 *	     HIERARCHY		*
 		 *******************************/
 
-:- begin_particle(rdf_node, display).
+:- begin_particle(rdfs_hierarchy, display).
+
+clicked(V) :-
+	get(V, resource, R),
+	get(V, container, rdf_node, Node),
+	(   get(Node, resource, R)
+	->  send(Node?tree, selected, Node)
+	;   super::clicked(V)
+	).
+
+:- end_particle.
+
+
+:- begin_particle(rdf_node, rdfs_hierarchy).
 
 menu_item(Gr, Group, Item, Receiver) :-
 	super::menu_item(Gr, Group, Item, Receiver),
@@ -345,14 +369,6 @@ menu_item(Gr, edit, new(Role), Node) :-
 menu_item(Gr, edit, delete=delete_resource, Node) :-
 	(   container_with_method(Gr, delete_resource, Node)
 	->  true
-	).
-
-clicked(V) :-
-	get(V, resource, R),
-	get(V, container, rdf_node, Node),
-	(   get(Node, resource, R)
-	->  send(Node?tree, selected, Node)
-	;   super::clicked(V)
 	).
 
 :- end_particle.
@@ -370,6 +386,58 @@ clicked(V) :-
 
 child_cache(R, Cache, rdf_property_node) :-
 	rdf_cache(lsorted(V), rdf_has(V, rdfs:subPropertyOf, R), Cache).
+
+:- end_particle.
+
+:- begin_particle(rdf_root_node, rdf_node).
+
+child_cache(R, Cache, Role) :-
+	super::child_cache(R, Cache, Role).
+child_cache(_, Cache, rdf_orphan_node) :-
+	rdf_cache(X, orphan_resource(X), Cache).
+
+orphan_resource('__orphan_classes') :-
+	rdf_orphan_node:orphan_class(_) -> true.
+orphan_resource('__orphan_resources') :-
+	rdf_orphan_node:orphan_resource(_) -> true.
+
+:- end_particle.
+
+
+:- begin_particle(rdf_orphan_node, rdf_node).
+
+label_text('__orphan_classes', '<Classes without rdfs:subClassOf>').
+label_text('__orphan_resources', '<Resources without rdf:type>').
+%label_text(Resource, Label) :-
+%	super::label_text(Resource, Label).
+
+icon('__orphan_classes', Icon) :-
+	new(Icon, image(resource(orphanclass))).
+icon('__orphan_resources', Icon) :-
+	new(Icon, image(resource(orphanres))).
+icon(Resource, Icon) :-
+	super::icon(Resource, Icon).
+
+label_class('__orphan_classes', rdfs_class_label).
+label_class('__orphan_resources', rdf_individual_label).
+label_class(Resource, Class) :-
+	super::label_class(Resource, Class).
+
+child_cache('__orphan_classes', Cache, rdf_class_node) :-
+	rdf_cache(X, orphan_class(X), Cache).
+child_cache('__orphan_resources', Cache, rdf_individual_node) :-
+	rdf_cache(X, orphan_resource(X), Cache).
+child_cache(Resource, Cache, Role) :-
+	super::child_cache(Resource, Cache, Role).
+
+orphan_class(Class) :-
+	rdfs_individual_of(Class, rdfs:'Class'),
+	\+ rdf_has(Class, rdfs:subClassOf, _),
+	\+ rdf_equal(Class, rdfs:'Resource').
+
+orphan_resource(Resource) :-
+	rdf_subject(Resource),
+	\+ rdf_has(Resource, rdf:type, _).
 
 :- end_particle.
 

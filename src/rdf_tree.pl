@@ -46,9 +46,8 @@ initialise(H, Root:[name]) :->
 	;   TheRoot = Root
 	),
 	send(H, direction, list),
-	send(H, level_gap, 20),
-	new(RootNode, rdf_node(TheRoot)),
-%	call_rules(H, root_node(TheRoot, RootNode)),
+	send(H, level_gap, 15),
+	new(RootNode, rdf_root_node(TheRoot)),
 	send(H, root, RootNode).
 
 expand_root(H) :->
@@ -57,6 +56,11 @@ expand_root(H) :->
 	send(Root, collapsed, @off).
 
 :- pce_group(build).
+
+create_node(_OT, Resource:name, Role:name, Node:node) :<-
+	"Create a new node (using tree for proper context)"::
+	NewTerm =.. [Role, Resource],
+	new(Node, NewTerm).
 
 member(OT, Id:name, Node:rdf_node) :<-
 	"Find Node representing ID"::
@@ -219,8 +223,7 @@ expand_role(N, Role:name, Cache:int) :->
 
 add_child(N, Resource:name, Role:name, Before:[node], Son:rdf_node) :<-
 	"Create node for resource in role"::
-	NewTerm =.. [Role, Resource],
-	new(Son, NewTerm),
+	get(N?tree, create_node, Resource, Role, Son),
 	send(N, son, Son, Before).
 
 add_child(N, Resource:name, Role:name, Before:[node]) :->
@@ -446,6 +449,12 @@ new_individual(N) :->
 
 
 :- pce_begin_class(owl_restriction_node, rdf_node).
+:- pce_end_class.
+
+:- pce_begin_class(rdf_root_node, rdf_node).
+:- pce_end_class.
+
+:- pce_begin_class(rdf_orphan_node, rdf_node).
 :- pce_end_class.
 
 

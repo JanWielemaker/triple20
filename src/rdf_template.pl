@@ -53,7 +53,7 @@ event(W, Ev:event) :->
 arm(W, For:[name], Target:graphical) :<-
 	(   get(@event, position, W, point(X, Y)),
 	    get(W, slot, scroll_offset, point(OX, OY)),
-	    AX is X + OX, AY = Y+OY,
+	    AX is X + OX, AY is Y+OY,
 	    new(Ev, event(arm, W, AX, AY)),
 	    (	For == @default
 	    ->	true
@@ -183,7 +183,9 @@ drop(T, Resource:name) :->
 
 on_left_click(V) :->
 	"Left-click on object: find container that deals with it"::
-	call_rules(V, clicked(V)).
+	send(@display, busy_cursor),
+	call_cleanup(call_rules(V, clicked(V)),
+		     send(@display, busy_cursor, @nil)).
 
 :- pce_group(rdf).
 
@@ -269,13 +271,8 @@ rdf_container(O, Container:device) :<-
 :- pce_extend_class(node).
 
 rdf_container(N, Container:visual) :<-
-	(   get(N, parents, Parents),
-	    Parents \== @nil,
-	    get(Parents, head, Container)
-	->  true
-	;   get(N, tree, Container),
-	    Container \== @nil
-	).
+	get(N, tree, Container),
+	Container \== @nil.
 
 :- pce_end_class.
 
@@ -296,16 +293,19 @@ call_rules(Obj, Goal) :-
 
 container_with_particle(Obj, Particle) :-
 	get(Obj, rdf_particle, Particle),
-	current_particle(Particle).
+	current_particle(Particle),
+	debug(container, '~p has particle ~p', [Obj, Particle]).
 container_with_particle(Obj, Particle) :-
 	(   get(Obj, rdf_container, Container)
-	->  container_with_particle(Container, Particle)
+	->  debug(container, 'Try container of ~p: ~p', [Obj, Container]),
+	    container_with_particle(Container, Particle)
 	;   get(Obj, create_context,
 		message(@arg1, instance_of, visual),
 		Context)
-	->  debug(container, '~p~n', [Context]),
+	->  debug(container, 'Try create context of ~p: ~p~n', [Obj, Context]),
 	    container_with_particle(Context, Particle)
 	;   print_message(error, not_contained(Obj)),
+	    trace,
 	    fail
 	).
 

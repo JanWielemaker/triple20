@@ -9,7 +9,10 @@
 ================================================================
 * Bugs:
 
-	+ Undo: Action/undo/Action --> only redo lights up
+	+ Discard empty transactions
+	+ Unclip window: wheelmouse, click, and other problems
+	+ Drop class on `Range' doesn't work
+	+ Particle/module conflict: rdfs_hierarchy
 
 
 ================================================================

@@ -4,7 +4,7 @@
     Purpose: 
 */
 
-:- module(rdfs_hierarchy, []).
+:- module(rdf_hierarchy, []).
 :- use_module(library(pce)).
 :- use_module(rdf_tree).
 

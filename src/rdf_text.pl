@@ -45,7 +45,10 @@ update(T) :->
 label(T, Label:char_array) :<-
 	"Compute label from resource"::
 	get(T, resource, Resource),
-	rdfs_ns_label(Resource, Label).
+	(   call_rules(T, label_text(Resource, Label))
+	->  true
+	;   Label = Resource
+	).
 
 resource(T, Resource:name) :->
 	"Modify the represented resource"::
