@@ -68,7 +68,7 @@ rdf_file(ic,		 'iconclass.rdfs').
 load(Category) :-
 	load(1, Category).
 load(C, Category) :-				% load the whole world
-	findall(rdf_load(X), rdf_file(Category, X), Goals),
+	findall(rdfe_load(X), rdf_file(Category, X), Goals),
 	concurrent(C, Goals).
 
 % :- rdf_debug(1).		% Print messages
@@ -105,14 +105,29 @@ go :-
 	send(X, open).
 
 go(Argv) :-
-	(   select('--nobase', Argv, Av)
-	->  parse_argv(Av)
-	;   load(base(rdfs)),
-	    load(base(owl)),
-	    parse_argv(Argv)
+	(   select(Journal, Argv, Argv1),
+	    file_name_extension(_, rdfj, Journal)
+	->  (   exists_file(Journal)
+	    ->	JournalLoaded = true
+	    ;	true
+	    ),
+	    rdfe_open_journal(Journal, append)
+	;   Argv1 = Argv
+	),
+	(   JournalLoaded == true
+	->  true
+	;   rdfe_transaction(parse_argv1(Argv1))
 	),
 	new(X, rdfs_explorer),
 	send(X, open).
+
+parse_argv1(Argv) :-
+	select('--nobase', Argv, Argv1),
+	parse_argv(Argv1).
+parse_argv1(Argv) :-
+	load(base(rdfs)),
+	load(base(owl)),
+	parse_argv(Argv).
 
 parse_argv([]).
 parse_argv(['--world'|T]) :-
@@ -130,7 +145,7 @@ parse_argv(['--ulan'|T]) :-
 parse_argv([File|T]) :-
 	file_name_extension(_, Ext, File),
 	rdf_file_extension(Ext), !,
-	rdf_load(File),
+	rdfe_load(File),
 	parse_argv(T).
 parse_argv([File]) :-
 	file_name_extension(_Base, rdfj, File),

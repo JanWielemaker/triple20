@@ -174,13 +174,6 @@ update(L) :->
 	send(L, icon, Icon),
 	send(L, append, rdf_resource_text(Resource)).
 
-new_class(L) :->
-	(   get(L, contained_in, Container),
-	    send(Container, has_send_method, new_class)
-	->  send(Container, new_class)
-	;   send(L, report, error, 'Cannot create classes')
-	).
-
 :- pce_end_class(rdfs_class_label).
 
 

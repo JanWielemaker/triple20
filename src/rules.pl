@@ -113,19 +113,44 @@ icon(_, Icon) :-
 :- begin_particle(rdf_resource_menu, []).
 
 popup(Gr, Popup) :-
-	new(Popup, popup(options,
-			 message(@arg2, @arg1))),
-	(   bagof(Item, ::menu_item(Gr, _Group, Item), Items),
+	new(Popup, popup),
+	(   bagof(Item, ::menu_item(Gr, _Group, Item, Receiver), Items),
 	    send(Popup, append, gap),
-	    forall(member(Item, Items),
-		   send(Popup, append, Item)),
+	    forall(item_member(Method, Label, Items),
+		   send(Popup, append,
+			menu_item(Label,
+				  message(Receiver, Method)))),
 	    fail
 	;   true
 	).
 
-menu_item(Gr, Group, Item) :-
+container_with_method(Gr, Method, Gr) :-
+	send(Gr, has_send_method, Method).
+container_with_method(Gr, Method, Container) :-
+	get(Gr, contained_in, Container0),
+	container_with_method(Container0, Method, Container).
+
+item_method(Item=Method, Item, Method) :- !.
+item_method(Item,        Item, Item).
+
+item_member(Method, Label, Items) :-
+	member(Item, Items),
+	item_method(Item, Label, Method).
+
+menu_item(Gr, Group, Item, Receiver) :-
 	::menu_item(Group, Item),
-	send(Gr, has_send_method, Item).
+	item_method(Item, _Label, Method),
+	(   container_with_method(Gr, Method, Receiver)
+	->  true
+	).
+
+%	menu_item(Group, Item)
+%	
+%	Define menu items.  When  creating  the   popup  all  items  are
+%	collected by Group which are separated by a bar. The ordering is
+%	left unchanged.
+%	
+%	Item is either a method name or of the form LabelName=Method
 
 menu_item(select, hierarchy_location).
 menu_item(select, details).
@@ -234,5 +259,7 @@ child_cache(R, Cache, rdf_property_node) :-
 menu_item(Group, Item) :-
 	super::menu_item(Group, Item).
 menu_item(edit, new_class).
+menu_item(edit, new_individual).
+menu_item(edit, delete=delete_resource).
 
 :- end_particle.

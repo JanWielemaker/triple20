@@ -89,17 +89,27 @@ rdf_update_cache(Cache) :-
 	cache_attributes(Cache, Generation, _Size),
 	rdf_generation(Generation), !.
 rdf_update_cache(Cache) :-
-	retractall(cache_attributes(Cache, _, _)),
-	retractall(cache_result(Cache, _)),
 	cache_goal(Cache, Var, Goal),
 	findall(Label-Var, (Goal, (rdfs_label(Var, Label)->true)), Values0),
 	keysort(Values0, Values1),
 	unique_unkey(Values1, Values),
 	Result =.. [values|Values],
-	assert(cache_result(Cache, Result)),
+	(   cache_result(Cache, Result)
+	->  true
+	;   retract(cache_result(Cache, _))
+	->  assert(cache_result(Cache, Result)),
+	    BroadCast = rdf_cache_modified(Cache)
+	;   assert(cache_result(Cache, Result))
+	),
 	rdf_generation(Generation),
 	functor(Result, _, Arity),
-	assert(cache_attributes(Cache, Generation, Arity)).
+	retractall(cache_attributes(Cache, _, _)),
+	assert(cache_attributes(Cache, Generation, Arity)),
+	(   nonvar(BroadCast)
+	->  broadcast(BroadCast)
+	;   true
+	).
+
 
 unique_unkey([], []).
 unique_unkey([H0|T0], [H|T]) :-
@@ -127,3 +137,8 @@ rdf_cache_clear :-
 	;   true
 	).
 	
+
+		 /*******************************
+		 *	       UPDATE		*
+		 *******************************/
+

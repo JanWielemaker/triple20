@@ -279,11 +279,27 @@ on_double_left_click(N) :->
 :- pce_group(edit).
 
 new_class(N) :->
+	"Create subclass of this class"::
 	send_class(N, node, collapsed(@off)),
 	get(N, resource, Resource),
 	send(N, son, new(C, rdf_create_node(Resource, class))),
 	send(N?window, compute),
 	send(C, get_focus).
+
+new_individual(N) :->
+	"Create indivisual of this class"::
+	send_class(N, node, collapsed(@off)),
+	get(N, resource, Resource),
+	send(N, son, new(C, rdf_create_node(Resource, individual))),
+	send(N?window, compute),
+	send(C, get_focus).
+
+delete_resource(N) :->
+	"Delete a class or individual"::
+	get(N, resource, Resource),
+	send(@display, confirm,
+	     string('Delete resource %s?', Resource)),
+	rdfe_delete(Resource).
 
 :- pce_end_class(rdf_node).
 
@@ -402,49 +418,72 @@ initialise(B, More:int) :->
 :- pce_begin_class(rdf_create_node, node,
 		   "Create a new instance").
 
-variable(mode,     {class,instance}, get, "Mode of operation").
-variable(resource, name,	     get, "Context Class").
+initialise(N, Parent:name, What:{class,individual}) :->
+	send_super(N, initialise, new(D, rdf_create_dialog(Parent, What))),
+	send(D, pen, 1),
+	send(N, collapsed, @nil).
 
-initialise(N, Parent:name, What:{class,instance}) :->
-	send(N, slot, mode, What),
-	send(N, slot, resource, Parent),
-	send_super(N, initialise, new(D, figure)),
-	send(N, collapsed, @nil),
-	send(D, format, new(format(vertical, 1, @on))),
-	send(D, display, bitmap(resource(class))),
-	rdf_global_id(NS:_, Parent),
-	send(D, display, new(rdf_ns_menu(NS))),
-	send(D, display, new(rdf_id_item)),
-	send(D, display, new(C, button(create, message(N, create)))),
-	send(D, display, button(done, message(N, destroy))),
-	send(C, default_button, @on).
-
-super_resource(N, Super:name) :<-
-	"Resource of the node of which I am a child"::
+resource_created(N, Resource:name) :->
 	get(N, parents, chain(Parent)),
-	get(Parent, resource, Super).
+	send(Parent, add_child, Resource, rdf_class_node, N).
 
-create(N) :->
+get_focus(N) :->
+	send(N?image, advance).
+
+delete_item(N, _D:graphical) :->
+	send(N, destroy).
+
+:- pce_end_class(rdf_create_node).
+
+:- pce_begin_class(rdf_create_dialog, dialog,
+		   "Create instance or class").
+
+variable(mode,     {class,individual}, get, "Mode of operation").
+variable(resource, name,	       get, "Context Class").
+
+initialise(D, Parent:name, What:{class,individual}) :->
+	send(D, slot, mode, What),
+	send(D, slot, resource, Parent),
+	send_super(D, initialise, string('Create %s', What?label_name)),
+	rdf_global_id(NS:_, Parent),
+	send(D, append, new(rdf_ns_menu(NS))),
+	send(D, append, new(rdf_id_item), right),
+	send(D, append, new(C, button(create, message(D, create_resource)))),
+	send(D, append, button(done)),
+	send(C, default_button, @on),
+	send(D, '_compute_desired_size').
+
+done(D) :->
+	(   get(D, contained_in, Container),
+	    send(Container, has_send_method, delete_item)
+	->  send(Container, delete_item, D)
+	;   send(D, destroy)
+	).
+
+create_resource(N) :->
 	get(N, member, namespace, NSI),
 	get(NSI, selection, NS),
 	get(N, member, id, IDI),
 	get(IDI, selection, Label),
 	local_uri_from_label(NS, Label, Local),
 	atom_concat(NS, Local, Resource),
-	rdfe_transaction(send(N, create_resource, Resource, Label)),
-	get(N, parents, chain(Parent)),
-	send(Parent, add_child, Resource, rdf_class_node, N),
-	send(IDI, clear).
+	rdfe_transaction(send(N, do_create_resource, Resource, Label)),
+	send(IDI, clear),
+	(   get(N, contained_in, Container),
+	    send(Container, has_send_method, resource_created)
+	->  send(Container, resource_created, Resource)
+	;   true
+	).
 
-create_resource(N, Resource:name, Label:name) :->
+do_create_resource(N, Resource:name, Label:name) :->
 	"Create a new resource"::
-	get(N, super_resource, Super),
+	get(N, resource, Super),
 	(   get(N, mode, class)
 	->  rdfe_assert(Resource, rdf:type, rdfs:'Class'),
 	    rdfe_assert(Resource, rdfs:subClassOf, Super)
 	;   rdfe_assert(Resource, rdf:type, Super)
 	),
-	rdfe_assert(Resource, rdfs:label, Label).
+	rdfe_assert(Resource, rdfs:label, literal(Label)).
 
 local_uri_from_label(_, Label, Local) :-
 	new(S, string('%s', Label)),
@@ -452,11 +491,8 @@ local_uri_from_label(_, Label, Local) :-
 	get(S, value, Local),
 	free(S).
 
-get_focus(N) :->
-	get(N, member, id, IDI),
-	send(N?window, keyboard_focus, IDI).
+:- pce_end_class(rdf_create_dialog).
 
-:- pce_end_class(rdf_create_node).
 
 :- pce_begin_class(rdf_ns_menu, menu,
 		   "Prompt for namespace").
