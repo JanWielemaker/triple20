@@ -186,7 +186,10 @@ fill_tool_dialog(OV) :->
 
 	send_list(Help, append,
 		  [ help,
-		    about
+		    about,
+		    gap,
+		    menu_item(wiki, @default,
+			      'Open user (wiki) web')
 		  ]),
 
 	send_list(Maintenance, append,
@@ -537,6 +540,10 @@ help(_) :->
 			   Path),
 	atom_concat('file:', Path, URI),
 	www_open_url(URI).
+
+wiki(_) :->
+	"Open Triple20 wiki page"::
+	www_open_url('http://gollem.swi.psy.uva.nl/twiki/pl/bin/view/Development/TripleTwenty').
 
 %	->about
 %	
