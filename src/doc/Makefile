@@ -25,9 +25,9 @@ HTML=$(DOC).html
 
 doc:		$(PDF) $(HTML)
 pdf:		$(PDF)
-html:		$(HTML)
+html:		$(TEX) $(HTML)
 
-$(HTML):	$(TEX)
+$(HTML)::
 		latex2html $(DOC)
 		mv html/index.html $@
 		cp -a html/*.gif .

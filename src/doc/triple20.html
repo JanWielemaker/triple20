@@ -58,18 +58,19 @@ is why we only explain the basics in this document.
 <LI><A HREF="#sec:2.5">2.5 Undo and redo</A>
 <LI><A HREF="#sec:2.6">2.6 View consistency</A>
 </UL>
-<LI><A HREF="#sec:3"><B>3 Projects and files</B></A>
+<LI><A HREF="#sec:3"><B>3 OWL support</B></A>
+<LI><A HREF="#sec:4"><B>4 Projects and files</B></A>
 <UL>
-<LI><A HREF="#sec:3.1">3.1 Files</A>
-<LI><A HREF="#sec:3.2">3.2 Namespaces</A>
-<LI><A HREF="#sec:3.3">3.3 Project files and snapshots</A>
+<LI><A HREF="#sec:4.1">4.1 Files</A>
+<LI><A HREF="#sec:4.2">4.2 Namespaces</A>
+<LI><A HREF="#sec:4.3">4.3 Project files and snapshots</A>
 </UL>
-<LI><A HREF="#sec:4"><B>4 Downloading and Installation</B></A>
+<LI><A HREF="#sec:5"><B>5 Downloading and Installation</B></A>
 <UL>
-<LI><A HREF="#sec:4.1">4.1 Finishing in MS-Windows</A>
-<LI><A HREF="#sec:4.2">4.2 Finishing in Unix</A>
+<LI><A HREF="#sec:5.1">5.1 Finishing in MS-Windows</A>
+<LI><A HREF="#sec:5.2">5.2 Finishing in Unix</A>
 </UL>
-<LI><A HREF="#sec:5"><B>5 Bugs and other issues</B></A>
+<LI><A HREF="#sec:6"><B>6 Bugs and other issues</B></A>
 </UL>
 
 <H2><A NAME="sec:1">1 Introduction</A></H2>
@@ -122,11 +123,11 @@ relation. Predicates can also be dropped on the khaki coloured
 subject.
 </UL>
 
-<P>Note that <B>File/New window</B> creates a new view on the triple set 
-that fully cooperates and synchronises with the other views. Drag and 
-drop between multiple views is a suggested technique to deal with larger 
-ontologies. Notable the user can exploit search in a small window to 
-locate relevant resources.
+<P>Note that <A HREF="#menu:File/Newwindow">File/New window</A> creates 
+a new view on the triple set that fully cooperates and synchronises with 
+the other views. Drag and drop between multiple views is a suggested 
+technique to deal with larger ontologies. Notable the user can exploit 
+search in a small window to locate relevant resources.
 
 <H3><A NAME="sec:2.2">2.2 Context menus</A></H3>
 
@@ -138,91 +139,91 @@ Sub-menus are described as <B>Menu/SubMenu/...</B>
 <DL>
 
 <P>
-<DT><A NAME="Details"><STRONG>Details</STRONG></A> (<VAR>hierarchy</VAR>)<DD>
+<DT><A NAME="menu:Details"><STRONG>Details</STRONG></A> (<VAR>hierarchy</VAR>)<DD>
 Show the resource in the table and bring the most applicable view to the 
 front.
 
 <P>
-<DT><A NAME="Hierarchylocation"><STRONG>Hierarchy location</STRONG></A> (<VAR>table</VAR>)<DD>
+<DT><A NAME="menu:Hierarchylocation"><STRONG>Hierarchy location</STRONG></A> (<VAR>table</VAR>)<DD>
 If the resource is not in the hierarchy, add it as well as the parents 
-to create (an arbitrary) path to the root. See also <B>View/Show all 
-parents</B>.
+to create (an arbitrary) path to the root. See also <A HREF="#menu:View/Showallparents">View/Show all parents</A>.
 
 <P>
-<DT><A NAME="Copy/Id"><STRONG>Copy/Id</STRONG></A><DD>
+<DT><A NAME="menu:Copy/Id"><STRONG>Copy/Id</STRONG></A><DD>
 Put the full resource identifier (including namespace) on the clipboard.
 
 <P>
-<DT><A NAME="Copy/Copyasxmlidentifier"><STRONG>Copy/Copy as xml 
+<DT><A NAME="menu:Copy/Copyasxmlidentifier"><STRONG>Copy/Copy as xml 
 identifier</STRONG></A><DD>
 Put the <VAR>NamespaceId</VAR>:<VAR>LocalId</VAR> on the clipboard using 
 the namespace identifier as registered with the <CODE>rdf_db</CODE> 
 library.
 
 <P>
-<DT><A NAME="Copy/Copyasxmlattribute"><STRONG>Copy/Copy as xml attribute</STRONG></A><DD>
+<DT><A NAME="menu:Copy/Copyasxmlattribute"><STRONG>Copy/Copy as xml 
+attribute</STRONG></A><DD>
 Put the resource in a format suitable for an XML attribute value:
 &amp;<VAR>NamespaceId</VAR>;<VAR>LocalId</VAR>
 
 <P>
-<DT><A NAME="Renameresource"><STRONG>Rename resource</STRONG></A><DD>
+<DT><A NAME="menu:Renameresource"><STRONG>Rename resource</STRONG></A><DD>
 Rename an existing resource to a new one. All triples holding the old 
 resource in either of the three fields are updated.
 
 <P>
-<DT><A NAME="Delete"><STRONG>Delete</STRONG></A><DD>
+<DT><A NAME="menu:Delete"><STRONG>Delete</STRONG></A><DD>
 Delete a resource completely. All triples holding this resource in 
 either of the three fields are removed from the database.
 
 <P>
-<DT><A NAME="Deleteclasshierarchy"><STRONG>Delete class hierarchy</STRONG></A> (<VAR>hierarchy</VAR>)<DD>
+<DT><A NAME="menu:Deleteclasshierarchy"><STRONG>Delete class hierarchy</STRONG></A> (<VAR>hierarchy</VAR>)<DD>
 Delete an entire hierarchy build using <CODE>rdfs:subClassOf</CODE> or a 
 subproperty thereof. Resources that become disconnected from the 
 hierarchy are deleted completely.
 
 <P>
-<DT><A NAME="Unrelate"><STRONG>Unrelate</STRONG></A> (<VAR>hierarchy</VAR>)<DD>
+<DT><A NAME="menu:Unrelate"><STRONG>Unrelate</STRONG></A> (<VAR>hierarchy</VAR>)<DD>
 Delete the triple causing the node to appear in this location of the 
 hierarchy. All other relations are unaffected. See also
-<B>View/Show all parents</B>.
+<A HREF="#menu:View/Showallparents">View/Show all parents</A>.
 
 <P>
-<DT><A NAME="Newsubclass"><STRONG>New subclass</STRONG></A> (<VAR>hierarchy</VAR>)<DD>
+<DT><A NAME="menu:Newsubclass"><STRONG>New subclass</STRONG></A> (<VAR>hierarchy</VAR>)<DD>
 Create a new resource and make it a subclass of the current node. The 
 create dialog prompts for the file, namespace and label for the new 
 resource. The meta class (<CODE>rdf:type</CODE>, default associated file 
 and default namespace are the same as the super class.
 
 <P>
-<DT><A NAME="Newindividual"><STRONG>New individual</STRONG></A> (<VAR>hierarchy</VAR>)<DD>
+<DT><A NAME="menu:Newindividual"><STRONG>New individual</STRONG></A> (<VAR>hierarchy</VAR>)<DD>
 Create an individual of the class represented by the current node. See 
-also <B>New subclass</B>.
+also <A HREF="#menu:Newsubclass">New subclass</A>.
 
 <P>
-<DT><A NAME="Newproperty"><STRONG>New property</STRONG></A> (<VAR>hierarchy</VAR>)<DD>
+<DT><A NAME="menu:Newproperty"><STRONG>New property</STRONG></A> (<VAR>hierarchy</VAR>)<DD>
 Create an individual of the property class represented by the current 
-node. See also <B>New subclass</B>.
+node. See also <A HREF="#menu:Newsubclass">New subclass</A>.
 
 <P>
-<DT><A NAME="View/rdfsource"><STRONG>View/rdf source</STRONG></A><DD>
+<DT><A NAME="menu:View/rdfsource"><STRONG>View/rdf source</STRONG></A><DD>
 Open the RDF description defining the resource. The current 
 implementation na&iuml;vely opens the first if triples for the resource 
 originate from multiple descriptions.
 
 <P>
-<DT><A NAME="View/diagram"><STRONG>View/diagram</STRONG></A><DD>
+<DT><A NAME="menu:View/diagram"><STRONG>View/diagram</STRONG></A><DD>
 Open an RDF diagram with this resource or add this resource to the 
 already open diagram. The current diagram window is based on code from 
 an older project and not yet well integrated into Triple20.
 
 <P>
-<DT><A NAME="View/Showallparents"><STRONG>View/Show all parents</STRONG></A> (<VAR>hierarchy</VAR>)<DD>
+<DT><A NAME="menu:View/Showallparents"><STRONG>View/Show all parents</STRONG></A> (<VAR>hierarchy</VAR>)<DD>
 Find all places in the hierarchy where the current resource appears and 
 highlight them. This is particularly useful to examine multiple 
 inheritance, multiple types, etc.
 
 <P>
-<DT><A NAME="View/triples"><STRONG>View/triples</STRONG></A> (<VAR>predicate</VAR>)<DD>
+<DT><A NAME="menu:View/triples"><STRONG>View/triples</STRONG></A> (<VAR>predicate</VAR>)<DD>
 Show all triples of this predicate in the right-hand table. The current 
 triple-table is crude, providing inefficient update and poor handling of 
 large tables.
@@ -233,51 +234,51 @@ large tables.
 <DL>
 
 <P>
-<DT><A NAME="File/Newwindow"><STRONG>File/New window</STRONG></A><DD>
+<DT><A NAME="menu:File/Newwindow"><STRONG>File/New window</STRONG></A><DD>
 Create a new Triple20 window on the same database. Drag and drop between 
 the two windows is supported to relate resources from different parts of 
 the hierarchy.
 
 <P>
-<DT><A NAME="File/Openproject"><STRONG>File/Open project</STRONG></A><DD>
+<DT><A NAME="menu:File/Openproject"><STRONG>File/Open project</STRONG></A><DD>
 Discard the current database and open an existing project (see
-<A HREF="#sec:project">section 3</A>). Triple20 cannot work with 
+<A HREF="#sec:project">section 4</A>). Triple20 cannot work with 
 multiple projects at the same time.
 
 <P>
-<DT><A NAME="File/Newproject"><STRONG>File/New project</STRONG></A><DD>
+<DT><A NAME="menu:File/Newproject"><STRONG>File/New project</STRONG></A><DD>
 Discard the current database and create a new empty project. See
-<A HREF="#sec:project">section 3</A> for details on working with 
+<A HREF="#sec:project">section 4</A> for details on working with 
 projects.
 
 <P>
-<DT><A NAME="File/Loadontology"><STRONG>File/Load ontology</STRONG></A><DD>
+<DT><A NAME="menu:File/Loadontology"><STRONG>File/Load ontology</STRONG></A><DD>
 Load triples from an XML/RDF file. Note that most XML/RDF files depend 
 on RDFS and/or OWL, which must be loaded to get a meaningful view. See 
-also <B>File/Load base ontology</B>. If Triple20 is started by opening 
-an XML/RDF file it will apply some heuristics to load the required base 
-ontologies. Use <B>File/Statistics</B> to examine the loaded files.
+also <A HREF="#menu:File/Loadbaseontology">File/Load base ontology</A>. 
+If Triple20 is started by opening an XML/RDF file it will apply some 
+heuristics to load the required base ontologies. Use <A HREF="#menu:File/Statistics">File/Statistics</A> 
+to examine the loaded files.
 
 <P>
-<DT><A NAME="File/Loadbaseontology/..."><STRONG>File/Load base 
-ontology/...</STRONG></A><DD>
+<DT><A NAME="menu:File/Loadbaseontology"><STRONG>File/Load base ontology</STRONG></A><DD>
 Load one of the ontologies distributed with triple20. Almost any project 
 requires <CODE>rdfs</CODE>.
 
 <P>
-<DT><A NAME="File/Newfile"><STRONG>File/New file</STRONG></A><DD>
+<DT><A NAME="menu:File/Newfile"><STRONG>File/New file</STRONG></A><DD>
 Create a new file and add it to the pool. After creating this file 
-resources can be associated to it. See also <B>New class</B>.
+resources can be associated to it. See also <A HREF="#menu:Newsubclass">New subclass</A>.
 
 <P>
-<DT><A NAME="File/Mergefiles"><STRONG>File/Merge files</STRONG></A><DD>
+<DT><A NAME="menu:File/Mergefiles"><STRONG>File/Merge files</STRONG></A><DD>
 Move the triples associated with a file to another file. The command 
 opens a dialog for selecting the source and destination files. For 
 example, ontologies can be merged by creating a new file, merging the 
 desired ontologies into the new file and save this file.
 
 <P>
-<DT><A NAME="File/Savefile/..."><STRONG>File/Save file/...</STRONG></A><DD>
+<DT><A NAME="menu:File/Savefile"><STRONG>File/Save file</STRONG></A><DD>
 The submenu holds all loaded files, where the files whose set of 
 associated triples has been modified are activated. The `modified' state 
 is based on the MD5 hash of the triples associated to the file which 
@@ -285,70 +286,72 @@ implies that after <EM>edit/undo</EM> or <EM>edit/inverse edit</EM> the
 file is still regarded unmodified.
 
 <P>
-<DT><A NAME="File/Saveall"><STRONG>File/Save all</STRONG></A><DD>
+<DT><A NAME="menu:File/Saveall"><STRONG>File/Save all</STRONG></A><DD>
 Save all modified files.
 
 <P>
-<DT><A NAME="File/Namespaces"><STRONG>File/Name spaces</STRONG></A><DD>
+<DT><A NAME="menu:File/Namespaces"><STRONG>File/Name spaces</STRONG></A><DD>
 Inspect/edit the mapping from short name space identifiers (e.g. <EM>rdfs</EM>) 
 to the associated URI. Changes to this mapping are stored in the 
 project.
 
 <P>
-<DT><A NAME="File/Statistics"><STRONG>File/Statistics</STRONG></A><DD>
+<DT><A NAME="menu:File/Statistics"><STRONG>File/Statistics</STRONG></A><DD>
 Show statistics on the triples loaded from and associated to each file 
 as well as some query statistics.
 
 <P>
-<DT><A NAME="File/exit"><STRONG>File/exit</STRONG></A><DD>
+<DT><A NAME="menu:File/exit"><STRONG>File/exit</STRONG></A><DD>
 Exit the current window. Note that the current Triple20 runs on top of 
 the Prolog toplevel which may be used to inspect and alter the triple 
 store. Closing a window does not stop Prolog. New Triple20 windows can 
 be created from Prolog using the command <CODE>?- go.</CODE>.
 
 <P>
-<DT><A NAME="View/Label/..."><STRONG>View/Label/...</STRONG></A><DD>
-Change the labels displayed for resources. See <B>section ??</B> for 
-details.
+<DT><A NAME="menu:View/Label"><STRONG>View/Label</STRONG></A><DD>
+Change the labels displayed for resources. See <A HREF="#sec:label">section 
+2.4</A> for details.
 
 <P>
-<DT><A NAME="View/Dialect/..."><STRONG>View/Dialect/...</STRONG></A><DD>
+<DT><A NAME="menu:View/Dialect"><STRONG>View/Dialect</STRONG></A><DD>
 Change which part of and how the triple store is interpreted. Little of 
 this is implemented in the current prototype.
 
 <P>
-<DT><A NAME="View/OWL/Classextension"><STRONG>View/OWL/Class extension</STRONG></A><DD>
+<DT><A NAME="menu:View/OWL/Classextension"><STRONG>View/OWL/Class 
+extension</STRONG></A><DD>
 If selected (default), resources that belong to the dynamically computed 
 class extension are visible in the hierarchy with the
 <IMG SRC="think.gif"> icon. Note that computing the OWL class extension 
 is very incomplete.
 
 <P>
-<DT><A NAME="Tools/Addmissinglabels"><STRONG>Tools/Add missing labels</STRONG></A><DD>
+<DT><A NAME="menu:Tools/Addmissinglabels"><STRONG>Tools/Add missing 
+labels</STRONG></A><DD>
 Add an <CODE>rdfs:label</CODE> triple to each non-anonymous resource 
 that has no defined label. The default label is the local name of the 
 resource.
 
 <P>
-<DT><A NAME="Tools/Maintenance/Deletecachedontologies"><STRONG>Tools/Maintenance/Delete 
+<DT><A NAME="menu:Tools/Maintenance/Deletecachedontologies"><STRONG>Tools/Maintenance/Delete 
 cached ontologies</STRONG></A><DD>
 Delete all cache files created to speedup the loading of RDF/XML files. 
 This may be necessary to recover from incompatible changes to the cache 
 file format or bugs in the RDF/XML parser.
 
 <P>
-<DT><A NAME="Tools/Maintenance/Deletesnapshots"><STRONG>Tools/Maintenance/Delete 
+<DT><A NAME="menu:Tools/Maintenance/Deletesnapshots"><STRONG>Tools/Maintenance/Delete 
 snapshots</STRONG></A><DD>
 Delete all snapshots. If you want to preserve any project file, make 
 sure you understand snapshots before using this option. See
-<B>section ??</B>.
+<A HREF="#sec:snapshots">section 4.3</A>.
 
 <P>
-<DT><A NAME="Help/Help"><STRONG>Help/Help</STRONG></A><DD>
+<DT><A NAME="menu:Help/Help"><STRONG>Help/Help</STRONG></A><DD>
 Open this document in your browser.
 
 <P>
-<DT><A NAME="Help/About"><STRONG>Help/About</STRONG></A><DD>
+<DT><A NAME="menu:Help/About"><STRONG>Help/About</STRONG></A><DD>
 Show the about box. Among author and copyright information it provides a 
 link to the project home.
 </DL>
@@ -357,12 +360,12 @@ link to the project home.
 
 <A NAME="sec:label"></A>
 
-<P>Using the <B>View/Label</B> menu the system can identify resources in 
-three ways. <EM>Label only</EM> only displays the label. The label is 
-either the first value for the <CODE>rdfs:label</CODE> property, a 
-subproperty thereof or the last part of the resource name. <EM>Namespace 
+<P>Using the <A HREF="#menu:View/Label">View/Label</A> menu the system 
+can identify resources in three ways. <EM>Label only</EM> only displays 
+the label. The label is either the first value for the <CODE>rdfs:label</CODE> 
+property, a subproperty thereof or the last part of the resource name. <EM>Namespace 
 and label</EM> displays the namespace identifier (see <A HREF="#sec:namespaces">section 
-3.2</A>) before the label. This is the default. <EM>Resource</EM> 
+4.2</A>) before the label. This is the default. <EM>Resource</EM> 
 displays the namespace identifiers in front of the local resource name.
 
 <P>In most situations the label is preceded by a small icon. The icons 
@@ -373,7 +376,8 @@ classification.
 
 <H3><A NAME="sec:2.5">2.5 Undo and redo</A></H3>
 
-<P>Triple20 provides unlimited undo and redo using toolbar buttons.
+<P>Triple20 provides unlimited undo and redo using toolbar buttons. Note 
+however that some operations, notably file merge
 
 <H3><A NAME="sec:2.6">2.6 View consistency</A></H3>
 
@@ -392,41 +396,77 @@ proper update. When in doubt collapse and re-expand the hierarchy and/or
 switch the table to another resource and back to force proper update. 
 Please report inconsistencies you think can be avoided.
 
-<H2><A NAME="sec:3">3 Projects and files</A></H2>
+<H2><A NAME="sec:3">3 OWL support</A></H2>
+
+<A NAME="sec:owl"></A>
+
+<P>The current version of Triple20 does not know much about OWL. It 
+supports OWL at the following places:
+
+<P><UL COMPACT>
+<LI><I>Restriction labels</I><BR>
+All instances of class <CODE>owl:Restriction</CODE> can be accessed in 
+the hierarchy below the class node. Restriction that have an anonymous 
+resource have a dedicated label that clearly visualizes its contents. If <B>OWL/Class extension</B> 
+is active (default) it shows the resources that satisfy the restriction 
+prefixed by the
+<IMG SRC="think.gif"> icon.
+
+<P>
+<LI><I>OWL Descriptions</I><BR>
+It also shows a special icon and (if the resource is anonymous) 
+dedicated label for OWL descriptions. Descriptions visualise the class 
+extension as restrictions described above.
+
+<P>
+<LI><I>Subclass</I><BR>
+The hierarchy displays, in addition to <CODE>rdfs:subClassOf</CODE>, the 
+reverse of <CODE>owl:intersectionOf</CODE>.
+</UL>
+
+<P>OWL reasoning incorporates restrictions and descriptions, but does 
+not do <CODE>owl:sameAs</CODE>, <CODE>owl:equivalentClass</CODE>,
+<CODE>owl:equivalentProperty</CODE>, property types (symetric, 
+transitive) or reasoning about attribute values based on membership of a 
+description.
+
+<H2><A NAME="sec:4">4 Projects and files</A></H2>
 
 <A NAME="sec:project"></A>
 
-<H3><A NAME="sec:3.1">3.1 Files</A></H3>
+<H3><A NAME="sec:4.1">4.1 Files</A></H3>
 
 <P>Triples in <EM>rdf_db</EM> are actually quadruples. The last part 
 registers the origin of the triple, so the tool can load ontologies from 
 multiple files, present the joined view and still save the modified 
 triples to a specific file. If a new class or instance is created using 
-the <B>New ...</B> context menu in the hierarchy the system allows to 
-specify the file using the file of the parent as default. If properties 
-are added to a subject these are added in the same file as the <CODE>rdf:type</CODE> 
+the <A HREF="#menu:Newsubclass">New subclass</A>, <A HREF="#menu:Newindividual">New individual</A>, 
+etc. context menu in the hierarchy the system allows to specify the file 
+using the file of the parent as default. If properties are added to a 
+subject these are added in the same file as the <CODE>rdf:type</CODE> 
 property of the subject or ---if this property is not present--- to the 
 file of the first property found.
 
-<P>The menu <B>File/Merge files</B> allow the user to move all triples 
-associated to some file to another file. This can be used to merge 
-ontologies.
+<P>The menu <A HREF="#menu:File/Mergefiles">File/Merge files</A> allow 
+the user to move all triples associated to some file to another file. 
+This can be used to merge ontologies.
 
-<P>The <B>File/Save file</B> submenus allow for saving modified files.
+<P>The <A HREF="#menu:File/Savefile">File/Save file</A> submenus allow 
+for saving modified files.
 
-<H3><A NAME="sec:3.2">3.2 Namespaces</A></H3>
+<H3><A NAME="sec:4.2">4.2 Namespaces</A></H3>
 
 <A NAME="sec:namespaces"></A>
 
 <P>Triple20 has an internal table of well-known namespaces and their 
 common abbreviation. This table is in the file <CODE>rdf_base.pl</CODE>. 
 If possible it will use the abbreviated form in the UI. Namespaces can 
-be added through the <B>File/Namespaces</B> menu option. Registered 
-namespaces are stored in the project file.
+be added through the <A HREF="#menu:File/Namespaces">File/Names paces</A> 
+menu option. Registered namespaces are stored in the project file.
 
-<H3><A NAME="sec:3.3">3.3 Project files and snapshots</A></H3>
+<H3><A NAME="sec:4.3">4.3 Project files and snapshots</A></H3>
 
-<A NAME="sec:snaphots"></A>
+<A NAME="sec:snapshots"></A>
 
 <P>A <EM>project file</EM> <CODE>.rdfj</CODE> is a <EM>journal</EM> of 
 executed edit operations. This approach has several advantages over the 
@@ -461,7 +501,7 @@ first try to locate the snapshot from the MD5 digest and name, loading
 exactly the same file. If this fails Triple20 tries to locate the 
 ontology file itself.
 
-<H2><A NAME="sec:4">4 Downloading and Installation</A></H2>
+<H2><A NAME="sec:5">5 Downloading and Installation</A></H2>
 
 <P>The current snapshot of the Triple20 toolkit can be downloaded from
 <A HREF="http://www.swi-prolog.org/cvs.html">SWI-Prolog CVS server</A>. 
@@ -487,7 +527,7 @@ Alternatively you may checkout the CVS module
 <A HREF="http://www.opencyc.org/">OpenCyc</A> and
 <A HREF="http://suo.ieee.org/">SUMO</A> (total <VAR>&#177;</VAR>&nbsp;47&nbsp;Mb).
 
-<H3><A NAME="sec:4.1">4.1 Finishing in MS-Windows</A></H3>
+<H3><A NAME="sec:5.1">5.1 Finishing in MS-Windows</A></H3>
 
 <P>After installing Prolog, double click <CODE>src/setup.pl</CODE> to 
 register
@@ -498,7 +538,7 @@ lauch Triple20 and load the file.
 <P>To make Triple20 accessible from the Windows desktop, create a
 <EM>shortcut</EM> from the desktop to <CODE>src/triple20.pl</CODE>.
 
-<H3><A NAME="sec:4.2">4.2 Finishing in Unix</A></H3>
+<H3><A NAME="sec:5.2">5.2 Finishing in Unix</A></H3>
 
 <P>Edit <CODE>triple20.pl</CODE>, adjust <CODE>#!</CODE> path to point 
 to the SWI-Prolog executable and <A NAME="idx:filesearchpath2:1"></A><B>file_search_path/2</B> 
@@ -510,7 +550,7 @@ environment variable as <CODE>triple20</CODE>.
 Using
 <CODE>triple20 --help</CODE> for a list of commandline options.
 
-<H2><A NAME="sec:5">5 Bugs and other issues</A></H2>
+<H2><A NAME="sec:6">6 Bugs and other issues</A></H2>
 
 <P>Although the current system is in active use for browsing ontologies 
 for some time and the first users start to edit ontologies with it, it 
@@ -535,11 +575,12 @@ Owl reasoning is very incomplete.
 <P>
 <LI><I>Update</I><BR>
 Some scheduling and visual feedback is required to deal with maintaining 
-the UI consistency on large ontologies using background computing.
+the UI consistency on large ontologies using background computing. We 
+also need to destroy unused cached queries to free up memory.
 
 <P>
 <LI><I>Tables</I><BR>
-The table controller faces some layout problems.
+The table controller suffers some layout problems.
 
 <P>
 <LI><I>Extensibility</I><BR>
@@ -553,52 +594,68 @@ modify the visualization rule-set and extend the tool.
 
 <P>
 <DT><STRONG>C</STRONG><DD>
-<DT><A HREF="#Copy/Copyasxmlattribute">Copy/Copyasxmlattribute</A><DD>
-<DT><A HREF="#Copy/Copyasxmlidentifier">Copy/Copyasxmlidentifier</A><DD>
-<DT><A HREF="#Copy/Id">Copy/Id</A><DD>
+<DT><A HREF="#menu:Copy/Copyasxmlattribute">Copy/Copy as xml attribute</A><DD>
+<DT><A HREF="#menu:Copy/Copyasxmlidentifier">Copy/Copy as xml identifier</A><DD>
+<DT><A HREF="#menu:Copy/Id">Copy/Id</A><DD>
 <DT><STRONG>D</STRONG><DD>
-<DT><A HREF="#Delete">Delete</A><DD>
-<DT><A HREF="#Deleteclasshierarchy">Deleteclasshierarchy</A><DD>
-<DT><A HREF="#Details">Details</A><DD>
+<DT><A HREF="#menu:Delete">Delete</A><DD>
+<DT><A HREF="#menu:Deleteclasshierarchy">Delete class hierarchy</A><DD>
+<DT><A HREF="#menu:Details">Details</A><DD>
 <DT><STRONG>F</STRONG><DD>
-<DT><A HREF="#File/exit">File/exit</A><DD>
-<DT><A HREF="#File/Loadbaseontology/...">File/Loadbaseontology/...</A><DD>
-<DT><A HREF="#File/Loadontology">File/Loadontology</A><DD>
-<DT><A HREF="#File/Mergefiles">File/Mergefiles</A><DD>
-<DT><A HREF="#File/Namespaces">File/Namespaces</A><DD>
-<DT><A HREF="#File/Newfile">File/Newfile</A><DD>
-<DT><A HREF="#File/Newproject">File/Newproject</A><DD>
-<DT><A HREF="#File/Newwindow">File/Newwindow</A><DD>
-<DT><A HREF="#File/Openproject">File/Openproject</A><DD>
-<DT><A HREF="#File/Saveall">File/Saveall</A><DD>
-<DT><A HREF="#File/Savefile/...">File/Savefile/...</A><DD>
+<DT><A HREF="#menu:File/exit">File/exit</A><DD>
+<DT><A HREF="#menu:File/Loadbaseontology">File/Load base ontology</A><DD>
+<A HREF="#sec:2.3">2.3</A>
+<DT><A HREF="#menu:File/Loadontology">File/Load ontology</A><DD>
+<DT><A HREF="#menu:File/Mergefiles">File/Merge files</A><DD>
+<A HREF="#sec:4.1">4.1</A>
+<DT><A HREF="#menu:File/Namespaces">File/Name spaces</A><DD>
+<DT>File/Names paces<DD>
+<A HREF="#sec:4.2">4.2</A>
+<DT><A HREF="#menu:File/Newfile">File/New file</A><DD>
+<DT><A HREF="#menu:File/Newproject">File/New project</A><DD>
+<DT><A HREF="#menu:File/Newwindow">File/New window</A><DD>
+<A HREF="#sec:2.1">2.1</A>
+<DT><A HREF="#menu:File/Openproject">File/Open project</A><DD>
+<DT><A HREF="#menu:File/Saveall">File/Save all</A><DD>
+<DT><A HREF="#menu:File/Savefile">File/Save file</A><DD>
+<A HREF="#sec:4.1">4.1</A>
 <DT>file_search_path/2<DD>
-<A HREF="#idx:filesearchpath2:1">4.2</A>
-<DT><A HREF="#File/Statistics">File/Statistics</A><DD>
+<A HREF="#idx:filesearchpath2:1">5.2</A>
+<DT><A HREF="#menu:File/Statistics">File/Statistics</A><DD>
+<A HREF="#sec:2.3">2.3</A>
 <DT><STRONG>H</STRONG><DD>
-<DT><A HREF="#Help/About">Help/About</A><DD>
-<DT><A HREF="#Help/Help">Help/Help</A><DD>
-<DT><A HREF="#Hierarchylocation">Hierarchylocation</A><DD>
+<DT><A HREF="#menu:Help/About">Help/About</A><DD>
+<DT><A HREF="#menu:Help/Help">Help/Help</A><DD>
+<DT><A HREF="#menu:Hierarchylocation">Hierarchy location</A><DD>
 <DT><STRONG>N</STRONG><DD>
-<DT><A HREF="#Newindividual">Newindividual</A><DD>
-<DT><A HREF="#Newproperty">Newproperty</A><DD>
-<DT><A HREF="#Newsubclass">Newsubclass</A><DD>
+<DT><A HREF="#menu:Newindividual">New individual</A><DD>
+<A HREF="#sec:4.1">4.1</A>
+<DT><A HREF="#menu:Newproperty">New property</A><DD>
+<DT><A HREF="#menu:Newsubclass">New subclass</A><DD>
+<A HREF="#sec:2.2">2.2</A> <A HREF="#sec:2.2">2.2</A> <A HREF="#sec:2.3">2.3</A> <A HREF="#sec:4.1">4.1</A>
+<DT><STRONG>O</STRONG><DD>
+<DT>OWL/Class extension<DD>
+<A HREF="#sec:3">3</A>
 <DT><STRONG>R</STRONG><DD>
-<DT><A HREF="#Renameresource">Renameresource</A><DD>
+<DT><A HREF="#menu:Renameresource">Rename resource</A><DD>
 <DT><STRONG>T</STRONG><DD>
-<DT><A HREF="#Tools/Addmissinglabels">Tools/Addmissinglabels</A><DD>
-<DT><A HREF="#Tools/Maintenance/Deletecachedontologies">Tools/Maintenance/Deletecachedontologies</A><DD>
-<DT><A HREF="#Tools/Maintenance/Deletesnapshots">Tools/Maintenance/Deletesnapshots</A><DD>
+<DT><A HREF="#menu:Tools/Addmissinglabels">Tools/Add missing labels</A><DD>
+<DT><A HREF="#menu:Tools/Maintenance/Deletecachedontologies">Tools/Maintenance/Delete 
+cached ontologies</A><DD>
+<DT><A HREF="#menu:Tools/Maintenance/Deletesnapshots">Tools/Maintenance/Delete 
+snapshots</A><DD>
 <DT><STRONG>U</STRONG><DD>
-<DT><A HREF="#Unrelate">Unrelate</A><DD>
+<DT><A HREF="#menu:Unrelate">Unrelate</A><DD>
 <DT><STRONG>V</STRONG><DD>
-<DT><A HREF="#View/diagram">View/diagram</A><DD>
-<DT><A HREF="#View/Dialect/...">View/Dialect/...</A><DD>
-<DT><A HREF="#View/Label/...">View/Label/...</A><DD>
-<DT><A HREF="#View/OWL/Classextension">View/OWL/Classextension</A><DD>
-<DT><A HREF="#View/rdfsource">View/rdfsource</A><DD>
-<DT><A HREF="#View/Showallparents">View/Showallparents</A><DD>
-<DT><A HREF="#View/triples">View/triples</A><DD>
+<DT><A HREF="#menu:View/diagram">View/diagram</A><DD>
+<DT><A HREF="#menu:View/Dialect">View/Dialect</A><DD>
+<DT><A HREF="#menu:View/Label">View/Label</A><DD>
+<A HREF="#sec:2.4">2.4</A>
+<DT><A HREF="#menu:View/OWL/Classextension">View/OWL/Class extension</A><DD>
+<DT><A HREF="#menu:View/rdfsource">View/rdf source</A><DD>
+<DT><A HREF="#menu:View/Showallparents">View/Show all parents</A><DD>
+<A HREF="#sec:2.2">2.2</A> <A HREF="#sec:2.2">2.2</A>
+<DT><A HREF="#menu:View/triples">View/triples</A><DD>
 </DL>
 
 </BODY></HTML>

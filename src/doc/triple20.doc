@@ -96,7 +96,7 @@ relation. Predicates can also be dropped on the khaki coloured
 subject.
 \end{itemlist}
 
-Note that \textsf{File/New window} creates a new view on the triple set
+Note that \menuref{File/New window} creates a new view on the triple set
 that fully cooperates and synchronises with the other views. Drag and
 drop between multiple views is a suggested technique to deal with larger
 ontologies. Notable the user can exploit search in a small window to
@@ -117,7 +117,7 @@ front.
 
     \menuitem{Hierarchy location}{table}
 If the resource is not in the hierarchy, add it as well as the parents
-to create (an arbitrary) path to the root. See also \textsf{View/Show
+to create (an arbitrary) path to the root. See also \menuref{View/Show
 all parents}.
 
     \menuitem{Copy/Id}{}
@@ -147,7 +147,7 @@ hierarchy are deleted completely.
     \menuitem{Unrelate}{hierarchy}
 Delete the triple causing the node to appear in this location of the
 hierarchy. All other relations are unaffected. See also
-\textsf{View/Show all parents}.
+\menuref{View/Show all parents}.
 
     \menuitem{New subclass}{hierarchy}
 Create a new resource and make it a subclass of the current node. The
@@ -157,11 +157,11 @@ default namespace are the same as the super class.
 
     \menuitem{New individual}{hierarchy}
 Create an individual of the class represented by the current node.  See
-also \textsf{New subclass}.
+also \menuref{New subclass}.
 
     \menuitem{New property}{hierarchy}
 Create an individual of the property class represented by the current
-node. See also \textsf{New subclass}.
+node. See also \menuref{New subclass}.
 
     \menuitem{View/rdf source}{}
 Open the RDF description defining the resource. The current
@@ -205,17 +205,17 @@ Discard the current database and create a new empty project.  See
     \menuitem{File/Load ontology}{}
 Load triples from an XML/RDF file.  Note that most XML/RDF files depend
 on RDFS and/or OWL, which must be loaded to get a meaningful view.  See
-also \textsf{File/Load base ontology}. If Triple20 is started by opening
+also \menuref{File/Load base ontology}. If Triple20 is started by opening
 an XML/RDF file it will apply some heuristics to load the required base
-ontologies.  Use \textsf{File/Statistics} to examine the loaded files.
+ontologies.  Use \menuref{File/Statistics} to examine the loaded files.
 
-    \menuitem{File/Load base ontology/...}{}
+    \menuitem{File/Load base ontology}{}
 Load one of the ontologies distributed with triple20. Almost any project
 requires \const{rdfs}.
 
     \menuitem{File/New file}{}
 Create a new file and add it to the pool.  After creating this file
-resources can be associated to it.  See also \textsf{New class}.
+resources can be associated to it.  See also \menuref{New subclass}.
 
     \menuitem{File/Merge files}{}
 Move the triples associated with a file to another file.   The command
@@ -223,7 +223,7 @@ opens a dialog for selecting the source and destination files. For
 example, ontologies can be merged by creating a new file, merging
 the desired ontologies into the new file and save this file.
 
-    \menuitem{File/Save file/...}{}
+    \menuitem{File/Save file}{}
 The submenu holds all loaded files, where the files whose set of
 associated triples has been modified are activated.  The `modified'
 state is based on the MD5 hash of the triples associated to the file
@@ -248,11 +248,11 @@ of the Prolog toplevel which may be used to inspect and alter the
 triple store.  Closing a window does not stop Prolog.  New Triple20
 windows can be created from Prolog using the command \exam{?- go.}.
 
-    \menuitem{View/Label/...}{}
-Change the labels displayed for resources.  See \secref{sec:label}
+    \menuitem{View/Label}{}
+Change the labels displayed for resources.  See \secref{label}
 for details.
 
-    \menuitem{View/Dialect/...}{}
+    \menuitem{View/Dialect}{}
 Change which part of and how the triple store is interpreted.  Little
 of this is implemented in the current prototype.
 
@@ -287,7 +287,7 @@ a link to the project home.
 
 \subsection{Icons and Labels}			\label{sec:label}
 
-Using the {\sf View/Label} menu the system can identify resources in
+Using the \menuref{View/Label} menu the system can identify resources in
 three ways.  \emph{Label only} only displays the label.  The label is
 either the first value for the \const{rdfs:label} property, a subproperty
 thereof or the last part of the resource name.  \emph{Namespace and label}
@@ -304,7 +304,8 @@ classification.
 
 \subsection{Undo and redo}
 
-Triple20 provides unlimited undo and redo using toolbar buttons.
+Triple20 provides unlimited undo and redo using toolbar buttons. Note
+however that some operations, notably file merge 
 
 
 \subsection{View consistency}
@@ -325,6 +326,37 @@ switch the table to another resource and back to force proper update.
 Please report inconsistencies you think can be avoided.
 
 
+\section{OWL support}				\label{sec:owl}
+
+The current version of Triple20 does not know much about OWL.  It supports
+OWL at the following places:
+
+\begin{shortlist}
+    \item [Restriction labels]
+All instances of class \const{owl:Restriction} can be accessed in the
+hierarchy below the class node.  Restriction that have an anonymous
+resource have a dedicated label that clearly visualizes its contents.
+If \menuref{OWL/Class extension} is active (default) it shows the
+resources that satisfy the restriction prefixed by the
+\includegraphics[width=2ex]{think} icon.
+
+    \item [OWL Descriptions]
+It also shows a special icon and (if the resource is anonymous)
+dedicated label for OWL descriptions.  Descriptions visualise the
+class extension as restrictions described above. 
+
+    \item [Subclass]
+The hierarchy displays, in addition to \const{rdfs:subClassOf},
+the reverse of \const{owl:intersectionOf}.
+\end{shortlist}
+
+OWL reasoning incorporates restrictions and descriptions, but does
+not do \const{owl:sameAs}, \const{owl:equivalentClass},
+\const{owl:equivalentProperty}, property types (symetric, transitive)
+or reasoning about attribute values based on membership of a
+description.
+
+
 \section{Projects and files}			\label{sec:project}
 
 \subsection{Files}
@@ -333,17 +365,18 @@ Triples in \emph{rdf_db} are actually quadruples. The last part
 registers the origin of the triple, so the tool can load ontologies from
 multiple files, present the joined view and still save the modified
 triples to a specific file.  If a new class or instance is created
-using the \textsf{New ...} context menu in the hierarchy the system
-allows to specify the file using the file of the parent as default.
-If properties are added to a subject these are added in the same
-file as the \const{rdf:type} property of the subject or ---if this
-property is not present--- to the file of the first property found.
+using the \menuref{New subclass}, \menuref{New individual}, etc.\
+context menu in the hierarchy the system allows to specify the file
+using the file of the parent as default. If properties are added to a
+subject these are added in the same file as the \const{rdf:type}
+property of the subject or ---if this property is not present--- to the
+file of the first property found.
 
-The menu \textsf{File/Merge files} allow the user to move all triples
+The menu \menuref{File/Merge files} allow the user to move all triples
 associated to some file to another file.  This can be used to merge
 ontologies.
 
-The \textsf{File/Save file} submenus allow for saving modified files.
+The \menuref{File/Save file} submenus allow for saving modified files.
 
 
 \subsection{Namespaces}				\label{sec:namespaces}
@@ -351,11 +384,11 @@ The \textsf{File/Save file} submenus allow for saving modified files.
 Triple20 has an internal table of well-known namespaces and their common
 abbreviation.  This table is in the file \file{rdf_base.pl}.  If possible
 it will use the abbreviated form in the UI.  Namespaces can be added through
-the \textsf{File/Namespaces} menu option.  Registered namespaces are stored
-in the project file.
+the \menuref{File/Names paces} menu option. Registered namespaces are
+stored in the project file.
 
 
-\subsection{Project files and snapshots}	\label{sec:snaphots}
+\subsection{Project files and snapshots}	\label{sec:snapshots}
 
 A \emph{project file} \fileext{rdfj} is a \jargon{journal} of executed
 edit operations.  This approach has several advantages over the normal
@@ -456,10 +489,11 @@ Owl reasoning is very incomplete.
 
     \item [Update]
 Some scheduling and visual feedback is required to deal with maintaining
-the UI consistency on large ontologies using background computing.
+the UI consistency on large ontologies using background computing. We
+also need to destroy unused cached queries to free up memory.
 
     \item [Tables]
-The table controller faces some layout problems.
+The table controller suffers some layout problems.
 
     \item [Extensibility]
 The internal interfaces must be cleaned and documented to allow users

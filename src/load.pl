@@ -75,7 +75,7 @@ user:file_search_path(snapshot, user_profile(Dir)) :-
 		 *	      VERSION		*
 		 *******************************/
 
-rdf_version('0.1, October 2003').
+rdf_version('0.2, November 2003').
 
 
 		 /*******************************
