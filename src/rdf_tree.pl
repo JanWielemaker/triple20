@@ -145,10 +145,17 @@ initialise(N, Resource:name) :->
 	send_super(N, initialise, Label),
 	(   call_rules(N, child_cache(Resource, Cache, Role)),
 	    send(N?caches, value, Role, Cache),
+	    rdf_cache_attach(Cache, N),
 	    fail
 	;   true
 	),
 	send(N, update_can_expand).
+
+
+unlink(N) :->
+	send(N?caches, for_all,
+	     message(@prolog, rdf_cache_detach, @arg1?value, N)),
+	send_super(N, unlink).
 
 
 label(N, Label:graphical) :<-

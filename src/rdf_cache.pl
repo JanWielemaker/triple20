@@ -10,16 +10,20 @@
 	    rdf_cache_result/3,		% +Cache, ?Index, -Value
 	    rdf_cache_empty/1,		% +Cache
 	    rdf_cache_clear/1,		% +Cache
-	    rdf_cache_clear/0
+	    rdf_cache_clear/0,
+	    rdf_cache_attach/2,		% +Cache, +Term
+	    rdf_cache_detach/2		% +Cache, -Term
 	  ]).
 :- use_module(semweb(rdf_db)).
 :- use_module(semweb(rdfs)).
+:- use_module(library(broadcast)).
 
 :- dynamic
 	cache_directory/2,		% +Key, -Index
 	cache_goal/3,			% +Index, +Var, -Goal
 	cache_attributes/3,		% +Index, -Generation, -Size
 	cache_result/2,			% +Index, -ResultSet
+	cache_attached/2,		% +Index, +Satelite
 	next_cache/1.			% +Index
 
 :- meta_predicate
@@ -60,7 +64,7 @@ rdf_cache2(Var, Goal, Index) :-
 %	Get the size of the result-set.
 
 rdf_cache_cardinality(Cache, Cardinality) :-
-	rdf_update_cache(Cache),
+	rdf_update_cache(Cache, _),
 	cache_attributes(Cache, _Generation, Cardinality).
 
 %	rdf_cache_empty(+Cache)
@@ -80,35 +84,37 @@ rdf_cache_empty(Cache) :-
 %	Get nth result from the cache, sorted to the label-name.
 
 rdf_cache_result(Cache, Index, Result) :-
-	rdf_update_cache(Cache),
+	mutex_lock(rdf_cache),
+	call_cleanup(locked_rdf_cache_result(Cache, Index, Result),
+		     mutex_unlock(rdf_cache)).
+
+locked_rdf_cache_result(Cache, Index, Result) :-
+	rdf_update_cache(Cache, _Modified),
 	cache_result(Cache, ResultSet),
 	arg(Index, ResultSet, Result).
 
-
-rdf_update_cache(Cache) :-
+rdf_update_cache(Cache, false) :-
 	cache_attributes(Cache, Generation, _Size),
 	rdf_generation(Generation), !.
-rdf_update_cache(Cache) :-
+rdf_update_cache(Cache, Modified) :-
 	cache_goal(Cache, Var, Goal),
 	findall(Label-Var, (Goal, (rdfs_label(Var, Label)->true)), Values0),
 	keysort(Values0, Values1),
 	unique_unkey(Values1, Values),
 	Result =.. [values|Values],
 	(   cache_result(Cache, Result)
-	->  true
+	->  RawModified = false
 	;   retract(cache_result(Cache, _))
 	->  assert(cache_result(Cache, Result)),
-	    BroadCast = rdf_cache_modified(Cache)
-	;   assert(cache_result(Cache, Result))
+	    RawModified = true
+	;   assert(cache_result(Cache, Result)),
+	    RawModified = new
 	),
 	rdf_generation(Generation),
 	functor(Result, _, Arity),
 	retractall(cache_attributes(Cache, _, _)),
 	assert(cache_attributes(Cache, Generation, Arity)),
-	(   nonvar(BroadCast)
-	->  broadcast(BroadCast)
-	;   true
-	).
+	Modified = RawModified.
 
 
 unique_unkey([], []).
@@ -139,6 +145,50 @@ rdf_cache_clear :-
 	
 
 		 /*******************************
+		 *	  ATTACH/DETACH		*
+		 *******************************/
+
+rdf_cache_attach(Cache, Satelite) :-
+	asserta(cache_attached(Cache, Satelite)).
+
+rdf_cache_detach(Cache, Satelite) :-
+	retract(cache_attached(Cache, Satelite)), !.
+
+
+		 /*******************************
 		 *	       UPDATE		*
 		 *******************************/
 
+rdf_cache_create_update_thread :-
+	current_thread(rdf_cache_updater, _Status), !.
+rdf_cache_create_update_thread :-
+	thread_create(update_loop, _,
+		      [ alias(rdf_cache_updater)
+		      ]),
+	listen(rdf_transaction(X),
+	       thread_send_message(rdf_cache_updater,
+				   rdf_transaction(X))).
+
+update_loop :-
+	repeat,
+	thread_get_message(X),
+	(   X = rdf_transaction(_)
+	->  update_cache,
+	    fail
+	;   X == quit
+	->  !
+	).
+
+update_cache :-
+	cache_attached(Cache, _Satelite),
+	cache_result(Cache, _),		% don't do non-existing caches
+	(   rdf_update_cache(Cache, Modified),
+	    debug(rdf_cache, '~w: modified = ~w~n', [Cache, Modified]),
+	    Modified == true,
+	    broadcast(rdf_cache_updated(Cache)),
+	    fail
+	;   true
+	).
+
+:- initialization
+   rdf_cache_create_update_thread.
