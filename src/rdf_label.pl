@@ -25,6 +25,7 @@
 :- use_class_template(rdf_resource_template).
 
 variable(resource,  name,  get, "Represented resource").
+variable(wrap,      {extend,wrap,wrap_fixed_width,clip}, get, "Wrapping mode").
 
 initialise(T, Resource:name) :->
 	send_super(T, initialise),
@@ -45,7 +46,10 @@ icon(T, Icon:image) :->
 
 append(T, Gr:graphical) :->
 	send(T, display, Gr),
-	send(T, format, @rdf_composite_format).
+	(   get(T, format, @nil)
+	->  send(T, format, @rdf_composite_format)
+	;   true
+	).
 
 print(T, Text:char_array) :->
 	send(T, append, text(Text, @default, bold)).
@@ -91,6 +95,20 @@ is_anonymous(TF) :->
 	->  !, fail
 	;   sub_atom(Resource, _, _, _, '__')
 	), !.
+
+margin(T, Width:int*, How:[{wrap,wrap_fixed_width,clip}]) :->
+	"Wrap items to indicated width"::
+	(   Width == @nil
+	->  send(T, slot, wrap, extend),
+	    send(T, format, @rdf_composite_format)
+	;   send(T, slot, wrap, How),
+	    How == wrap
+	->  new(F, format(horizontal, Width, @off)),
+	    send(F, column_sep, 2),
+	    send(F, row_sep, 0),
+	    send(T, format, F)
+	;   tbd
+	).
 
 :- pce_end_class(rdf_composite_label).
 
@@ -155,6 +173,13 @@ update(L) :->
 	call_rules(L, icon(Resource, Icon)),
 	send(L, icon, Icon),
 	send(L, append, rdf_resource_text(Resource)).
+
+new_class(L) :->
+	(   get(L, contained_in, Container),
+	    send(Container, has_send_method, new_class)
+	->  send(Container, new_class)
+	;   send(L, report, error, 'Cannot create classes')
+	).
 
 :- pce_end_class(rdfs_class_label).
 

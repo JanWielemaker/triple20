@@ -115,24 +115,28 @@ icon(_, Icon) :-
 popup(Gr, Popup) :-
 	new(Popup, popup(options,
 			 message(@arg2, @arg1))),
-	(   ::menu_item(Gr, Item),
-	    send(Popup, append, Item),
+	(   bagof(Item, ::menu_item(Gr, _Group, Item), Items),
+	    send(Popup, append, gap),
+	    forall(member(Item, Items),
+		   send(Popup, append, Item)),
 	    fail
 	;   true
 	).
 
-menu_item(Gr, Item) :-
-	::menu_item(Item),
+menu_item(Gr, Group, Item) :-
+	::menu_item(Group, Item),
 	send(Gr, has_send_method, Item).
 
-menu_item(hierarchy_location).
-menu_item(details).
-menu_item(show_id).
-menu_item(copy_id).
-menu_item(copy_as_xml_identifier).
-menu_item(copy_as_xml_attribute).
-menu_item(view_rdf_source).
-menu_item(diagram_).
+menu_item(select, hierarchy_location).
+menu_item(select, details).
+
+menu_item(copy,   show_id).
+menu_item(copy,   copy_id).
+menu_item(copy,   copy_as_xml_identifier).
+menu_item(copy,   copy_as_xml_attribute).
+
+menu_item(open,   view_rdf_source).
+menu_item(open,   diagram_).
 
 :- end_particle.
 
@@ -224,3 +228,11 @@ child_cache(R, Cache, rdf_property_node) :-
 
 :- end_particle.
 
+
+:- begin_particle(rdf_node, display).
+
+menu_item(Group, Item) :-
+	super::menu_item(Group, Item).
+menu_item(edit, new_class).
+
+:- end_particle.

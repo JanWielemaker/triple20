@@ -9,9 +9,12 @@
 :- use_module(library(pce_unclip)).
 :- use_module(semweb(rdf_db)).
 :- use_module(semweb(rdfs)).
+:- use_module(semweb(rdf_edit)).
 :- use_module(particle).
 :- use_module(rdf_template).
 :- use_module(rdf_cache).
+
+:- pce_autoload(identifier_item, library(pce_identifier_item)).
 
 
 		 /*******************************
@@ -273,6 +276,15 @@ on_double_left_click(N) :->
 	;   send(N, report, warning, 'Cannot open %s class', Role)
 	).
 
+:- pce_group(edit).
+
+new_class(N) :->
+	send_class(N, node, collapsed(@off)),
+	get(N, resource, Resource),
+	send(N, son, new(C, rdf_create_node(Resource, class))),
+	send(N?window, compute),
+	send(C, get_focus).
+
 :- pce_end_class(rdf_node).
 
 
@@ -381,3 +393,104 @@ initialise(B, More:int) :->
 	send(B, show_focus_border, @off).
 
 :- pce_end_class(more_button).
+
+
+		 /*******************************
+		 *	       EDIT		*
+		 *******************************/
+
+:- pce_begin_class(rdf_create_node, node,
+		   "Create a new instance").
+
+variable(mode,     {class,instance}, get, "Mode of operation").
+variable(resource, name,	     get, "Context Class").
+
+initialise(N, Parent:name, What:{class,instance}) :->
+	send(N, slot, mode, What),
+	send(N, slot, resource, Parent),
+	send_super(N, initialise, new(D, figure)),
+	send(N, collapsed, @nil),
+	send(D, format, new(format(vertical, 1, @on))),
+	send(D, display, bitmap(resource(class))),
+	rdf_global_id(NS:_, Parent),
+	send(D, display, new(rdf_ns_menu(NS))),
+	send(D, display, new(rdf_id_item)),
+	send(D, display, new(C, button(create, message(N, create)))),
+	send(D, display, button(done, message(N, destroy))),
+	send(C, default_button, @on).
+
+super_resource(N, Super:name) :<-
+	"Resource of the node of which I am a child"::
+	get(N, parents, chain(Parent)),
+	get(Parent, resource, Super).
+
+create(N) :->
+	get(N, member, namespace, NSI),
+	get(NSI, selection, NS),
+	get(N, member, id, IDI),
+	get(IDI, selection, Label),
+	local_uri_from_label(NS, Label, Local),
+	atom_concat(NS, Local, Resource),
+	rdfe_transaction(send(N, create_resource, Resource, Label)),
+	get(N, parents, chain(Parent)),
+	send(Parent, add_child, Resource, rdf_class_node, N),
+	send(IDI, clear).
+
+create_resource(N, Resource:name, Label:name) :->
+	"Create a new resource"::
+	get(N, super_resource, Super),
+	(   get(N, mode, class)
+	->  rdfe_assert(Resource, rdf:type, rdfs:'Class'),
+	    rdfe_assert(Resource, rdfs:subClassOf, Super)
+	;   rdfe_assert(Resource, rdf:type, Super)
+	),
+	rdfe_assert(Resource, rdfs:label, Label).
+
+local_uri_from_label(_, Label, Local) :-
+	new(S, string('%s', Label)),
+	send(S, translate, ' ', '_'),
+	get(S, value, Local),
+	free(S).
+
+get_focus(N) :->
+	get(N, member, id, IDI),
+	send(N?window, keyboard_focus, IDI).
+
+:- pce_end_class(rdf_create_node).
+
+:- pce_begin_class(rdf_ns_menu, menu,
+		   "Prompt for namespace").
+
+initialise(M, Default:[name], Msg:[code]*) :->
+	send_super(M, initialise, namespace, cycle, Msg),
+	findall(NS, rdf_db:ns(NS, _), List0),
+	sort(List0, List),
+	(   member(NS, List),
+	    rdf_db:ns(NS, Full),
+	    send(M, append, menu_item(Full, @default, NS)),
+	    fail
+	;   true
+	),
+	(   Default \== @default,
+	    rdf_db:ns(Default, FullDefault)
+	->  send(M, selection, FullDefault)
+	;   true
+	),
+	send(M, show_label, @off).
+
+:- pce_end_class(rdf_ns_menu).
+
+:- pce_begin_class(rdf_id_item, identifier_item,
+		   "Enter a local id").
+
+initialise(ID, Default:[name]) :->
+	send_super(ID, initialise, id, Default),
+	send(ID, show_label, @off).
+
+typed(Id, Ev:event) :->
+	(   get(Ev, id, 27)
+	->  send(Id?device?node, destroy) % hack!
+	;   send_super(Id, typed, Ev)
+	).
+
+:- pce_end_class(rdf_id_item).

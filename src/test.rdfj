@@ -6,7 +6,11 @@
    Do not edit!
 */
 
-start([time(1045227434), version(1)]).
-update([0], 'http://www.w3.org/2000/01/rdf-schema#isDefinedBy', 'http://www.w3.org/2000/01/rdf-schema#range', 'http://www.w3.org/2000/01/rdf-schema#Resource', object('http://www.w3.org/1999/02/22-rdf-syntax-ns#Property')).
+start([time(1061392555), version(1)]).
+assert([0], 'http://www.w3.org/1999/02/22-rdf-syntax-ns#test', 'http://www.w3.org/1999/02/22-rdf-syntax-ns#type', 'http://www.w3.org/2000/01/rdf-schema#Class', user).
+assert([0], 'http://www.w3.org/1999/02/22-rdf-syntax-ns#test', 'http://www.w3.org/2000/01/rdf-schema#subClassOf', 'http://www.w3.org/1999/02/22-rdf-syntax-ns#Statement', user).
+assert([0], 'http://www.w3.org/1999/02/22-rdf-syntax-ns#test', 'http://www.w3.org/2000/01/rdf-schema#label', test, user).
 commit([0]).
-end([time(1045240737)]).
+end([time(1061392567)]).
+resume([time(1061392588), version(1)]).
+end([time(1061392604)]).

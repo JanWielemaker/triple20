@@ -201,8 +201,9 @@ stretched_column(Table, Col:table_column, W:int) :->
 
 stretched_cell(T, Cell:table_cell, W:int, ColN:int) :->
 	(   get(Cell, image, Graphical),
-	    send(Graphical, instance_of, text),
-	    get(Graphical, wrap, wrap)
+	    (	send(Graphical, instance_of, rdf_literal_text)
+	    ;	send(Graphical, instance_of, rdf_list_label)
+	    )				% TBD: how to generalise?
 	->  get(Cell, col_span, Span),
 	    get(Cell, column, Col0),
 	    EndCol is Col0+Span,
