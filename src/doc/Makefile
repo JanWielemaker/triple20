@@ -30,6 +30,7 @@ html:		$(HTML)
 $(HTML):	$(TEX)
 		latex2html $(DOC)
 		mv html/index.html $@
+		cp -a html/*.gif .
 
 $(PDF):		$(TEX)
 		runtex --pdf $(DOC)

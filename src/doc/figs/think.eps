@@ -1,0 +1,62 @@
+%!PS-Adobe-2.0 EPSF-2.0
+%%Title: /staff/jan/src/Triple20/src/doc/figs/think.ps
+%%Creator: XV Version 3.10a  Rev: 12/29/94 (PNG patch 1.2)  -  by John Bradley
+%%BoundingBox: 298 388 314 404
+%%Pages: 1
+%%DocumentFonts:
+%%EndComments
+%%EndProlog
+
+%%Page: 1 1
+
+% remember original state
+/origstate save def
+
+% build a temporary dictionary
+20 dict begin
+
+% define string to hold a scanline's worth of data
+/pix 16 string def
+
+% define space for color conversions
+/grays 16 string def  % space for gray scale line
+/npixls 0 def
+/rgbindx 0 def
+
+% lower left corner
+298 388 translate
+
+% size of image (on paper, in 1/72inch coords)
+15.98400 15.98400 scale
+
+16 16 8			% dimensions of data
+[16 0 0 -16 0 16]		% mapping matrix
+{currentfile pix readhexstring pop}
+image
+
+bfbfbfbfbfbfbfbfbfbfbfbfbfbfbfbf
+bfbfbfbfbfbfbfbfbfbfbfbfbfbfbfbf
+bfbfbfbfbfbfbfbfbfbfbfbfbfbfbfbf
+bfbfbfbfbfbfbfbfbfbfbfbfbfbfbfbf
+bf000000000000000000000000000000
+bf000000000000000000000000000000
+bfbfbfbfbf6b3921395a7bb5bfbfbfbf
+bfbfbfbfc6733921295273adf7bfbfbf
+bfbfbfbfad63392129395a84b5bfbfbf
+bfbfbfce8c5231212129395a8ccebfbf
+bfbfbfb56b3929102129314a73b5bfbf
+bfbfd68c5a31212121292939638ccebf
+bfbfc6844a312110212129394a7bb5bf
+bfbfbfbfbfbfbfbfbfbfbfbfbfbfbfbf
+bfbfbfbfbfbfbfbfbfbfbfbfbfbfbfbf
+bfbfbfbfbfbfbfbfbfbfbfbfbfbfbfbf
+
+showpage
+
+% stop using temporary dictionary
+end
+
+% restore original state
+origstate restore
+
+%%Trailer

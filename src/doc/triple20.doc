@@ -25,12 +25,21 @@
 \maketitle
 
 \begin{abstract}
-This document describes Triple20, a library of graphical components in
-SWI-Prolog/XPCE for visualization and editing of Semantic Web data
-stored in the \file{rdf_db} triple library.
+This document describes Triple20.  Triple20 is a visualisation and
+editing tool for data stored in the SWI-Prolog \emph{semweb} triple
+store.  Triple20 has been designed not to limit the expressiveness
+of the triple data model, to scale comfortably to several millions
+of triples and deal with triples associated to multiple sources at
+the same time.
 
-This version of the document only provides a brief overview of the files
-and installation of the toolkit.
+As the internal interfaces stabelise they will be fixated and
+documented, providing an extensible toolkit whose components can be
+reorganised to build dedicated semantic web tools.
+
+Based completely on XML/RDF and fairly crash-proof the system is
+usable as visualisation and editing tool. Both is internal interfaces
+and UI however are under active development and change frequently, which
+is why we only explain the basics in this document.
 \end{abstract}
 
 \vfill
@@ -39,14 +48,24 @@ and installation of the toolkit.
 
 \newpage
 
+
 \section{Introduction}
 
-Triple20 is a toolkit for visualization and editing of data in the
-\pllib{rdf_db} \emph{triple store}.  
+Most ontology editors have their own view on the world that dictate both
+the internal data model and the UI. Such systems provide import and
+export filters to other formats. Triple20 on the contrary uses RDF/XML
+and the RDF formal triple data model \emph{directly}, providing a range
+of visualization primitives that interpret the triple store at different
+level of abstraction ranging from access to the RDF/XML source via
+triple-tables and RDF diagrams to dedicated RDFS and OWL views. Using
+triples directly, these views can co-exist in the same application and
+the toolkit can easily handle anything that can be expressed in triples.
 
-
-
-
+Modularity and scale are other important aspects of the semantic web.
+Triple20 keeps track of the source of each triple which enables it it
+view and edit several RDF documents in a unified view.  It has been
+designed to view and edit models with several millions of triples on
+standard office equipment.
 
 \section{The Triple20 User Interface}
 
@@ -68,20 +87,191 @@ The hierarchy in the left window can be reorganised using drag-and-drop.
 This can be used to modify the class hierarchy, property hierarchy and
 to change the type of instances.
 
-    \item [Change propterty values]
+    \item [Change property values]
 Objects can be dropped on property values in the table to change the
 value of a property.  When an object is dropped on a predicate a new
 value is added.  Dropping a predicate on a predicate changes the
-relation.
+relation. Predicates can also be dropped on the khaki coloured
+\textbf{Predicates} title bar to add a new predicate to the current
+subject.
 \end{itemlist}
+
+Note that \textsf{File/New window} creates a new view on the triple set
+that fully cooperates and synchronises with the other views. Drag and
+drop between multiple views is a suggested technique to deal with larger
+ontologies. Notable the user can exploit search in a small window to
+locate relevant resources.
 
 
 \subsection{Context menus}
 
-Most objects have a context menu associated with the right mouse-button.
+Most objects have a context menu associated with the right mouse-button
+that act on the represented resource, possibly in relation to other
+resources on the same row (table) or related in the hierarchy. Sub-menus
+are described as \textbf{Menu/SubMenu/...}
+
+\begin{description}
+    \menuitem{Details}{hierarchy}
+Show the resource in the table and bring the most applicable view to the
+front.
+
+    \menuitem{Hierarchy location}{table}
+If the resource is not in the hierarchy, add it as well as the parents
+to create (an arbitrary) path to the root. See also \textsf{View/Show
+all parents}.
+
+    \menuitem{Copy/Id}{}
+Put the full resource identifier (including namespace) on the clipboard.
+
+    \menuitem{Copy/Copy as xml identifier}{}
+Put the \arg{NamespaceId}:\arg{LocalId} on the clipboard using the
+namespace identifier as registered with the \file{rdf_db} library.
+
+    \menuitem{Copy/Copy as xml attribute}{}
+Put the resource in a format suitable for an XML attribute value:
+\&\arg{NamespaceId};\arg{LocalId}
+
+    \menuitem{Rename resource}{}
+Rename an existing resource to a new one.  All triples holding the old
+resource in either of the three fields are updated.
+
+    \menuitem{Delete}{}
+Delete a resource completely.  All triples holding this resource in
+either of the three fields are removed from the database.
+
+    \menuitem{Delete class hierarchy}{hierarchy}
+Delete an entire hierarchy build using \const{rdfs:subClassOf} or a
+subproperty thereof.  Resources that become disconnected from the
+hierarchy are deleted completely.
+
+    \menuitem{Unrelate}{hierarchy}
+Delete the triple causing the node to appear in this location of the
+hierarchy. All other relations are unaffected. See also
+\textsf{View/Show all parents}.
+
+    \menuitem{View/rdf source}{}
+Open the RDF description defining the resource. The current
+implementation na\"\i{}vely opens the first if triples for the resource
+originate from multiple descriptions.
+
+    \menuitem{View/diagram}{}
+Open an RDF diagram with this resource or add this resource to the
+already open diagram.   The current diagram window is based on code
+from an older project and not yet well integrated into Triple20.
+
+    \menuitem{View/Show all parents}{hierarchy}
+Find all places in the hierarchy where the current resource appears
+and highlight them.  This is particularly useful to examine multiple
+inheritance, multiple types, etc.
+
+    \menuitem{View/triples}{predicate}
+Show all triples of this predicate in the right-hand table.  The
+current triple-table is crude, providing inefficient update and
+poor handling of large tables.
+\end{description}
 
 
-\subsection{Icons and Labels}
+\subsection{The Window menu}
+
+\begin{description}
+    \menuitem{File/New window}{}
+Create a new Triple20 window on the same database.  Drag and drop
+between the two windows is supported to relate resources from different
+parts of the hierarchy.
+
+    \menuitem{File/Open project}{}
+Discard the current database and open an existing project (see
+\secref{project}).  Triple20 cannot work with multiple projects at the
+same time.
+
+    \menuitem{File/New project}{}
+Discard the current database and create a new empty project.  See
+\secref{project} for details on working with projects.
+
+    \menuitem{File/Load ontology}{}
+Load triples from an XML/RDF file.  Note that most XML/RDF files depend
+on RDFS and/or OWL, which must be loaded to get a meaningful view.  See
+also \textsf{File/Load base ontology}. If Triple20 is started by opening
+an XML/RDF file it will apply some heuristics to load the required base
+ontologies.  Use \textsf{File/Statistics} to examine the loaded files.
+
+    \menuitem{File/Load base ontology/...}{}
+Load one of the ontologies distributed with triple20. Almost any project
+requires \const{rdfs}.
+
+    \menuitem{File/New file}{}
+Create a new file and add it to the pool.  After creating this file
+resources can be associated to it.  See also \textsf{New class}.
+
+    \menuitem{File/Merge files}{}
+Move the triples associated with a file to another file.   The command
+opens a dialog for selecting the source and destination files. For
+example, ontologies can be merged by creating a new file, merging
+the desired ontologies into the new file and save this file.
+
+    \menuitem{File/Save file/...}{}
+The submenu holds all loaded files, where the files whose set of
+associated triples has been modified are activated.  The `modified'
+state is based on the MD5 hash of the triples associated to the file
+which implies that after \emph{edit/undo} or \emph{edit/inverse edit}
+the file is still regarded unmodified.
+
+    \menuitem{File/Save all}{}
+Save all modified files.
+
+    \menuitem{File/Name spaces}{}
+Inspect/edit the mapping from short name space identifiers (e.g.\
+\emph{rdfs}) to the associated URI.  Changes to this mapping are
+stored in the project.
+
+    \menuitem{File/Statistics}{}
+Show statistics on the triples loaded from and associated to each file
+as well as some query statistics.
+
+    \menuitem{File/exit}{}
+Exit the current window.  Note that the current Triple20 runs on top
+of the Prolog toplevel which may be used to inspect and alter the
+triple store.  Closing a window does not stop Prolog.  New Triple20
+windows can be created from Prolog using the command \exam{?- go.}.
+
+    \menuitem{View/Label/...}{}
+Change the labels displayed for resources.  See \secref{sec:label}
+for details.
+
+    \menuitem{View/Dialect/...}{}
+Change which part of and how the triple store is interpreted.  Little
+of this is implemented in the current prototype.
+
+    \menuitem{View/OWL/Class extension}{}
+If selected (default), resources that belong to the dynamically computed
+class extension are visible in the hierarchy with the
+\includegraphics[width=2ex]{think} icon. Note that computing the OWL
+class extension is very incomplete.
+
+    \menuitem{Tools/Add missing labels}{}
+Add an \const{rdfs:label} triple to each non-anonymous resource that has
+no defined label.  The default label is the local name of the resource.
+
+    \menuitem{Tools/Maintenance/Delete cached ontologies}{}
+Delete all cache files created to speedup the loading of RDF/XML files.
+This may be necessary to recover from incompatible changes to the cache
+file format or bugs in the RDF/XML parser.
+
+    \menuitem{Tools/Maintenance/Delete snapshots}{}
+Delete all snapshots.  If you want to preserve any project file, make
+sure you understand snapshots before using this option. See
+\secref{snapshots}.
+
+    \menuitem{Help/Help}{}
+Open this document in your browser.
+
+    \menuitem{Help/About}{}
+Show the about box.  Among author and copyright information it provides
+a link to the project home.
+\end{description}
+
+
+\subsection{Icons and Labels}			\label{sec:label}
 
 Using the {\sf View/Label} menu the system can identify resources in
 three ways.  \emph{Label only} only displays the label.  The label is
@@ -121,7 +311,7 @@ switch the table to another resource and back to force proper update.
 Please report inconsistencies you think can be avoided.
 
 
-\section{Projects and files}
+\section{Projects and files}			\label{sec:project}
 
 \subsection{Files}
 
@@ -129,7 +319,7 @@ Triples in \emph{rdf_db} are actually quadruples. The last part
 registers the origin of the triple, so the tool can load ontologies from
 multiple files, present the joined view and still save the modified
 triples to a specific file.  If a new class or instance is created
-using the \textsf{New ...} context menu in the hierachy the system
+using the \textsf{New ...} context menu in the hierarchy the system
 allows to specify the file using the file of the parent as default.
 If properties are added to a subject these are added in the same
 file as the \const{rdf:type} property of the subject or ---if this
@@ -151,7 +341,7 @@ the \textsf{File/Namespaces} menu option.  Registered namespaces are stored
 in the project file.
 
 
-\subsection{Project files and snapshots}
+\subsection{Project files and snapshots}	\label{sec:snaphots}
 
 A \emph{project file} \fileext{rdfj} is a \jargon{journal} of executed
 edit operations.  This approach has several advantages over the normal
@@ -164,7 +354,7 @@ load-modify-save cycle.
     \item A journal protects the user from loosing work due to crashes or
           other malfunctioning of experimental software.
 
-    \item A journal provides an excelent starting point for advanced 
+    \item A journal provides an excellent starting point for advanced 
           version management as well as studying user behaviour.
 \end{itemize}
 
@@ -190,7 +380,7 @@ The current snapshot of the Triple20 toolkit can be downloaded from
 \url[SWI-Prolog CVS server]{http://www.swi-prolog.org/cvs.html}.  As
 the system is under active development, the \emph{HEAD} revision is
 often unstable.	We use the symbolic (sticky) tag \emph{STABLE} to
-reflect the latest useable version.  The CVS download commands are:
+reflect the latest usable version.  The CVS download commands are:
 
 \begin{code}
 % cvs -d :pserver:pl@gollem.swi.psy.uva.nl:/usr/local/cvspl login
@@ -228,6 +418,39 @@ environment variable as \const{triple20}.
 
 After this you can run \verb$triple20 option ... file ...$.  Using
 \verb$triple20 --help$ for a list of commandline options.
+
+
+\section{Bugs and other issues}
+
+Although the current system is in active use for browsing ontologies
+for some time and the first users start to edit ontologies with it, it
+should first of all be regarded as a prototype.  Some remaining issues
+are:
+
+\begin{shortlist}
+    \item [File handling]
+Viewing and controlling the association of triples to files needs to
+be improved.  In addition we need ways to package and tranfer project
+files which depends on one or more snapshots.
+
+    \item [Search]
+We need an advanced search dialog to specify complex searches for
+resources.
+
+    \item [OWL]
+Owl reasoning is very incomplete.
+
+    \item [Update]
+Some scheduling and visual feedback is required to deal with maintaining
+the UI consistency on large ontologies using background computing.
+
+    \item [Tables]
+The table controller faces some layout problems.
+
+    \item [Extensibility]
+The internal interfaces must be cleaned and documented to allow users
+to modify the visualization rule-set and extend the tool.
+\end{shortlist}
 
 
 		 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
