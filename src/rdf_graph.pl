@@ -373,7 +373,7 @@ show_my_subjects(V) :->
 	"Show objects having me as subject"::
 	get(V, device, Dev),
 	get(V, resource, O),
-	(   setof(S, P^rdf(S,P,O), List),
+	(   setof(S, not_show_subject(O,Dev,S), List),
 	    length(List, Len)
 	->  (   Len > 10
 	    ->	get(V, ask_howmany, Len, Show)
@@ -397,8 +397,22 @@ show_my_subjects(V) :->
 	    ;	true
 	    ),
 	    send(V, update)
+	;   rdf(_, _, O)
+	->  send(V, report, status, 'All subjects already in graph')
 	;   send(V, report, warning, 'No subjects link to me')
 	).
+
+%	not_show_subject(+Object, +Graph, -Subject)
+%	
+%	Find the subjects relating to me that are not (yet) displayed
+%	in the graph.
+
+not_show_subject(O, V, S) :-
+	send(V, has_get_method, rdf_object), !,
+	rdf(S, _, O),
+	\+ get(V, rdf_object, S, _).
+not_show_subject(O, _, S) :-
+	rdf(S, _, O).
 
 ask_howmany(V, Count:int, Show:int) :<-
 	"Ask how many to display"::
