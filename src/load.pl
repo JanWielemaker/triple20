@@ -155,9 +155,19 @@ go(Argv) :-
 	    rdfe_open_journal(Journal, Mode)
 	;   Argv2 = Argv
 	),
+	(   select('--nobase', Argv2, Argv3)
+	->  NoBase = true
+	;   Argv3 = Argv2
+	),
 	(   JournalLoaded == true
 	->  true
-	;   rdfe_transaction(parse_argv(Argv2))
+	;   rdfe_transaction(parse_argv(Argv3), load_argv)
+	),
+	(   NoBase == true
+	->  true
+	;   rdfe_transaction(forall(required_base_ontology(O),
+				    load_base_ontology(O)),
+			     required_base_ontologies)
 	),
 	new(X, rdfs_explorer),
 	send(X, open).

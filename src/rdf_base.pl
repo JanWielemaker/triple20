@@ -32,7 +32,8 @@
 
 :- module(rdf_base,
 	  [ load_base_ontology/1,	% +Id
-	    current_base_ontology/1	% -Id
+	    current_base_ontology/1,	% -Id
+	    required_base_ontology/1	% -Id
 	  ]).
 :- use_module(concur).
 
@@ -100,6 +101,27 @@ requires(world,	   aat).
 requires(world,	   ulan).
 requires(world,	   wn).
 requires(world,	   ic).
+
+
+		 /*******************************
+		 *	   REQUIRED BASES	*
+		 *******************************/
+
+%	required_base_ontology(-Base)
+%	
+%	Deduce the required base ontologies from expressions used in the
+%	document.  This is heuristic.
+
+required_base_ontology(rdfs) :-
+	(   rdf(_, rdfs:subClassOf, _)
+	;   rdf(_, rdf:first, _)
+	;   rdf(_, rdf:rest, _)
+	) -> true.
+required_base_ontology(owl) :-
+	(   rdf(_, owl:unionOf, _)
+	;   rdf(_, owl:intersectionOf, _)
+	;   rdf(_, owl:complementOf, _)
+	) -> true.
 
 
 		 /*******************************
