@@ -67,6 +67,7 @@ initialise(AL) :->
 	listen(AL, rdf_transaction(TID), send(AL, update_transaction, TID)).
 
 unlink(AL) :->
+	unlisten(AL),
 	send(AL, detach_cache),
 	send_super(AL, unlink).
 
