@@ -1,3 +1,7 @@
+Dec 3, 2003
+
+  * FIXED: generate proper blank nodes in manipulating lists.
+
 Dec 01, 2003
 
   * FIXED: Handle symmetric properties (Marijn Manders) 

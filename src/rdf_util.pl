@@ -385,7 +385,7 @@ tail_triple(_, _, L, S, P, O) :-
 
 list_append(S, P, O, New) :-
 	rdf_default_file(S, Source),
-	rdf_node(Node),
+	rdf_bnode(Node),
 	rdfe_assert(Node, rdf:type, rdf:'List', Source),
 	rdfe_assert(Node, rdf:rest, O, Source),
 	rdfe_assert(Node, rdf:first, New, Source),
