@@ -10,6 +10,7 @@
 :- use_module(semweb(rdf_db)).
 :- use_module(semweb(rdfs)).
 :- use_module(semweb(rdf_edit)).
+:- use_module(particle).
 
 
 resource(class,       image, image('16x16/class.xpm')).
