@@ -71,6 +71,9 @@ ulan :-
 aat :-
 	load(aat).
 
+wn :-
+	load(wn).
+
 dbg :-
 %	debug(render),
 	guitracer.
@@ -88,6 +91,9 @@ go(['--world'|T]) :-
 	go(T).
 go(['--aat'|T]) :-
 	aat,
+	go(T).
+go(['--wn'|T]) :-
+	wn,
 	go(T).
 go([]) :-
 	new(X, rdfs_explorer),

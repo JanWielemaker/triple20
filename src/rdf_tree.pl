@@ -399,9 +399,10 @@ class_variable(icon, image*, resource(list_member)).
 :- pce_begin_class(rdf_more_node, node,
 		   "Show more alternatives").
 
-variable(role, name, get, "Role to expand further").
-variable(here, int,  get, "Current location").
-variable(size, int,  get, "Total set-size").
+variable(role,	   name,  get, "Role to expand further").
+variable(here,	   int,	  get, "Current location").
+variable(size,	   int,	  get, "Total set-size").
+variable(resource, name*, get, "Represented resource (@nil)").
 
 initialise(N, Role:name, Size:int, Here:int) :->
 	"Create `more' button"::
