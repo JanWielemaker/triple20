@@ -37,6 +37,7 @@
 	  ]).
 :- use_module(concur).
 :- use_module(semweb(rdf_db)).
+:- use_module(semweb(rdf_edit)).
 
 /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 This file defines commonly used namespaces,   base ontologies. etc. Note
@@ -79,7 +80,7 @@ load_base_ontology(Category) :-
 	load_base_ontology(1, Category).
 
 load_base_ontology(C, Category) :-
-	findall(rdfe_load(X), expand_category(Category, X), Goals0),
+	findall(load_base(X), expand_category(Category, X), Goals0),
 	list_to_set(Goals0, Goals),
 	concurrent(C, Goals).
 
@@ -97,6 +98,15 @@ current_base_ontology(Id) :-
 				    file_errors(fail)
 				  ],
 				  _File)).
+
+load_base(File) :-
+	absolute_file_name(File,
+			   [ access(read),
+			     extensions([rdf,rdfs,owl,''])
+			   ], Path),
+	rdfe_load(Path),
+	rdfe_set_file_property(Path, access(ro)).
+
 
 %	rdf_file(+Identifier, -File)
 %	

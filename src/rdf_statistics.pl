@@ -144,10 +144,10 @@ unlink(AM) :->
 
 update(AM) :->
 	get(AM, file, File),
-	(   rdf_get_file_property(F, default(Mode)),
+	(   rdfe_get_file_property(F, default(Mode)),
 	    F == File
 	->  send(AM, selection, Mode)
-	;   rdf_get_file_property(File, access(Access))
+	;   rdfe_get_file_property(File, access(Access))
 	->  send(AM, selection, Access)
 	).
 
@@ -157,8 +157,8 @@ access(AM, Mode:name) :->
 	(   (   Mode == all
 	    ;	Mode == fallback
 	    )
-	->  rdf_set_file_property(File, default(Mode))
-	;   rdf_set_file_property(File, access(Mode))
+	->  rdfe_set_file_property(File, default(Mode))
+	;   rdfe_set_file_property(File, access(Mode))
 	).
 
 :- pce_end_class(rdf_file_access_menu).
