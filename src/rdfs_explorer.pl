@@ -757,7 +757,7 @@ window_value(_OS, Window:window, Value:any) :->
 	    send(Type, validate, Value)
 	->  send(Tab, active, @on),
 	    send(Window, value, Value)
-	;   send(Tab, active, @off)
+	;   send(Tab, active, @on)	% was @off BJW
 	).
 
 resource(OS, Resource:name*) :->
