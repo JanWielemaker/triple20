@@ -9,13 +9,13 @@
 \htmlmainfile{index}				% Main document file
 \bodycolor{white}				% Page colour
 
-\renewcommand{\runningtitle}{OntoShow Manual}
+\renewcommand{\runningtitle}{Triple20 Manual}
 
 \newcommand{\elem}[1]{{\tt\string<#1\string>}}
 
 \begin{document}
 
-\title{The OntoShow Semantic web viewer and editor}
+\title{Triple20: an RDF triple viewer and editor}
 \author{Jan Wielemaker \\
 	SWI, \\
 	University of Amsterdam \\
@@ -25,9 +25,9 @@
 \maketitle
 
 \begin{abstract}
-This document describes OntoShow, a library of graphical components in
+This document describes Triple20, a library of graphical components in
 SWI-Prolog/XPCE for visualization and editing of Semantic Web data
-stored in the \file{rdf_db} library.
+stored in the \file{rdf_db} triple library.
 
 This version of the document only provides a brief overview of the files
 and installation of the toolkit.
@@ -41,12 +41,20 @@ and installation of the toolkit.
 
 \section{Introduction}
 
-TBD
+Triple20 is a toolkit for visualization and editing of data
+in the \pllib{rdf_db} \emph{triple store}.
+
 
 
 \section{Projects and files}
 
 \section{Namespaces}
+
+\section{Project files}
+
+A \emph{project file} \fileext{rdfj} is a \jargon{journal} of executed
+edit operations.  
+
 
 
 
