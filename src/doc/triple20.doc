@@ -327,6 +327,30 @@ switch the table to another resource and back to force proper update.
 Please report inconsistencies you think can be avoided.
 
 
+\section{Semantic Web practice}			\label{sec:practice}
+
+\subsection{Classes as property values}
+
+A very common modeling practice is to use classes as property values.
+For example, people are tempted to describe the colour of an object as
+\emph{red} by selecting the class \emph{red} from a colour ontology.
+A commonly seen mistake is to define a property colour with its range
+set to the root of the colour hierarchy of the domain ontology.  This
+construct however allows for \emph{individuals} of colours to be placed
+in the property, not \emph{subclasses}.  The W3C best practices group's
+current position on this issue is to fill the property with an
+\emph{anonymous individual} of the class, in our case an anonymous
+individual of class \emph{red}.  At first this may appear odd, but
+think about it.  The colour of an object is not `red', but some
+\emph{unspecified} form of this colour!  Representation as an
+anonymous individual is a clean solution to express this.
+
+Triple20 supports this practice by creating an anonymous individual
+whenever one tries to define a property where the value is a subclass
+of the range of the property.  Such objects are identified with the
+\includegraphics[width=2ex]{anon} icon.
+
+
 \section{OWL support}				\label{sec:owl}
 
 The current version of Triple20 does not know much about OWL.  It supports

@@ -8,7 +8,9 @@
 .SUFFIXES: .tex .dvi .doc .pl
 
 SHELL=/bin/sh
-PCEHOME=/staff/jan/src/pl/packages/xpce
+PLHOME=/staff/jan/src/pl
+PCEHOME=$(PLHOME)/packages/xpce
+RUNTEX=$(PLHOME)/man/runtex
 
 DOCTOTEX=$(PCEHOME)/bin/doc2tex
 PLTOTEX=$(PCEHOME)/bin/pl2tex
@@ -33,7 +35,7 @@ $(HTML)::
 		cp -a html/*.gif .
 
 $(PDF):		$(TEX)
-		runtex --pdf $(DOC)
+		$(RUNTEX) --pdf $(DOC)
 
 $(TEX):		$(DOCTOTEX)
 

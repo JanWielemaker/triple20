@@ -58,19 +58,23 @@ is why we only explain the basics in this document.
 <LI><A HREF="#sec:2.5">2.5 Undo and redo</A>
 <LI><A HREF="#sec:2.6">2.6 View consistency</A>
 </UL>
-<LI><A HREF="#sec:3"><B>3 OWL support</B></A>
-<LI><A HREF="#sec:4"><B>4 Projects and files</B></A>
+<LI><A HREF="#sec:3"><B>3 Semantic Web practice</B></A>
 <UL>
-<LI><A HREF="#sec:4.1">4.1 Files</A>
-<LI><A HREF="#sec:4.2">4.2 Namespaces</A>
-<LI><A HREF="#sec:4.3">4.3 Project files and snapshots</A>
+<LI><A HREF="#sec:3.1">3.1 Classes as property values</A>
 </UL>
-<LI><A HREF="#sec:5"><B>5 Downloading and Installation</B></A>
+<LI><A HREF="#sec:4"><B>4 OWL support</B></A>
+<LI><A HREF="#sec:5"><B>5 Projects and files</B></A>
 <UL>
-<LI><A HREF="#sec:5.1">5.1 Finishing in MS-Windows</A>
-<LI><A HREF="#sec:5.2">5.2 Finishing in Unix</A>
+<LI><A HREF="#sec:5.1">5.1 Files</A>
+<LI><A HREF="#sec:5.2">5.2 Namespaces</A>
+<LI><A HREF="#sec:5.3">5.3 Project files and snapshots</A>
 </UL>
-<LI><A HREF="#sec:6"><B>6 Bugs and other issues</B></A>
+<LI><A HREF="#sec:6"><B>6 Downloading and Installation</B></A>
+<UL>
+<LI><A HREF="#sec:6.1">6.1 Finishing in MS-Windows</A>
+<LI><A HREF="#sec:6.2">6.2 Finishing in Unix</A>
+</UL>
+<LI><A HREF="#sec:7"><B>7 Bugs and other issues</B></A>
 </UL>
 
 <H2><A NAME="sec:1">1 Introduction</A></H2>
@@ -242,13 +246,13 @@ the hierarchy.
 <P>
 <DT><A NAME="menu:File/Openproject"><STRONG>File/Open project</STRONG></A><DD>
 Discard the current database and open an existing project (see
-<A HREF="#sec:project">section 4</A>). Triple20 cannot work with 
+<A HREF="#sec:project">section 5</A>). Triple20 cannot work with 
 multiple projects at the same time.
 
 <P>
 <DT><A NAME="menu:File/Newproject"><STRONG>File/New project</STRONG></A><DD>
 Discard the current database and create a new empty project. See
-<A HREF="#sec:project">section 4</A> for details on working with 
+<A HREF="#sec:project">section 5</A> for details on working with 
 projects.
 
 <P>
@@ -269,7 +273,7 @@ requires <CODE>rdfs</CODE>.
 <DT><A NAME="menu:File/Newfile"><STRONG>File/New file</STRONG></A><DD>
 Create a new file and add it to the pool. After creating this file 
 resources can be associated to it. See also <A HREF="#menu:Newsubclass">New subclass</A> 
-and <A HREF="#sec:files">section 4.1</A> for a discussion on file 
+and <A HREF="#sec:files">section 5.1</A> for a discussion on file 
 management.
 
 <P>
@@ -346,7 +350,7 @@ file format or bugs in the RDF/XML parser.
 snapshots</STRONG></A><DD>
 Delete all snapshots. If you want to preserve any project file, make 
 sure you understand snapshots before using this option. See
-<A HREF="#sec:snapshots">section 4.3</A>.
+<A HREF="#sec:snapshots">section 5.3</A>.
 
 <P>
 <DT><A NAME="menu:Help/Help"><STRONG>Help/Help</STRONG></A><DD>
@@ -367,7 +371,7 @@ can identify resources in three ways. <EM>Label only</EM> only displays
 the label. The label is either the first value for the <CODE>rdfs:label</CODE> 
 property, a subproperty thereof or the last part of the resource name. <EM>Namespace 
 and label</EM> displays the namespace identifier (see <A HREF="#sec:namespaces">section 
-4.2</A>) before the label. This is the default. <EM>Resource</EM> 
+5.2</A>) before the label. This is the default. <EM>Resource</EM> 
 displays the namespace identifiers in front of the local resource name.
 
 <P>In most situations the label is preceded by a small icon. The icons 
@@ -398,7 +402,32 @@ proper update. When in doubt collapse and re-expand the hierarchy and/or
 switch the table to another resource and back to force proper update. 
 Please report inconsistencies you think can be avoided.
 
-<H2><A NAME="sec:3">3 OWL support</A></H2>
+<H2><A NAME="sec:3">3 Semantic Web practice</A></H2>
+
+<A NAME="sec:practice"></A>
+
+<H3><A NAME="sec:3.1">3.1 Classes as property values</A></H3>
+
+<P>A very common modeling practice is to use classes as property values. 
+For example, people are tempted to describe the colour of an object as
+<EM>red</EM> by selecting the class <EM>red</EM> from a colour ontology. 
+A commonly seen mistake is to define a property colour with its range 
+set to the root of the colour hierarchy of the domain ontology. This 
+construct however allows for <EM>individuals</EM> of colours to be 
+placed in the property, not <EM>subclasses</EM>. The W3C best practices 
+group's current position on this issue is to fill the property with an
+<EM>anonymous individual</EM> of the class, in our case an anonymous 
+individual of class <EM>red</EM>. At first this may appear odd, but 
+think about it. The colour of an object is not `red', but some
+<EM>unspecified</EM> form of this colour! Representation as an anonymous 
+individual is a clean solution to express this.
+
+<P>Triple20 supports this practice by creating an anonymous individual 
+whenever one tries to define a property where the value is a subclass of 
+the range of the property. Such objects are identified with the
+<IMG SRC="anon.gif"> icon.
+
+<H2><A NAME="sec:4">4 OWL support</A></H2>
 
 <A NAME="sec:owl"></A>
 
@@ -442,11 +471,11 @@ resource defines <CODE>owl:hasValue</CODE>.
 descriptions. If property values are to be considered it uses the above 
 described features to infer property values.
 
-<H2><A NAME="sec:4">4 Projects and files</A></H2>
+<H2><A NAME="sec:5">5 Projects and files</A></H2>
 
 <A NAME="sec:project"></A>
 
-<H3><A NAME="sec:4.1">4.1 Files</A></H3>
+<H3><A NAME="sec:5.1">5.1 Files</A></H3>
 
 <A NAME="sec:files"></A>
 
@@ -495,7 +524,7 @@ This can be used to merge ontologies.
 <P>The <A HREF="#menu:File/Savefile">File/Save file</A> submenus allow 
 for saving modified files.
 
-<H3><A NAME="sec:4.2">4.2 Namespaces</A></H3>
+<H3><A NAME="sec:5.2">5.2 Namespaces</A></H3>
 
 <A NAME="sec:namespaces"></A>
 
@@ -505,7 +534,7 @@ If possible it will use the abbreviated form in the UI. Namespaces can
 be added through the <A HREF="#menu:File/Namespaces">File/Names paces</A> 
 menu option. Registered namespaces are stored in the project file.
 
-<H3><A NAME="sec:4.3">4.3 Project files and snapshots</A></H3>
+<H3><A NAME="sec:5.3">5.3 Project files and snapshots</A></H3>
 
 <A NAME="sec:snapshots"></A>
 
@@ -542,7 +571,7 @@ first try to locate the snapshot from the MD5 digest and name, loading
 exactly the same file. If this fails Triple20 tries to locate the 
 ontology file itself.
 
-<H2><A NAME="sec:5">5 Downloading and Installation</A></H2>
+<H2><A NAME="sec:6">6 Downloading and Installation</A></H2>
 
 <P>The current snapshot of the Triple20 toolkit can be downloaded from
 <A HREF="http://www.swi-prolog.org/cvs.html">SWI-Prolog CVS server</A>. 
@@ -568,7 +597,7 @@ Alternatively you may checkout the CVS module
 <A HREF="http://www.opencyc.org/">OpenCyc</A> and
 <A HREF="http://suo.ieee.org/">SUMO</A> (total <VAR>&#177;</VAR>&nbsp;47&nbsp;Mb).
 
-<H3><A NAME="sec:5.1">5.1 Finishing in MS-Windows</A></H3>
+<H3><A NAME="sec:6.1">6.1 Finishing in MS-Windows</A></H3>
 
 <P>After installing Prolog, double click <CODE>setup.bat</CODE> to 
 register
@@ -589,7 +618,7 @@ write a .BAT file by adjusting the template given below.
 </PRE>
 </TABLE>
 
-<H3><A NAME="sec:5.2">5.2 Finishing in Unix</A></H3>
+<H3><A NAME="sec:6.2">6.2 Finishing in Unix</A></H3>
 
 <P>Edit <CODE>triple20.pl</CODE>, adjust <CODE>#!</CODE> path to point 
 to the SWI-Prolog executable and <A NAME="idx:filesearchpath2:1"></A><B>file_search_path/2</B> 
@@ -601,7 +630,7 @@ environment variable as <CODE>triple20</CODE>.
 Using
 <CODE>triple20 --help</CODE> for a list of commandline options.
 
-<H2><A NAME="sec:6">6 Bugs and other issues</A></H2>
+<H2><A NAME="sec:7">7 Bugs and other issues</A></H2>
 
 <P>Although the current system is in active use for browsing ontologies 
 for some time and the first users start to edit ontologies with it, it 
@@ -660,10 +689,10 @@ modify the visualization rule-set and extend the tool.
 <A HREF="#sec:2.3">2.3</A>
 <DT><A HREF="#menu:File/Loadontology">File/Load ontology</A><DD>
 <DT><A HREF="#menu:File/Mergefiles">File/Merge files</A><DD>
-<A HREF="#sec:4.1">4.1</A>
+<A HREF="#sec:5.1">5.1</A>
 <DT><A HREF="#menu:File/Namespaces">File/Name spaces</A><DD>
 <DT>File/Names paces<DD>
-<A HREF="#sec:4.2">4.2</A>
+<A HREF="#sec:5.2">5.2</A>
 <DT><A HREF="#menu:File/Newfile">File/New file</A><DD>
 <DT><A HREF="#menu:File/Newproject">File/New project</A><DD>
 <DT><A HREF="#menu:File/Newwindow">File/New window</A><DD>
@@ -671,11 +700,11 @@ modify the visualization rule-set and extend the tool.
 <DT><A HREF="#menu:File/Openproject">File/Open project</A><DD>
 <DT><A HREF="#menu:File/Saveall">File/Save all</A><DD>
 <DT><A HREF="#menu:File/Savefile">File/Save file</A><DD>
-<A HREF="#sec:4.1">4.1</A>
+<A HREF="#sec:5.1">5.1</A>
 <DT>file_search_path/2<DD>
-<A HREF="#idx:filesearchpath2:1">5.2</A>
+<A HREF="#idx:filesearchpath2:1">6.2</A>
 <DT><A HREF="#menu:File/Statistics">File/Statistics</A><DD>
-<A HREF="#sec:2.3">2.3</A> <A HREF="#sec:4.1">4.1</A>
+<A HREF="#sec:2.3">2.3</A> <A HREF="#sec:5.1">5.1</A>
 <DT><STRONG>H</STRONG><DD>
 <DT><A HREF="#menu:Help/About">Help/About</A><DD>
 <DT><A HREF="#menu:Help/Help">Help/Help</A><DD>
@@ -687,7 +716,7 @@ modify the visualization rule-set and extend the tool.
 <A HREF="#sec:2.2">2.2</A> <A HREF="#sec:2.2">2.2</A> <A HREF="#sec:2.3">2.3</A>
 <DT><STRONG>O</STRONG><DD>
 <DT>OWL/Class extension<DD>
-<A HREF="#sec:3">3</A>
+<A HREF="#sec:4">4</A>
 <DT><STRONG>R</STRONG><DD>
 <DT><A HREF="#menu:Renameresource">Rename resource</A><DD>
 <DT><STRONG>T</STRONG><DD>
