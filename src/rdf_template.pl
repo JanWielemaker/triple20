@@ -19,7 +19,10 @@
 :- pce_group(event).
 
 event(W, Ev:event) :->
-	(   send(Ev, is_a, loc_move)
+	(   get(W, focus, Gr),
+	    Gr \== @nil
+	->  true
+	;   send(Ev, is_a, loc_move)
 	->  send(W, check_arm, Ev)
 	;   send(Ev, is_a, area_exit)
 	->  send(W, arm_object, @nil)

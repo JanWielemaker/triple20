@@ -92,12 +92,7 @@ icon(R, Icon) :-
 	->  ResName = restriction
 	;   rdfs_subclass_of(R, rdfs:'Class')
 	->  ResName = metaclass
-	;   ResName = class
-	),
-	new(Icon, image(resource(ResName))).
-icon(R, Icon) :-
-	rdfs_individual_of(R, owl:'Class'),
-	(   owl_description_attribute(Att),
+	;   owl_description_attribute(Att),
 	    rdf_has(R, Att, _)
 	->  ResName = description
 	;   ResName = class
@@ -136,7 +131,7 @@ child_cache(R, Cache, Class) :-
 	    )
 	;   (   rdf_cache(V, rdf_has(V, rdfs:subClassOf, R), Cache),
 	        Class = rdf_class_node
-	    ;   \+ rdfs_subclass_of(R, rdfs:'Class'),
+	    ;   % \+ rdfs_subclass_of(R, rdfs:'Class'),
 	        rdf_cache(V, rdf_has(V, rdf:type, R), Cache),
 		Class = rdf_individual_node
 	    ;	rdfs_subclass_of(R, owl:'Restriction'),
@@ -144,6 +139,10 @@ child_cache(R, Cache, Class) :-
 		Class = owl_restriction_node	    
 	    )
 	).
+child_cache(R, Cache, rdf_individual_node) :-
+	rdfs_individual_of(R, rdf:'List'), !,
+	rdf_cache(V, rdfs_member(V, R), Cache).
+
 
 %	parent(+Resource, -Parent, -Class)
 %	
@@ -183,10 +182,10 @@ root_property(Class, P) :-
 
 :- begin_particle(rdf_individual_node, display).
 
-icon(_, Icon) :-
-	new(Icon, image(resource(individual))).
+%icon(_, Icon) :-
+%	new(Icon, image(resource(individual))).
 
-child_cache(_, _, _) :- !, fail.
+%child_cache(_, _, _) :- !, fail.
 
 :- end_particle.
 
