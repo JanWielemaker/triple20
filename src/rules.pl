@@ -14,6 +14,11 @@
 :- use_module(rdf_cache).
 
 
+owl_description_attribute(X) :- rdf_equal(owl:oneOf, X).
+owl_description_attribute(X) :- rdf_equal(owl:complementOf, X).
+owl_description_attribute(X) :- rdf_equal(owl:unionOf, X).
+owl_description_attribute(X) :- rdf_equal(owl:intersectionOf, X).
+
 		 /*******************************
 		 *	       LABELS		*
 		 *******************************/
@@ -60,11 +65,51 @@ label_class(Obj, rdf_individual_label) :-
 	rdf_has(Obj, rdf:type, _).
 label_class(_, rdf_resource_text).
 
-owl_description_attribute(X) :- rdf_equal(owl:oneOf, X).
-owl_description_attribute(X) :- rdf_equal(owl:complementOf, X).
-owl_description_attribute(X) :- rdf_equal(owl:unionOf, X).
-owl_description_attribute(X) :- rdf_equal(owl:intersectionOf, X).
+:- end_particle.
 
+resource(class,       image, image('16x16/class.xpm')).
+resource(metaclass,   image, image('16x16/Metaclass.gif')).
+resource(orphanclass, image, image('16x16/orphanclass.xpm')).
+resource(individual,  image, image('16x16/Instance.gif')).
+resource(property,    image, image('16x16/SlotDirect.gif')).
+resource(list,        image, image('16x16/list.xpm')).
+resource(list_member, image, image('16x16/list_member.xpm')).
+resource(untyped,     image, image('16x16/untyped.xpm')).
+resource(resource,    image, image('16x16/resource.xpm')).
+resource(restriction, image, image('16x16/restriction.xpm')).
+resource(description, image, image('16x16/description.xpm')).
+resource(wnclass,     image, image('16x16/wnclass.xpm')).
+
+:- begin_particle(rdf_icon_rules, []).
+
+icon(R, Icon) :-
+	rdfs_individual_of(R, wns:'LexicalConcept'),
+	new(Icon, image(resource(wnclass))).
+icon(R, Icon) :-
+	rdfs_individual_of(R, rdfs:'Class'), !,
+	(   rdfs_individual_of(R, owl:'Restriction')
+	->  ResName = restriction
+	;   rdfs_subclass_of(R, rdfs:'Class')
+	->  ResName = metaclass
+	;   ResName = class
+	),
+	new(Icon, image(resource(ResName))).
+icon(R, Icon) :-
+	rdfs_individual_of(R, owl:'Class'),
+	(   owl_description_attribute(Att),
+	    rdf_has(R, Att, _)
+	->  ResName = description
+	;   ResName = class
+	),
+	new(Icon, image(resource(ResName))).
+icon(R, Icon) :-
+	rdfs_individual_of(R, rdf:'Property'), !,
+	new(Icon, image(resource(property))).
+icon(R, Icon) :-
+	rdfs_individual_of(R, rdf:'List'),
+	new(Icon, image(resource(list))).
+icon(_, Icon) :-
+	new(Icon, image(resource(individual))).
 
 :- end_particle.
 
@@ -75,12 +120,24 @@ owl_description_attribute(X) :- rdf_equal(owl:intersectionOf, X).
 
 :- begin_particle(class_hierarchy, []).
 
+root_property(Class, P) :-
+	rdf_has(P, rdf:type, Class),
+	\+ rdf_has(P, rdfs:subPropertyOf, _).
+
 child_cache(R, Cache, Class) :-
 	rdfs_individual_of(R, rdfs:'Class'),
-	(   rdf_cache(V, rdf_has(V, rdfs:subClassOf, R), Cache),
-	    Class = rdf_class_node
-	;   rdf_cache(V, rdf_has(V, rdf:type, R), Cache),
-	    Class = rdf_individual_node
+	(   rdfs_subclass_of(R, rdf:'Property')
+	->  (   rdf_cache(V, rdf_has(V, rdfs:subClassOf, R), Cache),
+	        Class = rdf_class_node
+	    ;   rdf_cache(V, root_property(R,V), Cache),
+		Class = rdf_property_node
+	    )
+	;   (   rdf_cache(V, rdf_has(V, rdfs:subClassOf, R), Cache),
+	        Class = rdf_class_node
+	    ;   \+ rdfs_subclass_of(R, rdfs:'Class'),
+	        rdf_cache(V, rdf_has(V, rdf:type, R), Cache),
+		Class = rdf_individual_node
+	    )
 	).
 
 :- end_particle.
@@ -92,6 +149,25 @@ child_cache(R, Cache, Class) :-
 
 :- begin_particle(display,
 		  [ rdf_label_rules,
+		    rdf_icon_rules,
 		    class_hierarchy
 		  ]).
 :- end_particle.
+
+
+:- begin_particle(rdf_individual_node, display).
+
+icon(_, Icon) :-
+	new(Icon, image(resource(individual))).
+
+child_cache(_, _, _) :- !, fail.
+
+:- end_particle.
+
+:- begin_particle(rdf_property_node, display).
+
+child_cache(R, Cache, rdf_property_node) :-
+	rdf_cache(V, rdf_has(V, rdfs:subPropertyOf, R), Cache).
+
+:- end_particle.
+

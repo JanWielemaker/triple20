@@ -47,6 +47,7 @@
 :- use_module(pce_history).
 :- use_module(library(broadcast)).
 :- use_module(library(tabbed_window)).
+:- use_module(window).
 
 :- pce_autoload(report_dialog,	       library(pce_report)).
 :- pce_autoload(rdf_statistics_dialog, library(rdf_statistics)).
@@ -74,7 +75,9 @@ initialise(OV, Domain0:[prolog], Label:[name]) :->
 	rdf_global_term(Domain0, Domain),
 	send_super(OV, initialise),
 	send(OV, icon, resource(rdfs_explorer_icon)),
-	send(new(TD, tool_dialog(OV)), above, new(P, picture)),
+	send(new(TD, tool_dialog(OV)), above,
+	     new(P, constrained_scroll_picture)),
+	send(P, name, hierarchy_window),
 	send(OV, append, TD),
 	send(P, width, 250),
 	send(new(D, dialog), above, new(rdfs_sheet)),
@@ -84,6 +87,7 @@ initialise(OV, Domain0:[prolog], Label:[name]) :->
 	send(D, pen, 0),
 	send(new(report_dialog), below, P),
 	new(Tree, rdfs_hierarchy(Domain)),
+	send(Tree, name, hierarchy),
 	send(P, display, Tree, point(5,5)),
 	send(Tree, selectable, @nil),	% allow selecting all nodes
 	send(Tree, message, message(OV, show_resource, @arg1, table)),
@@ -252,8 +256,8 @@ resize_dialog(_OV, D:dialog, Size:size) :->
 
 tree(F, Tree:rdfs_hierarchy) :<-
 	"Get the tree object"::
-	get(F, member, picture, P),
-	get(P, member, rdfs_hierarchy, Tree).
+	get(F, member, hierarchy_window, P),
+	get(P, member, hierarchy, Tree).
 
 :- pce_group(find).
 

@@ -11,6 +11,7 @@
 :- use_module(semweb(rdfs)).
 :- use_module(semweb(rdf_edit)).
 :- use_module(particle).
+:- use_module(rdf_template).
 
 
 resource(class,       image, image('16x16/class.xpm')).
@@ -103,7 +104,8 @@ is_anonymous(TF) :->
 
 update(L) :->
 	get(L, resource, Resource),
-	send(L, icon, resource(individual)),
+	call_rules(L, icon(Resource, Icon)),
+	send(L, icon, Icon),
 	send(L, append, rdf_resource_text(Resource)).
 
 :- pce_end_class(rdf_individual_label).
@@ -111,15 +113,24 @@ update(L) :->
 :- pce_begin_class(rdf_list_label, rdf_composite_label,
 		   "Show elements of a list").
 
-update(L) :->
-	get(L, resource, List),
+update(L) :->				% TBD: limit length
+	get(L, resource, RDFList),
 	send(L, print, '['),
-	(   rdfs_member(Member, List),
-	    send(L, append_resource, Member),
-	    send(L, print, ', '),
-	    fail
-	;   send(L?graphicals?tail, string, ']')
+	rdfs_list_to_prolog_list(RDFList, List),
+	(   List == []
+	->  send(L, print, '[]')
+	;   send(L, print, '['),
+	    append_list(List, L),
+	    send(L, print, ']')
 	).
+
+append_list([], _).
+append_list([H], L) :- !,
+	send(L, append_resource, H).
+append_list([H|T], L) :-
+	send(L, append_resource, H),
+	send(L, print, ', '),
+	append_list(T, L).
 
 :- pce_end_class(rdf_list_label).
 
@@ -133,7 +144,8 @@ update(L) :->
 
 update(L) :->
 	get(L, resource, Resource),
-	send(L, icon, resource(property)),
+	call_rules(L, icon(Resource, Icon)),
+	send(L, icon, Icon),
 	send(L, append, rdf_resource_text(Resource)).
 
 :- pce_end_class(rdf_property_label).
@@ -145,7 +157,8 @@ update(L) :->
 update(L) :->
 	"Simple RDFS classes"::
 	get(L, resource, Resource),
-	send(L, icon, resource(class)),
+	call_rules(L, icon(Resource, Icon)),
+	send(L, icon, Icon),
 	send(L, append, rdf_resource_text(Resource)).
 
 :- pce_end_class(rdfs_class_label).
@@ -157,7 +170,8 @@ update(L) :->
 update(L) :->
 	"Simple RDFS classes"::
 	get(L, resource, Resource),
-	send(L, icon, resource(metaclass)),
+	call_rules(L, icon(Resource, Icon)),
+	send(L, icon, Icon),
 	send(L, append, rdf_resource_text(Resource)).
 
 :- pce_end_class(rdfs_metaclass_label).
@@ -179,7 +193,8 @@ update(L) :->
 update(L) :->
 	"OWL Specialised labels"::
 	get(L, resource, Resource),
-	send(L, icon, resource(description)),
+	call_rules(L, icon(Resource, Icon)),
+	send(L, icon, Icon),
 	(   send(L, is_anonymous)
 	->  (   rdf_has(Resource, owl:oneOf, List)
 	    ->  send(L, print, 'oneOf'),
@@ -207,7 +222,8 @@ update(L) :->
 
 update(L) :->
 	get(L, resource, Resource),
-	send(L, icon, resource(restriction)),
+	call_rules(L, icon(Resource, Icon)),
+	send(L, icon, Icon),
 	rdf_has(Resource, owl:onProperty, Property),
 	(   rdf_has(Resource, owl:cardinality, Card)
 	->  send(L, append_resource, Property),
@@ -244,7 +260,8 @@ update(L) :->
 
 update(L) :->
 	get(L, resource, Resource),
-	send(L, icon, resource(wnclass)),
+	call_rules(L, icon(Resource, Icon)),
+	send(L, icon, Icon),
 	(   rdf_has(Resource, wns:wordForm, Label),
 	    send(L, append_resource, Label),
 	    send(L, print, ', '),

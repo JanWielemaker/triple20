@@ -14,17 +14,6 @@
 :- use_module(rdf_template).
 :- use_module(rdf_cache).
 
-resource(class,       image, image('16x16/class.xpm')).
-resource(metaclass,   image, image('16x16/Metaclass.gif')).
-resource(orphanclass, image, image('16x16/orphanclass.xpm')).
-resource(individual,  image, image('16x16/Instance.gif')).
-resource(property,    image, image('16x16/SlotDirect.gif')).
-resource(list,        image, image('16x16/list.xpm')).
-resource(list_member, image, image('16x16/list_member.xpm')).
-resource(untyped,     image, image('16x16/untyped.xpm')).
-resource(resource,    image, image('16x16/resource.xpm')).
-resource(restriction, image, image('16x16/restriction.xpm')).
-resource(description, image, image('16x16/description.xpm')).
 
 		 /*******************************
 		 *	     HIERARCHY		*
@@ -144,7 +133,7 @@ variable(caches, sheet := new(sheet), get,
 
 initialise(N, Resource:name) :->
 	send(N, slot, resource, Resource),
-	call_rules(N, label(Resource, Label)),
+	get(N, label, Label),
 	send_super(N, initialise, Label),
 	(   call_rules(N, child_cache(Resource, Cache, Role)),
 	    send(N?caches, value, Role, Cache),
@@ -152,6 +141,11 @@ initialise(N, Resource:name) :->
 	;   true
 	),
 	send(N, update_can_expand).
+
+
+label(N, Label:graphical) :<-
+	get(N, resource, Resource),
+	call_rules(N, label(Resource, Label)).
 
 
 update_can_expand(N) :->
@@ -292,6 +286,10 @@ on_double_left_click(N) :->
 
 
 :- pce_begin_class(rdf_individual_node, rdf_node).
+:- pce_end_class.
+
+
+:- pce_begin_class(rdf_property_node, rdf_node).
 :- pce_end_class.
 
 

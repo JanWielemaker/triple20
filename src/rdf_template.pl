@@ -11,6 +11,7 @@
 :- use_module(library(pce)).
 :- use_module(library(pce_template)).
 :- use_module(particle).
+:- use_module(library(debug)).
 
 :- pce_begin_class(rdf_visual, template,
 		   "Common behaviour to all RDF visualisers").
@@ -96,7 +97,7 @@ container_with_particle(Obj, Particle) :-
 	;   get(Obj, create_context,
 		message(@arg1, instance_of, visual),
 		Context)
-	->  format(user_error, '~p~n', [Context]),
+	->  debug(container, '~p~n', [Context]),
 	    container_with_particle(Context, Particle)
 	;   print_message(error, not_contained(Obj)),
 	    fail
