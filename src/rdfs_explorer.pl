@@ -350,7 +350,8 @@ load_ontology(_OV) :->
 		  tuple('OWL files', owl),
 		  tuple('RDF files', rdf)),
 	    FileName),
-	rdfe_transaction(rdfe_load(FileName), load_file(FileName)).
+	rdfe_transaction(rdfe_load(FileName), load_file(FileName),
+			 load_ontology).
       
 open_project(OV) :->
 	"Open an existing journal file"::
@@ -379,7 +380,8 @@ new_file(_OV) :->
 	    FileName),
 	absolute_file_name(FileName, AbsName),
 	rdf_save(FileName, AbsName),
-	rdfe_transaction(rdfe_load(FileName), load_file(FileName)).
+	rdfe_transaction(rdfe_load(FileName), load_file(FileName),
+			 new_file).
 
 update_save_popup(_OV, Popup:popup) :->
 	"Update menu with all (modified) sources"::

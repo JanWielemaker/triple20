@@ -118,9 +118,13 @@ required_base_ontology(rdfs) :-
 	;   rdf(_, rdf:rest, _)
 	) -> true.
 required_base_ontology(owl) :-
-	(   rdf(_, owl:unionOf, _)
+	(   rdf(_, owl:oneOf, _)
+	;   rdf(_, owl:unionOf, _)
 	;   rdf(_, owl:intersectionOf, _)
 	;   rdf(_, owl:complementOf, _)
+	;   rdf(_, _, owl:'Restriction')
+	;   rdf(_, _, owl:'Class')
+	;   rdf(_, _, owl:'Thing')
 	) -> true.
 
 
