@@ -201,6 +201,31 @@ menu_item(open,   diagram_).
 
 
 		 /*******************************
+		 *		EDIT		*
+		 *******************************/
+
+:- begin_particle(rdf_predicate, []).
+
+%	standard_predicate(+Resource, -Predicate)
+%	
+%	Return, on backtracking, predicates that should normally be defined
+%	immediately when defining a resource.  This should use properties of
+%	the ontology, but often it doesn't.
+
+standard_predicate(Resource, Pred) :-
+	rdfs_individual_of(Resource, rdf:'Statement'), !,
+	(   rdf_equal(Pred, rdf:'Subject')
+	;   rdf_equal(Pred, rdf:'Predicate')
+	;   rdf_equal(Pred, rdf:'Object')
+	).
+
+:- end_particle.
+
+
+
+
+
+		 /*******************************
 		 *	      HIERARCHY		*
 		 *******************************/
 
@@ -352,7 +377,8 @@ clicked(V) :-
 		    class_hierarchy,
 		    rdf_resource_menu,
 		    rdf_drag_and_drop,
-		    rdf_click
+		    rdf_click,
+		    rdf_predicate
 		  ]).
 :- end_particle.
 

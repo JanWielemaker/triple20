@@ -49,6 +49,7 @@
 :- use_module(semweb(rdf_edit)).
 :- use_module(pce_history).
 :- use_module(library(broadcast)).
+:- use_module(rdf_template).
 :- use_module(library(tabbed_window)).
 :- use_module(window).
 
@@ -61,6 +62,7 @@
 
 resource(rdfs_explorer_icon, image, image('16x16/hierarchy.xpm')).
 resource(new_icon,	     image, image('16x16/new.xpm')).
+resource(new_multiple,	     image, image('16x16/newmultiple.xpm')).
 resource(undo,		     image, image('16x16/undo.xpm')).
 resource(redo,		     image, image('16x16/redo.xpm')).
 resource(open,		     image, image('16x16/open.xpm')).
@@ -892,10 +894,14 @@ display_predicates_title(AL) :->
 	send(D, format, new(F, format(vertical, 1, @on))),
 	send(F, adjustment, vector(center)),
 	send(D, display, text('Predicates', left, bold)),
-	send(D, display, new(BM, bitmap(resource(new_icon)))),
-	send(BM, recogniser,
+	send(D, display, new(BM1, bitmap(resource(new_icon)))),
+	send(BM1, recogniser,
 	     click_gesture(left, '', single,
 			   message(AL, add_predicate, @receiver))),
+	send(D, display, new(BM2, bitmap(resource(new_multiple)))),
+	send(BM2, recogniser,
+	     click_gesture(left, '', single,
+			   message(AL, add_standard_predicates))),
 	send(AL, append, D,
 	     halign := center, colspan := 2, background := khaki1),
 	send(AL, next_row).
@@ -1047,6 +1053,25 @@ missing_subject_predicate(AL, Property) :-
 	rdf_has(Property, rdfs:domain, Domain),
 	rdfs_subclass_of(Class, Domain),
 	\+ rdf(Subject, Property, _).
+
+add_standard_predicates(AL) :->
+	"Add missing predicates that should normally be present"::
+	rdfe_transaction(add_standard_predicates(AL),
+			 add_standard_predicates).
+
+add_standard_predicates(AL) :-
+	get(AL, resource, Subject),
+	(   call_rules(AL, standard_predicate(Subject, Predicate)),
+	    \+ rdf(Subject, Predicate, _),
+	    property_type(Subject, Predicate, Type),
+	    (	Type == resource
+	    ->	Object = '__not_filled'
+	    ;	Object = literal('')
+	    ),
+	    rdfe_assert(Subject, Predicate, Object),
+	    fail
+	;   true
+	).
 
 :- pce_end_class(rdfs_instance_sheet).
 
