@@ -39,6 +39,8 @@ make_onto_tree_recogniser(R) :-
 	new(R, handler_group),
 	send(R, append, click_gesture(left, '', single,
 				      message(@receiver, on_left_click))),
+	send(R, append, handler(obtain_keyboard_focus,
+				message(@receiver, advance))),
 	send(R, append, new(KB, key_binding)),
 	send(KB, function, key_top_5, update),
 	send(KB, function, '\\ef', find).
@@ -165,6 +167,7 @@ show_all_parents(OT, Resource:name) :->
 event(OT, Ev:event) :->
 	"Deal with events"::
 	(   send_super(OT, event, Ev)
+	->  true
 	;   send(@onto_tree_recogniser, event, Ev)
 	).
 
@@ -198,6 +201,20 @@ open_node(OT, Node:rdf_node) :->
 
 arm(_, _:bool) :->
 	fail.
+
+'_wants_keyboard_focus'(OT) :->
+	get(OT?graphicals, find,
+	    message(@arg1, '_wants_keyboard_focus'),
+	    _).
+
+compute(OT) :->
+	send_super(OT, compute),
+	(   get(OT, window, Window),
+	    get(Window, keyboard_focus, @nil)
+	->  send(OT, advance)
+	;   true
+	).
+
 
 triple_from_part(_OT, From:graphical, Triple:prolog) :<-
 	"Find triple represented by a node"::
@@ -357,14 +374,15 @@ expand(N) :->
 	send(N?caches?members, for_all,
 	     message(N, expand_role, @arg1?name, @arg1?value)).
 
-expand_role(N, Role:name, Cache:int, Prefix:[name]) :->
+expand_role(N, Role:name, Cache:int, Prefix:[name], Before:[node]) :->
 	"Expand a cache"::
 	rdf_cache_result_set(Cache, Set),
 	functor(Set, _, SetSize),
 	(   Prefix \== @default,
 	    bfind_prefix(Cache, Prefix, Offset)
 	->  true
-	;   Offset = 0
+	;   Offset = 0,
+	    Found = @off
 	),
 	Display is SetSize - Offset,
 	Start is Offset + 1,
@@ -374,9 +392,16 @@ expand_role(N, Role:name, Cache:int, Prefix:[name]) :->
 	    More is End + 1
 	),
 	forall(result_set_element(Set, Start, End, Value),
-	       send(N, add_child_from_cache, Value, Role, Cache)),
-	(   nonvar(More)
-	->  send(N, son, rdf_more_node(Role, Cache, More))
+	       send(N, add_child_from_cache, Value, Role, Cache, Before)),
+	(   nonvar(More), Before == @default
+	->  send(N, son,
+		 rdf_more_node(Role, Cache, Start, More, Prefix))
+	;   send(Before, instance_of, rdf_more_node)
+	->  (   var(Found)
+	    ->	Found = @on
+	    ;	true
+	    ),
+	    send(Before, view, Start, More, Prefix, Found)
 	;   true
 	).
 
@@ -413,6 +438,19 @@ show_more(N, MoreNode:rdf_more_node, Role:name, Count:int) :->
 	;   send(MoreNode, destroy)
 	).
 	
+prefix_role(N, Role:name, Prefix:name) :->
+	"Collapse nodes of Role"::
+	get(N?caches, value, Role, Cache),
+	get(N?sons, find,
+	    and(message(@arg1, instance_of, rdf_more_node),
+		@arg1?cache == Cache),
+	    MoreNode),
+	send(N?sons, for_all,
+	     if(and(@arg1?cache == Cache, @arg1 \== MoreNode),
+		message(@arg1, delete_tree))),
+	send(N, expand_role, Role, Cache, Prefix, MoreNode).
+
+
 :- pce_group(changes).
 
 /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -467,7 +505,7 @@ update_role(N, Role:name, Cache:int) :->
 		;   nonvar(Max), I >= Max
 		->  send(Existing, for_all,
 			 message(@arg1, delete_tree)),
-		    send(N, son, rdf_more_node(Role, Cache, Max))
+		    send(N, son, rdf_more_node(Role, Cache, 1, Max))
 		;   get(Existing, head, Node),
 		    get(Node, resource, R)
 		->  send(Existing, delete_head),
@@ -709,15 +747,23 @@ variable(here,	   int,	  get, "Current location").
 variable(size,	   int,	  get, "Total set-size").
 variable(resource, name*, get, "Represented resource (@nil)").
 variable(cache,    int*,  get, "Cache I belong to").
+variable(start,    int,   get, "Start index of shown nodes").
+variable(prefix,   name*, get, "Provided prefix").
+variable(found,    bool := @on, get, "Found target?").
 
-initialise(N, Role:name, Cache:int, Here:int) :->
+initialise(N, Role:name, Cache:int, Start:int, Here:int, Prefix:[name]) :->
 	"Create `more' button"::
 	rdf_cache_cardinality(Cache, Size),
 	send_super(N, initialise, new(more_figure)),
 	send(N, slot, role, Role),
 	send(N, slot, size, Size),
+	send(N, slot, start, Start),
 	send(N, slot, here, Here),
 	send(N, slot, cache, Cache),
+	(   Prefix \== @default
+	->  send(N, slot, prefix, Prefix)
+	;   true
+	),
 	send(N, update_more),
 	send(N, collapsed, @nil).
 
@@ -731,30 +777,61 @@ update(N) :->
 	    send(N, update_more)
 	).
 
+view(N, Start:int, Here:int, Prefix:[name], Found:[bool]) :->
+	"New parameters (after search)"::
+	send(N, slot, start, Start),
+	send(N, slot, here, Here),
+	(   (   Prefix == @default
+	    ;	Prefix == ''
+	    )
+	->  send(N, slot, prefix, @nil)
+	;   send(N, slot, prefix, Prefix)
+	),
+	default(Found, @on, TheFound),
+	send(N, slot, found, TheFound),
+	send(N, update_more).
+
 update_more(N) :->
 	"Update	displayed buttons"::
 	get(N, image, D),
 	send(D, clear),
-	send(D, display, text('Next', left, bold)),
 	get(N, size, Size),
 	get(N, here, Here),
-	Left is Size - Here,
-	(   Left < 1
-	->  send(N, destroy)
-	;   Left < 10
-	->  send(D, display, more_button(Left))
-	;   Left < 100
-	->  send(D, display, more_button(10)),
-	    send(D, display, more_button(Left))
-	;   Left < 1000
-	->  send(D, display, more_button(10)),
-	    send(D, display, more_button(100)),
-	    send(D, display, more_button(Left))
-	;   send(D, display, more_button(10)),
-	    send(D, display, more_button(100)),
-	    send(D, display, more_button(1000)),
-	    send(D, display, text(string('(showing %d of %d) ', Here, Size), left, italic))
+	Left is 1 + Size - Here,
+	End is Here - 1,
+	get(N, start, Start),
+	(   get(N, prefix, Prefix),
+	    atom(Prefix),
+	    Prefix \== ''
+	->  send(D, display, text('Search', left, bold)),
+	    send(D, display, new(S, rdf_more_search(Prefix))),
+	    send(S, end_of_line),
+	    send(S, keyboard_focus),
+	    (	get(N, found, @off)
+	    ->	send(S, colour, red)
+	    ;	true
+	    ),
+	    send(D, display, text(string('(showing %d-%d of %d) ',
+					 Start, End, Size),
+				  left, italic))
+	;   send(D, display, text('Next', left, bold)),
+	    (   Left < 1
+	    ->  send(N, destroy)
+	    ;   Left =< 10
+	    ->  send(D, display, more_button(Left))
+	    ;   Left =< 100
+	    ->  send(D, display, more_button(10)),
+		send(D, display, more_button(Left))
+	    ;   send(D, display, more_button(10)),
+		send(D, display, more_button(100)),
+		send(D, display, new(S, rdf_more_search)),
+		send(S, keyboard_focus),
+		send(D, display, text(string('(showing %d-%d of %d) ',
+					     Start, End, Size),
+				      left, italic))
+	    )
 	).
+
 
 update_label(_) :->
 	"Dummy"::
@@ -777,6 +854,12 @@ more(N, More:[int]) :->
 	get(N, parents, chain(Parent)),
 	get(N, role, Role),
 	send(Parent, show_more, N, Role, More).
+
+goto_prefix(N, Prefix:name) :->
+	"Start from prefix search"::
+	get(N, parents, chain(Parent)),
+	get(N, role, Role),
+	send(Parent, prefix_role, Role, Prefix).
 
 :- pce_end_class(rdf_more_node).
 
@@ -804,14 +887,11 @@ initialise(B, More:int) :->
 :- pce_begin_class(rdf_more_search, text_item,
 		   "Search-based offset in result-set").
 
-variable(cache, int, get, "Associated cache").
-
-initialise(SI, Cache:int) :->
+initialise(SI, Value:[name]) :->
 	"Create from cache"::
-	send_super(SI, initialise, search),
+	send_super(SI, initialise, search, Value),
 	send(SI, show_label, @off),
-	send(SI, length, 6),
-	send(SI, slot, cache, Cache).
+	send(SI, length, 6).
 
 event(SI, Ev:event) :->
 	get(SI, value_text, VT),
@@ -825,12 +905,18 @@ event(SI, Ev:event) :->
 
 search(SI, For:name) :->
 	"Search for For and invoke ->offset"::
-	get(SI, cache, Cache),
-	(   bfind_prefix(Cache, For, Offset)
-	->  send(SI, offset, Offset)
-	;   send(SI, offset, @nil)
-	).
+	get(SI?device, node, Node),
+	send(Node, goto_prefix, For).
 
+
+%	bfind_prefix(+Cache, +Prefix, -Offset)
+%	
+%	Find  offset  of  resource  with  Prefix.  Currently  search  is
+%	case-sensitive, which is required because  the lsorted(X) option
+%	of rdf_cache_result returns them sorted   case insensitive. Both
+%	should change.
+
+bfind_prefix(_, '', 0) :- !.		% simple case
 bfind_prefix(Cache, Prefix, Offset) :-
 	rdf_cache_result_set(Cache, Set),
 	functor(Set, _, Size),
@@ -841,15 +927,16 @@ bfind_prefix(Cache, Prefix, Offset) :-
 bfind_prefix(Low, Here, High, Set, Prefix, Offset) :-
 %	format('Low=~w, Here=~w, High=~w~n', [Low, Here, High]),
 	arg(Here, Set, R),
-	rdfs_label(R, Label0),
-	downcase_atom(Label0, Label),
+	once(rdfs_label(R, Label)),
+%	downcase_atom(Label0, Label),
 	(   sub_atom(Label, 0, _, _, Prefix)
 	->  (   Before is Here - 1,
 	        arg(Before, Set, R2),
-		rdfs_label(R2, LabelR20),
-		downcase_atom(LabelR20, LabelR2),
+		once(rdfs_label(R2, LabelR2)),
+%		downcase_atom(LabelR20, LabelR2),
 		sub_atom(LabelR2, 0, _, _, Prefix)
 	    ->	Here2 is (Low+Here)//2,
+		Here2 < Here,
 		bfind_prefix(Low, Here2, Here, Set, Prefix, Offset)
 	    ;	Offset = Here
 	    )
@@ -865,25 +952,13 @@ bfind_prefix(Low, Here, High, Set, Prefix, Offset) :-
 		;   Low < High
 		->  Here3 is Low + 1
 		),
+		Here3 < Here,
 	        bfind_prefix(Low, Here3, Here, Set, Prefix, Offset)
 	    ;	assume(fail)
 	    )
 	).
 
-offset(SI, Offset:int*) :->
-	"We found an offset"::
-	get(SI, cache, Cache),
-	End is Offset + 10,
-	rdf_cache_result_set(Cache, Set),
-	(   between(Offset, End, I),
-	    arg(I, Set, R),
-	    rdfs_ns_label(R, Label),
-	    format('~p~n', [Label]),
-	    fail
-	;   true
-	).
-
-:- pce_end_class.
+:- pce_end_class(rdf_more_search).
 
 
 		 /*******************************
@@ -917,8 +992,15 @@ arm(TF, Val:bool) :->
 event(TF, Ev:event) :->
 	(   send(@arm_recogniser, event, Ev)
 	->  true
+	;   send(Ev, is_a, obtain_keyboard_focus)
+	->  send(TF, advance)
 	;   send_super(TF, event, Ev)
 	).
+
+'_wants_keyboard_focus'(TF) :->
+	get(TF?graphicals, find,
+	    message(@arg1, '_wants_keyboard_focus'),
+	    _).
 
 :- pce_end_class.
 
