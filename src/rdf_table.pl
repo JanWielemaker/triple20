@@ -73,6 +73,13 @@ clear(AL) :->
 	"Delete all rows"::
 	send(AL, delete_rows).
 
+active(AL, Active:bool) :->
+	"(De-)activate tab if present"::
+	(   get(AL, container, tab, Tab)
+	->  send(Tab, active, Active)
+	;   send_super(AL, active, Active)
+	).
+
 :- pce_group(update).
 
 detach_cache(AL) :->
@@ -408,12 +415,16 @@ cache(T, Cache:int*) :->
 	"Change the cache"::
 	(   get(T, cache, Cache)
 	->  true
-	;   send(T, detach_cache),
+	;   send(T?window, scroll_to, point(0,0)),
+	    send(T, detach_cache),
 	    send(T, clear),
 	    send(T, slot, cache, Cache),
 	    rdf_cache_attach(Cache, T),
 	    send(T, update)
 	).
+
+value(T, Cache:int*) :->
+	send(T, cache, Cache).
 
 %	->update
 %	
@@ -425,8 +436,9 @@ update(T, _Cache:[int]) :->
 	send(T, display_title),
 	get(T, cache, Cache),
 	(   Cache == @nil
-	->  true
-	;   rdf_cache_result_set(Cache, Triples),
+	->  send(T, active, @off)
+	;   send(T, active, @on),
+	    rdf_cache_result_set(Cache, Triples),
 	    functor(Triples, _, Cardinality),
 	    (   between(1, Cardinality, I),
 		arg(I, Triples, Triple),

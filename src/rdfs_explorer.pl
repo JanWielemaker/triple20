@@ -665,7 +665,8 @@ variable(history,	 history,     get, "Location history").
 
 initialise(OS) :->
 	send_super(OS, initialise),
-	send(OS, slot, history, history(message(OS, resource, @arg1))),
+	send(OS, slot, history,
+	     history(message(OS, history_goto, @arg1))),
 	send(OS, size, size(500,350)),
 	send(OS, hor_stretch, 100),
 	send(OS, ver_stretch, 100),
@@ -682,27 +683,44 @@ sheet(OS, Name:name, Table:rdf_tabular) :<-
 	get(OS, member, Name, Window),
 	get(Window?graphicals, head, Table).
 
-resource(OS, Resource:name) :->
-	"Show the indicated object"::
-	get(OS, sheet, instance, InstanceSheet),
-	get(OS, sheet, class, ClassSheet),
-	send(OS?members, for_all,
-	     message(@arg1, scroll_to, point(0,0))),
-	send(InstanceSheet, resource, Resource),
-	(   rdfs_individual_of(Resource, rdfs:'Class')
-	->  send(ClassSheet, resource, Resource),
-	    send(OS, on_top, class)
-	;   send(ClassSheet, resource, @nil),
-	    send(OS, on_top, instance)
+history_goto(OS, Argv:vector) :->
+	"Go somewhere from the history"::
+	send(OS, send_vector, value, Argv).
+
+value(OS, Object:any*, Sheet:[name]) :->
+	"Show a value, optionally at a specified tab"::
+	(   Sheet == @default
+	->  call_rules(OS, default_resource_tab(Object, TabName))
+	;   TabName = Sheet
 	),
-	send(OS?history, location, Resource).
+	ignore(send(OS, on_top, TabName)),
+	send(OS?members, for_all,
+	     message(OS, window_value, @arg1, Object)),
+	send(OS?history, location, vector(Object, TabName)).
+	
+window_value(_OS, Window:window, Value:object) :->
+	"Try to send a value to a window"::
+	get(Window, container, tab, Tab),
+	(   get(Window, send_method, value, tuple(_, Method)),
+	    get(Method, argument_type, 1, Type),
+	    send(Type, validate, Value)
+	->  send(Tab, active, @on),
+	    send(Window, value, Value)
+	;   send(Tab, active, @off)
+	).
+
+resource(OS, Resource:name*) :->
+	"Show the indicated object"::
+	send(OS, value, Resource).
+
+%	->triples: Cache:int*
+%	
+%	Display triples from the rdf-cache Cache, which must return
+%	results of the format rdf(Subject, Predicate, Object).
 
 triples(OS, Cache:int*) :->
 	"Display triple-set from (query-) cache"::
-	(   get(OS, sheet, triples, TripleSheet)
-	->  send(OS, on_top, triples),
-	    send(TripleSheet, cache, Cache)
-	).
+	send(OS, value, Cache, triples).
 
 button(OS, Dir:{forward,backward}, B:tool_button) :<-
 	"Get button for history navigation"::
@@ -722,8 +740,29 @@ initialise(TT, Name:name, Table:tabular) :->
 	send(TT, name, Name),
 	send(TT, display, Table).	% do not use automatic layout
 
+table(TT, Table:tabular) :<-
+	get(TT?graphicals, head, Table).
+
+active(TW, Active:bool) :->
+	"Activate tab"::
+	(   get(TW, container, tab, Tab)
+	->  send(Tab, active, Active)
+	;   send_super(TW, active, Active)
+	).
+
+value(TT, Object:any*) :->
+	"Change the displayed resource"::
+	(   get(TT, table, Table),
+	    get(Table, send_method, value, tuple(_, Method)),
+	    get(Method, argument_type, 1, Type),
+	    send(Type, validate, Object)
+	->  send(TT, active, @on),
+	    send(Table, value, Object)
+	;   send(TT, active, @off)
+	).
+
 resize(TT) :->
-	get(TT?graphicals, head, Table),
+	get(TT, table, Table),
 	get(TT?size, width, W),
 	TW is max(0, W-2),		% table-width excludes the border
 	send(Table, table_width, TW).
@@ -861,14 +900,18 @@ attach_cache(AL) :->
 class_property(Class, P=O) :-
 	rdf(Class, P, O).
 
-resource(AL, Resource:name*) :->
+value(AL, Resource:name*) :->
 	(   get(AL, resource, Resource)
 	->  true
-	;   send(AL, detach_cache),
+	;   send(AL?window, scroll_to, point(0,0)),
+	    send(AL, detach_cache),
 	    send(AL, slot, resource, Resource),
 	    send(AL, attach_cache),
 	    send(AL, update)
 	).
+
+resource(AL, Resource:name*) :->
+	send(AL, value, Resource).
 
 show_properties(AL, Show:{all,self}) :->
 	(   get(AL, show_properties, Show)
@@ -883,9 +926,12 @@ update(AL, _Cache:[int]) :->
 	"Display properties of Class"::
 	send(AL, clear),
 	get(AL, resource, Class),
-	(   Class == @nil
-	->  true
-	;   send(AL, display_title, Class),
+	(   (   Class == @nil
+	    ;	\+ rdfs_individual_of(Class, rdfs:'Class')
+	    )
+	->  send(AL, active, @off)
+	;   send(AL, active, @on),
+	    send(AL, display_title, Class),
 	    send(AL, append_slots_of, Class)
 	).
 
@@ -1045,14 +1091,18 @@ attach_cache(AL) :->
 	;   true
 	).
 
-resource(AL, Resource:name*) :->
+value(AL, Resource:name*) :->
 	(   get(AL, resource, Resource)
 	->  true
-	;   send(AL, detach_cache),
+	;   send(AL?window, scroll_to, point(0,0)),
+	    send(AL, detach_cache),
 	    send(AL, slot, resource, Resource),
 	    send(AL, attach_cache),
 	    send(AL, update)
 	).
+
+resource(AL, Resource:name*) :->
+	send(AL, value, Resource).
 
 update(AL, _Cache:[int]) :->
 	send(AL, clear),
