@@ -71,7 +71,7 @@ initialise(OI, Property:name, Selection:[name]*, Message:[code]*,
 	   Domain:[prolog]) :->
 	rdfs_label(Property, Label),
 	send_super(OI, initialise, Label, box),
-	send(OI, border, size(10,5)),
+	send(OI, border, size(12,6)),	% try better layout BJW, was 10, 5
 	send(OI, gap, size(0,5)),
 	send(OI, append, new(TI, rdfs_text_item(text_item, '', Message))),
 	send(TI, show_label, @off),
