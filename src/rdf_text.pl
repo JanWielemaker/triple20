@@ -39,7 +39,7 @@
 :- use_module(semweb(rdf_edit)).
 :- use_module(semweb(rdfs)).
 :- use_module(rdf_template).
-:- use_module(particle).
+:- use_module(rdf_rules).
 
 :- pce_autoload(editable_text, library(pce_editable_text)).
 :- pce_autoload(partof_hyper,  library(hyper)).

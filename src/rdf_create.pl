@@ -151,7 +151,11 @@ initialise(M, Default:[name], Msg:[code]*) :->
 	;   true
 	),
 	(   Default \== @default
-	->  send(M, selection, Default)
+	->  (   get(M, member, Default, MI)
+	    ->	true
+	    ;	send(M, append, new(MI, menu_item(Default, @default)))
+	    ),
+	    send(M, selection, MI)
 	;   true
 	).
 

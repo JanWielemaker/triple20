@@ -36,7 +36,7 @@
 :- use_module(semweb(rdf_db)).
 :- use_module(semweb(rdfs)).
 :- use_module(semweb(rdf_edit)).
-:- use_module(particle).
+:- use_module(rdf_rules).
 :- use_module(rdf_template).
 :- use_module(rdf_cache).
 :- use_module(library(debug)).

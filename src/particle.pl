@@ -31,6 +31,7 @@
 
 :- module(particle,
 	  [ begin_particle/2,		% +Name, +Supers
+	    begin_particle/3,		% +Name, +Supers, +File:Line
 	    end_particle/0,
 	    current_particle/1,		% ?Particle
 	    (::)/2			% +Particle, +Goal
@@ -80,6 +81,9 @@ begin_particle(Name, _) :-
 	throw(error(permission_error(create_particle, Name),
 		    'Existing module')).
 begin_particle(Name, Super0) :-
+	source_location(File, Line),
+	begin_particle(Name, Super0, File:Line).
+begin_particle(Name, Super0, File:Line) :-
 	canonical_super(Super0, Supers),
 	(   current_particle(Name, Supers)
 	->  true
@@ -87,7 +91,6 @@ begin_particle(Name, Super0) :-
 	    assert(current_particle(Name, Supers)),
 	    set_import_modules(Name, Supers)
 	),
-	source_location(File, Line),
 	'$set_source_module'(Old, Name),
 	'$declare_module'(Name, File, Line),
 	asserta(loading_particle(Name, Old)).

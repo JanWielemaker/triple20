@@ -29,12 +29,12 @@
     the GNU General Public License.
 */
 
-:- module(rdf_rules,
+:- module(rdf_default_rules,
 	  [
 	  ]).
 :- use_module(library(debug)).
 :- use_module(particle).
-:- use_module(rdf_template).		% Get call_outer.  Must move
+:- use_module(rdf_rules).		% Get call_outer.  Must move
 :- use_module(semweb(rdfs)).
 :- use_module(semweb(rdf_db)).
 :- use_module(semweb(rdf_edit)).
@@ -456,12 +456,13 @@ root_property(Class, P) :-
 drop(Gr, V) :-
 	(   send(@event, instance_of, event),
 	    send(@event, is_a, ms_right_up)
-	->  findall(Cmd, ::drop_command(Gr, V, Cmd), List),
+	->  findall(Cmd, inner::drop_command(Gr, V, Cmd), List),
+	    List \== [],
 	    get(@receiver, select_command, List, Cmd)
-	;   ::drop_command(Gr, V, Cmd)
+	;   inner::drop_command(Gr, V, Cmd)
 	->  true
 	),
-	catch(rdfe_transaction(::drop(Cmd, Gr, V), Cmd),
+	catch(rdfe_transaction(inner::drop(Cmd, Gr, V), Cmd),
 	      E, report_exception(Gr, E)).
 
 report_exception(Gr, E) :-

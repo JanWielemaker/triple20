@@ -50,6 +50,7 @@
 :- use_module(pce_history).
 :- use_module(library(broadcast)).
 :- use_module(rdf_template).
+:- use_module(rdf_rules).
 :- use_module(rdf_tools).
 :- use_module(library(tabbed_window)).
 :- use_module(window).
