@@ -4,7 +4,7 @@
     Purpose: Visualise RDF hierarchy
 */
 
-:- module(rdf_tree, []).
+:- module(rdf_tree_file, []).
 :- use_module(library(pce)).
 :- use_module(library(pce_unclip)).
 :- use_module(semweb(rdf_db)).

@@ -605,17 +605,8 @@ append_slot(AL, Slot:name, Class:[name]) :->
 	(   TheClass == @nil
 	->  send(AL, append, '<unknown>', italic),
 	    send(AL, append, '-')
-	;   (   rdfs_subproperty_of(DomainProperty, rdfs:domain),
-	        rdf(Slot, DomainProperty, Base),
-	        Base \== TheClass
-	    ->  send(AL, append, rdf_object_cell(Base, Slot))
-	    ;	send(AL, append, '<self>', italic)
-	    ),
-	    (   rdfs_subproperty_of(RangeProperty, rdfs:range),
-		rdf(Slot, RangeProperty, Range)
-	    ->	send(AL, append, rdf_object_cell(Range, Slot))
-	    ;	send(AL, append, '-')
-	    )
+	;   send(AL, append, rdf_domain_cell(Slot)),
+	    send(AL, append, rdf_range_cell(Slot))
 	),
 	send(AL, next_row).
 

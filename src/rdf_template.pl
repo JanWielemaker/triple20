@@ -240,10 +240,33 @@ container_with_get_method(Gr, Method, Container) :-
 		 *	      PARTICLE		*
 		 *******************************/
 
+:- dynamic
+	class_particle/2.		% XPCE class --> particle
+
+update_class_particle(ClassName, Particle) :-
+	isa_class(ClassName, Particle),
+	current_particle(Particle), !,
+	assert(class_particle(ClassName, Particle)).
+update_class_particle(ClassName, _) :-
+	assert(class_particle(ClassName, [])).
+
+:- multifile
+	user:message_hook/3.
+:- dynamic
+	user:message_hook/3.
+
+user:message_hook(load_file(_), _, _) :-
+	retractall(class_particle(_,_)),
+	fail.
+
 :- pce_extend_class(object).
 
 rdf_particle(O, Particle:name) :<-
-	get(O, class_name, Particle).
+	get(O, class_name, ClassName),
+	(   class_particle(ClassName, Particle)
+	->  Particle \== []
+	;   update_class_particle(ClassName, Particle)
+	).
 
 rdf_container(O, Container:visual) :<-
 	get(O, contained_in, Container).
@@ -290,29 +313,34 @@ rdf_container(N, Container:visual) :<-
 		 *	       RULES		*
 		 *******************************/
 
+:- pce_global(@particle, new(var(visual, particle, @nil))).
+
 %	call_rules(+Obj, +Goal)
 %	
 %	Search the container classes for the first matching container
 %	defining Goal and call it.
 
 call_rules(Obj, Goal) :-
-	container_with_particle(Obj, Particle),
+	container_with_particle(Obj, Container, Particle),
 	current_predicate(_, Particle:Goal), !,
-	Particle::Goal.
+	get(@particle, '_value', Old),
+	send(@particle, assign, Container),
+	call_cleanup(Particle::Goal,
+		     send(@particle, assign, Old)).
 
-container_with_particle(Obj, Particle) :-
+container_with_particle(Obj, Obj, Particle) :-
 	get(Obj, rdf_particle, Particle),
 	current_particle(Particle),
 	debug(container, '~p has particle ~p', [Obj, Particle]).
-container_with_particle(Obj, Particle) :-
-	(   get(Obj, rdf_container, Container)
-	->  debug(container, 'Try container of ~p: ~p', [Obj, Container]),
-	    container_with_particle(Container, Particle)
+container_with_particle(Obj, Container, Particle) :-
+	(   get(Obj, rdf_container, Container0)
+	->  debug(container, 'Try container of ~p: ~p', [Obj, Container0]),
+	    container_with_particle(Container0, Container, Particle)
 	;   get(Obj, create_context,
 		message(@arg1, instance_of, visual),
 		Context)
 	->  debug(container, 'Try create context of ~p: ~p~n', [Obj, Context]),
-	    container_with_particle(Context, Particle)
+	    container_with_particle(Context, Container, Particle)
 	;   print_message(error, not_contained(Obj)),
 %	    trace,
 	    fail

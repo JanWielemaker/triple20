@@ -342,7 +342,7 @@ clicked(V) :-
 		 *	     HIERARCHY		*
 		 *******************************/
 
-:- begin_particle(rdfs_hierarchy, display).
+:- begin_particle(rdf_tree, display).
 
 clicked(V) :-
 	get(V, resource, R),
@@ -369,7 +369,7 @@ menu_item(Gr, edit, delete=delete_resource, Node) :-
 
 :- end_particle.
 
-:- begin_particle(rdf_node, rdfs_hierarchy).
+:- begin_particle(rdf_node, rdf_tree).
 
 :- end_particle.
 
@@ -475,3 +475,24 @@ drop(add, Gr, Resource) :-
 	rdfe_transaction(rdfe_assert(Subject, Predicate, Resource)).
 
 :- end_particle.
+
+:- begin_particle(rdf_range_cell, rdf_object_cell).
+
+drop(modify, _Gr, Resource) :-
+	get(@particle, triple, rdf(Subject, Predicate, Old)),
+	rdfe_transaction(rdfe_update(Subject, Predicate, Old,
+				     object(Resource))).
+
+:- end_particle.
+
+
+:- begin_particle(rdf_domain_cell, rdf_object_cell).
+
+drop(modify, _Gr, Resource) :-
+	get(@particle, triple, rdf(Subject, Predicate, Old)),
+	rdfe_transaction(rdfe_update(Subject, Predicate, Old,
+				     object(Resource))).
+
+:- end_particle.
+
+

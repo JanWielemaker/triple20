@@ -156,6 +156,11 @@ initialise(C, R:prolog) :->
 	call_rules(C, label(R, Label)),
 	send_super(C, initialise, Label).
 
+resource(C, Value:prolog) :<-
+	"Represented value"::
+	get(C, image, Image),
+	get(Image, resource, Value).
+
 :- pce_end_class.
 
 :- pce_begin_class(rdf_subject_cell, rdf_resource_cell).
@@ -183,6 +188,57 @@ delete(Cell) :->
 
 modify(Cell) :->
 	format('Request to modify ~p~n', [Cell]).
+
+:- pce_end_class.
+
+:- pce_begin_class(rdf_domain_cell, rdf_object_cell,
+		   "Represent a slot-domain").
+
+variable(property, name*, get, "Represented property").
+
+initialise(C, Property:name) :->
+	send(C, slot, property, Property),
+	(   rdf_has(Property, rdfs:domain, Domain)
+	->  send_super(C, initialise, Domain)
+	;   rdf_equal(rdfs:'Resource', Domain),
+	    send_super(C, initialise, Domain)
+	).
+
+triple(C, Triple:prolog) :<-
+	"Represented triple"::
+	get(C, property, Subject),
+	get(C, resource, Object),
+	(   rdf_has(Subject, rdfs:domain, Object, Property)
+	->  true
+	;   rdf_equal(rdfs:domain, Property)
+	),
+	Triple = rdf(Subject, Property, Object).
+
+:- pce_end_class.
+
+
+:- pce_begin_class(rdf_range_cell, rdf_object_cell,
+		   "Represent a slot-range").
+
+variable(property, name*, get, "Represented property").
+
+initialise(C, Property:name) :->
+	send(C, slot, property, Property),
+	(   rdf_has(Property, rdfs:range, Range)
+	->  send_super(C, initialise, Range)
+	;   rdf_equal(rdfs:'Resource', Range),
+	    send_super(C, initialise, Range)
+	).
+
+triple(C, Triple:prolog) :<-
+	"Represented triple"::
+	get(C, property, Subject),
+	get(C, resource, Object),
+	(   rdf_has(Subject, rdfs:range, Object, Property)
+	->  true
+	;   rdf_equal(rdfs:range, Property)
+	),
+	Triple = rdf(Subject, Property, Object).
 
 :- pce_end_class.
 
