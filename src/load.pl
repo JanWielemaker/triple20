@@ -76,7 +76,7 @@ user:file_search_path(snapshot, user_profile(Dir)) :-
 		 *	      VERSION		*
 		 *******************************/
 
-rdf_version('0.3, November 2003').
+t20_version('0.3, November 2003').
 required_prolog_version(50211).
 
 check_prolog_version :-

@@ -610,7 +610,7 @@ about(M) :->
 	send(D, append, button(ok, message(D, destroy))),
 	send(D, open_centered).
 
-about([ 'Triple20 version %s'+[@prolog?rdf_version]-boldhuge,
+about([ 'Triple20 version %s'+[@prolog?t20_version]-boldhuge,
 	'Copyright 2003, University of Amsterdam',
 	'XPCE comes with ABSOLUTELY NO WARRANTY.',
 	'This is free software (LGPL), and you are welcome to',
