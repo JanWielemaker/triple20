@@ -336,15 +336,13 @@ open_file(OV) :->
 	;   send(OV, open_project)
 	).
 
-load_ontology(OV) :->
+load_ontology(_OV) :->
 	get(@finder, file, open,
 	    chain(tuple('RDF-Schema and OWL files', chain(rdfs,owl)),
 		  tuple('OWL files', owl),
 		  tuple('RDF files', rdf)),
 	    FileName),
-	rdfe_transaction(rdfe_load(FileName), load_file(FileName)),
-	get(OV, tree, Tree),
-	send(Tree, refresh).
+	rdfe_transaction(rdfe_load(FileName), load_file(FileName)).
       
 open_project(OV) :->
 	"Open an existing journal file"::
