@@ -172,7 +172,7 @@ max_cardinality(Min1, Min2, Min) :-
 	
 %	satisfies_restrictions(+Restrictions, +Value)
 %
-%	See whether Values satisfies all restrictions, so we can indeed
+%	See whether Value satisfies all restrictions, so we can indeed
 %	use it as a value.
 
 satisfies_restrictions([], _).

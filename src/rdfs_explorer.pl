@@ -737,6 +737,7 @@ owl_property(P) :- rdf_equal(owl:allValuesFrom, P).
 owl_property(P) :- rdf_equal(owl:someValuesFrom, P).
 owl_property(P) :- rdf_equal(owl:onProperty, P).
 owl_property(P) :- rdf_equal(owl:hasValue, P).
+owl_property(P) :- rdf_equal(owl:cardinality, P).
 
 
 append_continuation_value(AL, V:prolog, Pred:[name]) :->

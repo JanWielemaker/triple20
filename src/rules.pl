@@ -464,7 +464,7 @@ clicked(V) :-
 	get(V, container, rdf_node, Node),
 	(   get(Node, resource, R)
 	->  send(Node?tree, selected, Node)
-	;   super::clicked(V)
+	;   send(Node?tree, selected, V)
 	).
 
 menu_item(Group, Item) :-

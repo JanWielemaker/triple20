@@ -169,11 +169,16 @@ on_left_click(OT) :->
 	"Deselect all nodes"::
 	send(OT, selection, @nil).
 
-selected(OT, Node:rdf_node) :->
+selected(OT, Node:'node|graphical') :->
 	"User selected a node"::
-	send(OT, selection, Node?image),
+	(   send(Node, instance_of, node)
+	->  send(OT, selection, Node?image)
+	;   send(OT, selection, @nil),
+	    send(Node?device, selection, Node)
+	),
 	(   get(OT, message, M),
-	    M \== @nil
+	    M \== @nil,
+	    send(Node, has_get_method, resource)
 	->  get(Node, resource, Term),
 	    send(M, forward, Term)	% @arg1 = term
 	;   true
