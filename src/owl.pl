@@ -569,6 +569,99 @@ owl_has_direct(S, P, O) :-
 owl_has_direct(S, P, O) :-
 	owl_use_has_value(S, P, O).
 
+
+%----------------------------------------------------------
+% added by BJW for use of OWL with SWRL rules, highly experimental
+% see http://www.daml.org/rules/proposal/rules-all.html for SWRL.
+% It implements simple Prolog-like inferencing were order of antecedents
+%  may matter and some assumptions about instantiation of variables are
+%  made (see comments below).
+% Currently is doesnot cater for arbitrary OWL descriptions mixed with
+% SWRL.
+
+owl_has_direct(S, P, O) :-
+	owl_use_rule(S, P, O).
+
+owl_use_rule(S, P, O):-
+	rdf(Rule, rdf:type, swrl:'Impl'),     % pick a rule
+	rdf(Rule, swrl:head, HeadList),
+	rdfs_member(IPA, HeadList),           % can we use the rule?
+	rdf(IPA, rdf:type, swrl:'IndividualPropertyAtom'),
+	rdf(IPA, swrl:propertyPredicate, P),  % IndividualPropertyAtom
+	rdf(Rule, swrl:body, BodyList),	      % yes
+	rdfs_list_to_prolog_list(BodyList, BL),
+	rdf_has(IPA, swrl:argument1, A1),
+	rdf_has(IPA, swrl:argument2, A2),
+	(   nonvar(S) ->
+	    (	nonvar(O) -> SL = [A1/S, A2/O]
+	    ;	SL= [A1/S])
+	;   nonvar(O) -> SL = [A2/O]
+	;   SL = []),
+	owl_evaluate_body(BL, SL, Subst),
+	(   member(A1/S, Subst) ->true ;true), % make sure S and O are instantiated
+	(   member(A2/O, Subst) ->true ;true). % could probably be done more elegantly
+	
+owl_evaluate_body([], Subst, Subst).
+owl_evaluate_body([IPA| Rest], SL, Subst):-
+	rdf(IPA, rdf:type, swrl:'IndividualPropertyAtom'),
+	rdf(IPA, swrl:propertyPredicate, P), % IPA = IndividualPropertyAtom
+	rdf_has(IPA, swrl:argument1, A1),    % maybe rdf instead of rdf_has? BJW
+	rdf_has(IPA, swrl:argument2, A2),
+	owl_has_swrl(A1, P, A2, SL, Subst1),
+	owl_evaluate_body(Rest, Subst1, Subst).
+owl_evaluate_body([DF| Rest], SL, Subst):-
+	rdf(DF, rdf:type, swrl:'DifferentIndividualsAtom'),
+	rdf_has(DF, swrl:argument1, A1),
+	instantiated(A1, S, SL),	% assume both arguments are instantiated
+	rdf_has(DF, swrl:argument2, A2),
+	instantiated(A2, O, SL),	% this assumption is to be discussed
+	S \= O,
+	owl_evaluate_body(Rest, SL, Subst).
+owl_evaluate_body([SF| Rest], SL, Subst):-
+	rdf(SF, rdf:type, swrl:'SameIndividualAtom'),
+	rdf_has(SF, swrl:argument1, A1),
+	instantiated(A1, S, SL),	% assume both arguments are instantiated
+	rdf_has(SF, swrl:argument2, A2),
+	instantiated(A2, O, SL),	% this assumption is to be discussed
+	owl_same_as(S,O),		% 
+	owl_evaluate_body(Rest, SL, Subst).
+owl_evaluate_body([CA| Rest], SL, Subst):-
+	rdf(CA, rdf:type, swrl:'ClassAtom'),
+	rdf_has(CA, swrl:argument1, A1),
+	(   instantiated(A1, S, SL) -> SL1=SL
+	;   SL1 = [A1/S|SL]),
+	rdf(CA, swrl:classPredicate, Class),
+	owl_individual_of(S, Class),
+	owl_evaluate_body(Rest, SL1, Subst).
+
+owl_has_swrl(A1, P, A2, Subst, Subst):-	% this can probably be done better BJW
+	instantiated(A1, S, Subst),
+	instantiated(A2, O, Subst),!,	% dont backtrack here, proof complete
+	owl_has(S, P, O).
+owl_has_swrl(A1, P, A2, Subst, [A1/S|Subst]):-
+	is_swrl_variable(A1),
+	instantiated(A2, O, Subst),
+	owl_has(S, P, O).
+owl_has_swrl(A1, P, A2, Subst, [A2/O| Subst] ):-
+	instantiated(A1, S, Subst),	
+	is_swrl_variable(A2),
+	owl_has(S, P, O).
+owl_has_swrl(A1, P, A2, Subst, [A1/S, A2/O| Subst]):-  % too general?
+	\+ instantiated(A1, S, Subst),
+	\+ instantiated(A2, O, Subst),
+	owl_has(S, P, O).
+
+is_swrl_variable(V):-
+	rdf_has(V, rdf:type, swrl:'Variable').
+
+instantiated(A, A, _Subst):-
+	\+ rdf_has(A, rdf:type, swrl:'Variable').
+instantiated(A, S, Subst):-
+	rdf_has(A, rdf:type, swrl:'Variable'),
+	member(A/S, Subst).
+
+%end additions BJW
+%----------------------------------------------------------
 owl_use_has_value(S, P, O) :-
 	nonvar(P), !,
 	rdf_has(Super, owl:onProperty, P),
