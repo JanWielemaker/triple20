@@ -11,6 +11,8 @@
 :- use_module(library(pce)).
 :- use_module(semweb(rdf_db)).
 :- use_module(semweb(rdf_edit)).
+:- use_module(library(lists)).
+:- use_module(rdf_util).
 
 :- pce_autoload(identifier_item, library(pce_identifier_item)).
 
@@ -28,6 +30,8 @@ initialise(D, Parent:name, Role:name, Client:[object]*) :->
 	send(D, slot, client, Cntl),
 	send_super(D, initialise, string('Create %s', Role?label_name)),
 	rdf_global_id(NS:_, Parent),
+	rdf_default_file(Parent, File),
+	send(D, append, new(rdf_file_menu(File))),
 	send(D, append, new(rdf_ns_menu(NS))),
 	send(D, append, new(rdf_id_item), right),
 	send(D, append, new(C, button(create, message(D, create_resource)))),
@@ -61,12 +65,17 @@ create_resource(D) :->
 do_create_resource(D, Resource:name, Label:name) :->
 	"Create a new resource"::
 	get(D, resource, Super),
-	(   get(D, role, rdf_class_node)
-	->  rdfe_assert(Resource, rdf:type, rdfs:'Class'),
-	    rdfe_assert(Resource, rdfs:subClassOf, Super)
-	;   rdfe_assert(Resource, rdf:type, Super)
+	(   get(D, member, file, FileItem),
+	    get(FileItem, selection, File)
+	->  true
+	;   File = user
 	),
-	rdfe_assert(Resource, rdfs:label, literal(Label)).
+	(   get(D, role, rdf_class_node) 		% TBD: generalise!
+	->  rdfe_assert(Resource, rdf:type, rdfs:'Class', File),
+	    rdfe_assert(Resource, rdfs:subClassOf, Super, File)
+	;   rdfe_assert(Resource, rdf:type, Super, File)
+	),
+	rdfe_assert(Resource, rdfs:label, literal(Label), File).
 
 local_uri_from_label(_, Label, Local) :-
 	new(S, string('%s', Label)),
@@ -99,6 +108,26 @@ initialise(M, Default:[name], Msg:[code]*) :->
 
 :- pce_end_class(rdf_ns_menu).
 
+:- pce_begin_class(rdf_file_menu, menu,
+		   "Prompt for file").
+
+initialise(M, Default:[name], Msg:[code]*) :->
+	send_super(M, initialise, file, cycle, Msg),
+	findall(File, rdf_source(File), List0),
+	sort(List0, List),
+	(   member(File, List),
+	    file_base_name(File, Base),
+	    send(M, append, menu_item(File, @default, Base)),
+	    fail
+	;   true
+	),
+	(   Default \== @default
+	->  send(M, selection, Default)
+	;   true
+	).
+
+:- pce_end_class(rdf_file_menu).
+
 :- pce_begin_class(rdf_id_item, identifier_item,
 		   "Enter a local id").
 
@@ -113,3 +142,4 @@ typed(Id, Ev:event) :->
 	).
 
 :- pce_end_class(rdf_id_item).
+

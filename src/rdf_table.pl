@@ -176,8 +176,22 @@ set_value(Cell, Value:name, Type:{resource,literal}) :->
 	;   Object = Value
 	),
 	get(Cell, triple, rdf(S,P,O)),
+	(   O == '__not_filled'
+	->  rdf_default_file(S, File),
+	    rdf_update(S, P, O, source(File))
+	;   true
+	),
 	rdfe_transaction(rdfe_update(S,P,O, object(Object)),
 			 modify_property).
+
+type(Cell, Type:{resource,literal}) :->
+	(   Type == literal
+	->  Object = literal('')
+	;   Object = '__not_filled'
+	),
+	get(Cell, triple, rdf(S,P,O)),
+	rdfe_transaction(rdfe_update(S,P,O, object(Object)),
+			 modify_property_type).
 
 :- pce_end_class.
 

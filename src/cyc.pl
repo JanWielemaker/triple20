@@ -10,7 +10,10 @@ rdf_db:ns(cyc,	   'http://www.cyc.com/cyc#').
 :- [load].
 
 cyc :-
-	go(['--reset', 'cyc.rdfj', 'cyc.rdfs']).
+	current_prolog_flag(argv, Argv),
+	append(_, [--|Args], Argv),
+	append(['cyc.rdfj', 'cyc.rdfs'], Args, AllArgs),
+	go(AllArgs).
 
 :- cyc.
 

@@ -548,3 +548,13 @@ drop(modify, _Gr, V) :-
 :- end_particle.
 
 
+:- begin_particle(rdf_not_filled_label, rdf_resource_menu).
+
+menu_item(edit, delete).
+menu_item(edit, modify).
+menu_item(edit, make_literal=type(literal)).
+
+clicked(V) :-
+	send(V, modify).
+
+:- end_particle.

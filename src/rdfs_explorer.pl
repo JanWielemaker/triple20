@@ -141,6 +141,12 @@ fill_tool_dialog(OV) :->
 			      condition := not(message(OV, has_project))),
 		    gap,
 		    menu_item(load_ontology),
+		    menu_item(new_file),
+		    gap,
+		    new(SaveFile, popup(save_file,
+					message(OV, save_file, @arg1))),
+		    menu_item(save_all,
+			      condition := message(OV, is_modified)),
 		    gap,
 		    menu_item(statistics),
 		    gap,
@@ -159,6 +165,8 @@ fill_tool_dialog(OV) :->
 		    resource
 		  ]),
 	send(Label, selection, namespace_and_label),
+	send(SaveFile, update_message,
+	     message(OV, update_save_popup, SaveFile)),
 	send(OV, append_tool_buttons).
 
 append_tool_buttons(OV) :->
@@ -351,6 +359,49 @@ new_project(OV) :->
 	    FileName),
 	rdfe_open_journal(FileName, write),
 	send(OV, set_label).
+
+new_file(_OV) :->
+	"Add a new file to the project"::
+	get(@finder, file, save,
+	    chain(tuple('RDF files', rdf),
+		  tuple('RDF-Schema files', rdfs),
+		  tuple('OWL files', owl)),
+	    FileName),
+	absolute_file_name(FileName, AbsName),
+	rdf_save(FileName, AbsName),
+	rdfe_transaction(rdfe_load(FileName), load_file(FileName)).
+
+update_save_popup(_OV, Popup:popup) :->
+	"Update menu with all (modified) sources"::
+	send(Popup, clear),
+	setof(F, rdf_source(F), Files),
+	(   member(F, Files),
+	    send(Popup, append, new(ME, menu_item(F, @default, F))),
+	    (	rdfe_is_modified(F)
+	    ->	true
+	    ;   send(ME, active, @off)
+	    ),
+	    fail
+	;   true
+	).
+	
+save_file(_OV, File:name) :->
+	"Save (export) given file"::
+	rdf_save(File, File),
+	rdfe_clear_modified(File).
+
+save_all(_OV) :->
+	"Save all modified files"::
+	(   rdfe_is_modified(File),
+	    send(@display, confirm, 'Save %s?', File),
+	    rdf_save(File, File),
+	    fail
+	;   true
+	).
+
+is_modified(_OV) :->
+	"True if there are modified files"::
+	rdfe_is_modified(_), !.
 
 has_project(_OV) :->
 	"Test whether a project is defined"::

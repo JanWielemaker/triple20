@@ -10,7 +10,8 @@
 :- module(rdf_util,
 	  [ property_domain/3,		% +Subject, +Property, -Domain
 	    property_type/3,		% +Subject, +Property, -Type
-	    sort_by_label/2		% +Resources, -Sorted
+	    sort_by_label/2,		% +Resources, -Sorted
+	    rdf_default_file/2		% +Resources, -File
 	  ]).
 :- use_module(semweb(rdf_db)).
 :- use_module(semweb(rdfs)).
@@ -78,3 +79,16 @@ tag_label([H|T0], [K-H|T]) :-
 unkey([], []).
 unkey([_-H|T0], [H|T]) :-
 	unkey(T0, T).
+
+
+%	rdf_default_file(+Resource, -File)
+%	
+%	Where to store facts about Resource? Should be extended to
+%	include triples (or at least relations).
+
+rdf_default_file(Resource, File) :-
+	rdf_has(Resource, rdf:type, Object, P),
+	rdf(Resource, P, Object, File:_), !.
+rdf_default_file(Resource, File) :-
+	rdf(Resource, _, _, File:_), !.
+rdf_default_file(_, user).
