@@ -38,6 +38,8 @@
 :- use_module(semweb(rdf_edit)).
 :- use_module(particle).
 :- use_module(rdf_template).
+:- use_module(rdf_cache).
+:- use_module(rdf_util).
 
 :- pce_autoload(ulan_timestamp_label,    ulan).
 
@@ -51,7 +53,8 @@
 :- use_class_template(rdf_resource_template).
 
 variable(resource,  name,  get, "Represented resource").
-variable(wrap,      {extend,wrap,wrap_fixed_width,clip}, get, "Wrapping mode").
+variable(wrap,      {extend,wrap,wrap_fixed_width,clip} := extend, get,
+	 "Wrapping mode").
 variable(opaque,    bool, both, "Hide parts from event-handling").
 
 class_variable(opaque, bool, @on).
@@ -170,25 +173,69 @@ update(L) :->
 :- pce_begin_class(rdf_list_label, rdf_composite_label,
 		   "Show elements of a list").
 
+variable(cache,	   int*, get, "Cache for members").
+variable(max_size, int,  get, "Maximum elements to show").
+
+class_variable(max_size, int, 5).
 class_variable(opaque, bool, @off).
 
-update(L) :->				% TBD: limit length
-	get(L, resource, RDFList),
-	rdfs_list_to_prolog_list(RDFList, List),
-	(   List == []
+initialise(T, Resource:name) :->
+	(   rdf_equal(Resource, rdf:nil)
+	->  true
+	;   rdf_cache(V, rdfs_member(V, Resource), Cache),
+	    send(T, slot, cache, Cache),
+	    rdf_cache_attach(Cache, T)
+	),
+	send_super(T, initialise, Resource).
+
+
+unlink(T) :->
+	(   get(T, cache, Cache),
+	    Cache \== @nil
+	->  rdf_cache_detach(Cache, T)
+	;   true
+	),
+	send_super(T, unlink).
+
+update(L, _Cache:[int]) :->
+	get(L, cache, Cache),
+	send(L, clear),
+	(   Cache == @nil		% rdf:nil
 	->  send(L, print, '[]')
-	;   send(L, print, '['),
-	    append_list(List, L),
-	    send(L, print, ']')
+	;   get(L, max_size, Max),
+	    rdf_cache_cardinality(Cache, Size),
+	    (	Size > Max
+	    ->	send(L, print, '['),
+		rdf_cache_result(Cache, Index, Value),
+		send(L, append_resource, Value),
+		(   Index < Max
+		->  send(L, print, ', '),
+		    fail
+		;   !,
+		    send(L, print, ', ..., '),
+		    rdf_cache_result(Cache, Size, Last),
+		    send(L, append_resource, Last),
+		    send(L, print, ']')
+		)
+	    ;	send(L, print, '['),
+		(   rdf_cache_result(Cache, Index, Value),
+		    send(L, append_resource, Value),
+		    (	Index < Size
+		    ->	send(L, print, ', ')
+		    ;	true
+		    ),
+		    fail
+		;   send(L, print, ']')
+		)
+	    )
 	).
 
-append_list([], _).
-append_list([H], L) :- !,
-	send(L, append_resource, H).
-append_list([H|T], L) :-
-	send(L, append_resource, H),
-	send(L, print, ', '),
-	append_list(T, L).
+delete_member(L, Part:graphical) :->
+	"Called from the delete menu on parts"::
+	send(Part, has_get_method, resource),
+	get(Part, resource, Resource),
+	get(L, triple, Triple),
+	rdf_list_operation(delete, Triple, Resource).
 
 :- pce_end_class(rdf_list_label).
 

@@ -732,6 +732,10 @@ owl_property(P) :- rdf_equal(owl:oneOf, P).
 owl_property(P) :- rdf_equal(owl:intersectionOf, P).
 owl_property(P) :- rdf_equal(owl:unionOf, P).
 owl_property(P) :- rdf_equal(owl:complementOf, P).
+					% OWL restrictions
+owl_property(P) :- rdf_equal(owl:allValuesFrom, P).
+owl_property(P) :- rdf_equal(owl:someValuesFrom, P).
+owl_property(P) :- rdf_equal(owl:onProperty, P).
 
 
 append_continuation_value(AL, V:prolog, Pred:[name]) :->
@@ -1016,13 +1020,7 @@ add_predicate(AL, From:graphical) :->
 	    Predicate \== @nil,
 
 	    get(AL, resource, Subject),
-	    property_type(Subject, Predicate, Type),
-	    (	Type == resource
-	    ->	Object = '__not_filled'
-	    ;	Object = literal('')
-	    ),
-	    rdfe_transaction(rdfe_assert(Subject, Predicate, Object),
-			     new_property)
+	    rdf_new_property(Subject, Predicate)
 	;   send(AL, report, warning,
 		 'No more properties are defined')
 	).
@@ -1061,12 +1059,7 @@ add_standard_predicates(AL) :-
 	get(AL, resource, Subject),
 	(   call_rules(AL, standard_predicate(Subject, Predicate)),
 	    \+ rdf(Subject, Predicate, _),
-	    property_type(Subject, Predicate, Type),
-	    (	Type == resource
-	    ->	Object = '__not_filled'
-	    ;	Object = literal('')
-	    ),
-	    rdfe_assert(Subject, Predicate, Object),
+	    rdf_new_property(Subject, Predicate),
 	    fail
 	;   true
 	).

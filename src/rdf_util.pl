@@ -35,7 +35,9 @@
 	    sort_by_label/2,		% +Resources, -Sorted
 	    rdf_default_file/2,		% +Resources, -File
 	    rdf_set_object/4,		% +S, +P, +O, +NewObject
-	    rdf_add_object/3		% +S, +P, +O
+	    rdf_add_object/3,		% +S, +P, +O
+	    rdf_new_property/2,		% +S, +P
+	    rdf_list_operation/3	% +Action, +Triple, +Resource
 	  ]).
 :- use_module(semweb(rdf_db)).
 :- use_module(semweb(rdfs)).
@@ -73,13 +75,23 @@ adjust_restriction(R, R).
 %	property_type(+Subject, +Property, -Type)
 %	
 %	Classify the type of the object. For now the return values are
-%	one of `resource' and `literal'.  May be extended in the future.
+%	one of
+%
+%		# resource
+%		Value is an arbitrary resource
+%		# literal
+%		Value is a literal
+%		# list
+%		Value is a an indivisual of rdf:List
 
 property_type(Subject, Property, Type) :-
 	property_domain(Subject, Property, Domain),
 	(   Domain = all_values_from(LiteralClass),
 	    rdfs_subclass_of(LiteralClass, rdfs:'Literal')
 	->  Type = literal
+	;   Domain = all_values_from(LiteralClass),
+	    rdfs_subclass_of(LiteralClass, rdf:'List')
+	->  Type = list
 	;   Type = resource
 	).
 
@@ -134,6 +146,10 @@ rdf_default_file(Resource, File) :-
 rdf_default_file(_, user).
 
 
+		 /*******************************
+		 *	  EDIT OPERATIONS	*
+		 *******************************/
+
 %	rdf_set_object(+Subject, +Predicate, +Old, +New)
 %	
 %	Modify object aspect of a triple.   This code also checks checks
@@ -172,3 +188,93 @@ add_object(Subject, Predicate, Object) :-
 	rdf_default_file(Subject, File),
 	rdfe_transaction(rdfe_assert(Subject, Predicate, Object, File),
 			 add_property).
+
+
+%	rdf_new_property(+Subject, +Property)
+%	
+%	Add a dummy value for a new property on Subject that can be
+%	filled by editing or drag-and-drop modification.
+%
+%	TBD: Check cardinality
+
+rdf_new_property(Subject, Predicate) :-
+	rdf_default_file(Subject, Source),
+	property_type(Subject, Predicate, Type),
+	default_object(Type, Object),
+	rdfe_transaction(rdfe_assert(Subject, Predicate, Object, Source),
+			 new_property).
+
+default_object(resource, '__not_filled').
+default_object(list, Nil) :-
+	rdf_equal(Nil, rdf:nil).
+default_object(literal, literal('')).
+
+
+%	rdf_list_operation(+Action, +Triple, +Resource)
+%	
+%	If Triple is a triple whose object is rdf:nil or a proper RDF
+%	list, merge Resource into this list according to Action:
+%	
+%		# append/prepend
+%		Add Resource at the start/end of the list
+%		
+%		# delete
+%		Remove resource from the list
+%
+%		# Modify
+%		Replace the list by Resource (which must be a list)
+
+rdf_list_operation(modify, rdf(S,P,O), New) :- !,
+	(   rdfs_individual_of(New, rdf:'List')
+	->  rdfe_transaction(set_object(S, P, O, New),
+			     modify_property_value)
+	;   rdf_equal(rdf:'List', ListClass),
+	    throw(error(domain_error(all_values_from(ListClass), New), _))
+	).
+rdf_list_operation(append, rdf(S, P, O), New) :-
+	tail_triple(S, P, O, Subject, Predicate, Object),
+	rdfe_transaction(list_append(Subject, Predicate, Object, New),
+			 append).
+rdf_list_operation(prepend, rdf(S, P, O), New) :-
+	rdfe_transaction(list_append(S, P, O, New),
+			 prepend).
+rdf_list_operation(delete, rdf(S, P, O), Resource) :-
+	rdfe_transaction(list_delete(S, P, O, Resource), delete_from_list).
+
+
+tail_triple(S, P, O, S, P, O) :-
+	rdf_equal(O, rdf:nil), !.	% must use owl:sameIndividual
+tail_triple(_, _, L, S, P, O) :-
+	rdf_has(L, rdf:rest, O1, P1), !,
+	tail_triple(L, P1, O1, S, P, O).
+	
+
+list_append(S, P, O, New) :-
+	rdf_default_file(S, Source),
+	rdf_node(Node),
+	rdfe_assert(Node, rdf:type, rdf:'List', Source),
+	rdfe_assert(Node, rdf:rest, O, Source),
+	rdfe_assert(Node, rdf:first, New, Source),
+	rdfe_update(S, P, O, object(Node)).
+
+%	list_delete(+Subject, +Predicate, +List, +Resource)
+%	
+%	Delete Resource from List, which is connected to Subject using
+%	Predicate. Actually, this is extremely tricky. We cannot delete
+%	from a list while maintaining the identity of the list. We could
+%	shift the rdf:first, but we still loose on a list with one
+%	element that must be replaced by rdf:nil.
+
+list_delete(S, P, O, Resource) :-
+	rdf_has(O, rdf:first, Resource), !,
+	rdf_has(O, rdf:rest, Rest),
+	rdfe_update(S, P, O, object(Rest)),
+	(   rdf(_, _, O)
+	->  true
+	;   rdfe_delete(O)			% TBD: too much?
+	).
+list_delete(_, _, O, Resource) :-
+	rdf_has(O, rdf:rest, Rest, P1),
+	list_delete(O, P1, Rest, Resource).
+	
+	

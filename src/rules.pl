@@ -655,3 +655,24 @@ clicked(V) :-
 	send(V, modify).
 
 :- end_particle.
+
+
+:- begin_particle(rdf_list_label, rdf_resource_menu).
+
+menu_item(Group, Item) :-
+	super::menu_item(Group, Item).
+menu_item(edit, delete=delete_member(@arg1)). % @arg1 = popup object
+
+drop_command(_Me, _Resource, append).
+drop_command(_Me, _Resource, prepend).
+drop_command(_Me, _Resource, modify).
+
+drop(Action, Gr, V) :-
+	get(V, resource, Resource),
+	get(Gr, triple, Triple),
+	debug(drop, 'Drop ~w: ~w on ~w~n', [Action, Resource, Triple]),
+	rdf_list_operation(Action, Triple, Resource).
+
+:- end_particle.
+
+
