@@ -1,3 +1,8 @@
+Nov 18, 2003
+
+  * ADDED: Protected files and directing new triples to specified files.
+    Requires SWI-Prolog 5.2.10 from the BETA download.
+
 Nov 14, 2003
 
-  * Added link to wiki web from help menu (suggested by Mark)
+  * ADDED: link to wiki web from help menu (suggested by Mark)
