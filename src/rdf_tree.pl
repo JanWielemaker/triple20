@@ -370,8 +370,24 @@ insert_node(R, Role, _, Cache, Parent) :-
 	get(Parent, add_child, R, Role, MoreNode, NewNode),
 	send(NewNode, slot, cache, Cache).
 insert_node(R, Role, _, Cache, Parent) :-
+	head_of_next_role(Parent, Cache, Before), !,
+	get(Parent, add_child, R, Role, Before, NewNode),
+	send(NewNode, slot, cache, Cache).
+insert_node(R, Role, _, Cache, Parent) :-
 	get(Parent, add_child, R, Role, NewNode),
 	send(NewNode, slot, cache, Cache).
+
+%	head_of_next_role(+Node, +Cache, -Head)
+%
+%	Find the first node produced by the `next' cache.
+
+head_of_next_role(N, Cache, Head) :-
+	new(Ch, chain),
+	send(N?caches, for_all, message(Ch, append, @arg1?value)),
+	chain_list(Ch, Caches),
+	append(_, [Cache|After], Caches),
+	member(C2, After),
+	get(N?sons, find, @arg1?cache == C2, Head), !.
 
 :- pce_group(event).
 
