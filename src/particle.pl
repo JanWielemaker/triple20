@@ -119,15 +119,23 @@ set_import_modules(Module, Imports) :-
 user:term_expansion((:- end_particle),
 		    (:- particle:end_particle)).
 
-user:goal_expansion(super::G, S:G) :-
+user:goal_expansion(super::G, Expanded) :-
 	(   loading_particle(L, _)
 	->  current_particle(L, Supers),
 	    (   Supers = [S]
-	    ->	true
+	    ->	(   current_particle(S)
+		->  true
+		;   throw(error(existence_error(particle, S), super))
+		)
 	    ;	throw(error(ambiguous(super, Supers), _))
+	    ),
+	    (	current_predicate(_, S:G)
+	    ->	Expanded = S:G
+	    ;	Expanded = call_outer(G)
 	    )
 	).
 user:goal_expansion(outer::G, call_outer(G)) :- !. % See rdf_template
+user:goal_expansion(inner::G, call_inner(G)) :- !. % See rdf_template
 user:goal_expansion(::G, particle:particle_self(G)) :-
 	loading_particle(_, _).
 	

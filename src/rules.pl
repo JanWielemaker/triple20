@@ -70,7 +70,7 @@ label_text(Resource, Text) :-
 	rdfs_ns_label(Resource, Text).
 
 label(Resource, Label) :-
-	::label_class(Resource, Class), !,
+	inner::label_class(Resource, Class), !,
 	Term =.. [Class, Resource],
 	new(Label, Term).
 
@@ -135,7 +135,7 @@ resource(inferred,    image, image('16x16/think.xpm')).
 :- begin_particle(rdf_icon_rules, []).
 
 icon(R, Icon) :-
-	::icon_resource(R, Resource),
+	inner::icon_resource(R, Resource),
 	new(Icon, image(resource(Resource))).
 
 icon_resource(R, wnclass) :-
@@ -165,8 +165,8 @@ icon_resource(_, individual).
 
 popup(Gr, Popup) :-
 	new(Popup, popup),
-	(   bagof(Item, ::menu_item(Gr, Group, Item, Receiver), Items),
-	    (	::sub_menu(Group)
+	(   bagof(Item, inner::menu_item(Gr, Group, Item, Receiver), Items),
+	    (	inner::sub_menu(Group)
 	    ->	(   get(Popup?members?tail, popup, @nil)
 		->  send(Popup, append, gap)
 		;   true
@@ -206,7 +206,7 @@ item_member(Method, Label, Items) :-
 	item_method(Item, Label, Method).
 
 menu_item(Gr, Group, Item, Receiver) :-
-	::menu_item(Group, Item),
+	inner::menu_item(Group, Item),
 	item_method(Item, _Label, Method),
 	(   container_with_method(Gr, Method, Receiver)
 	->  debug(menu, '~p: mapping ~w to ~p->~w',
@@ -314,7 +314,10 @@ child_cache(R, Cache, Class) :-
 	    ;   rdf_cache(lsorted(V), root_property(R,V), Cache),
 		Class = rdf_property_node
 	    )
-	;   (   rdf_cache(lsorted(V), rdf_has(V, rdfs:subClassOf, R), Cache),
+	;   (   (   rdf_current_dialect(owl)
+		->  rdf_cache(lsorted(V), owl_subclass_of(V, R), Cache)
+		;   rdf_cache(lsorted(V), rdf_has(V, rdfs:subClassOf, R), Cache)
+		),
 	        Class = rdf_class_node
 	    ;   \+ rdfs_subclass_of(R, rdfs:'Class'),
 		Class = rdf_individual_node,
@@ -325,17 +328,45 @@ child_cache(R, Cache, Class) :-
 	    )
 	).
 child_cache(R, Cache, rdf_inferred_node) :-
+	inner::view_owl_class_extension,
 	rdfs_individual_of(R, owl:'Class'),
 	\+ rdfs_subclass_of(R, rdfs:'Class'),
 	rdf_cache(lsorted(V), owl_inferred_member(V, R), Cache).
 child_cache(R, Cache, rdf_list_node) :-
 	rdfs_individual_of(R, rdf:'List'), !,
 	rdf_cache(lsorted(V), rdfs_member(V, R), Cache).
-child_cache(R, Cache, rdf_part_node) :-
+child_cache(R, Cache, rdf_part_node) :-	% TBD: move outside
 	rdf_has(erc:has_part, rdfs:domain, Domain),
 	rdf_has(R, rdf:type, Class),
 	rdfs_subclass_of(Class, Domain),
 	rdf_cache(lsorted(V), rdf_has(R, erc:has_part, V), Cache).
+
+%	setting predicate that can be overruled
+
+view_owl_class_extension.
+
+%	owl_subclass_of(-SubClass, +Class)
+%	owl_subclass_of(+SubClass, -Class)
+%	
+%	Returns both the RDFS subclasses and classes that have Class in
+%	their owl:intersectionOf attribute.  What to do with unionOf?
+
+owl_subclass_of(Class, R) :-
+	rdf_has(Class, rdfs:subClassOf, R).
+owl_subclass_of(Class, R) :-
+	(   nonvar(R)
+	->  rdf_has(List, rdf:first, R),
+	    list_head(List, Head),
+	    rdf_has(Class, owl:intersectionOf, Head)
+	;   rdf_has(Class, owl:intersectionOf, List),
+	    rdfs_member(R, List)
+	).
+	
+list_head(List, Head) :-
+	(   rdf_has(H, rdf:rest, List)
+	->  list_head(H, Head)
+	;   Head = List
+	).
 
 owl_inferred_member(R, Class) :-
 	owl_individual_of(R, Class),
@@ -361,9 +392,10 @@ owl_restriction_with_label(Class, Restriction, Label) :-
 %	showing Resource.
 
 parent(R, Parent, rdf_class_node) :-
-	rdf_has(R, rdfs:subClassOf, Parent).
-parent(R, Parent, rdf_property_node) :-
-	rdf_has(R, rdfs:subPropertyOf, Parent).
+	(   rdf_current_dialect(owl)
+	->  owl_subclass_of(R, Parent)
+	;   rdf_has(R, rdfs:subClassOf, Parent)
+	).
 parent(R, Parent, Role) :-
 	rdf_has(R, rdf:type, Parent),
 	\+ rdfs_individual_of(R, rdfs:'Class'),
@@ -426,7 +458,7 @@ drop(Command, Gr, V) :-
 	send(V, has_get_method, resource),
 	get(Gr, resource, C),
 	get(V, resource, R),
-	::drop_resource(Command, C, R).
+	inner::drop_resource(Command, C, R).
 
 drop_resource(move_class, C, R) :- !,			% drop R on C
 	rdf_set_object(R, rdfs:subClassOf, C).
@@ -447,7 +479,7 @@ drop_command(Gr, V, Command) :-
 	send(V, has_get_method, resource),
 	get(Gr, resource, C),
 	get(V, resource, R),
-	::drop_resource_command(C, R, Command).
+	inner::drop_resource_command(C, R, Command).
 
 drop_resource_command(C, R, move_property) :-
 	rdfs_individual_of(C, rdf:'Property'),
@@ -507,7 +539,7 @@ label_text(Resource, Text) :-
 		 *	     HIERARCHY		*
 		 *******************************/
 
-:- begin_particle(rdf_tree, display).
+:- begin_particle(rdf_tree, []).
 
 clicked(V) :-
 	get(V, resource, R),
@@ -518,26 +550,26 @@ clicked(V) :-
 	).
 
 menu_item(Group, Item) :-
-	super::menu_item(Group, Item).
+	outer::menu_item(Group, Item).
 menu_item(view, show_all_parents).
 menu_item(edit, unrelate=unrelate_resource).
 menu_item(edit, delete=delete_resource).
 menu_item(edit, delete_class_hierarchy).
 
 menu_item(Gr, edit, new(Role), Node) :-
-	(   container_with_method(Gr, new, Node),
+	(   rdf_resource_menu:container_with_method(Gr, new, Node),
 	    send(Node, instance_of, rdf_node)
 	->  get(Node?caches, attribute_names, Roles),
 	    chain_list(Roles, List),
 	    member(Role, List)
 	).
 menu_item(Gr, Group, Item, Receiver) :-
-	super::menu_item(Gr, Group, Item, Receiver),
+	outer::menu_item(Gr, Group, Item, Receiver),
 	Item \== hierarchy_location.
 
 :- end_particle.
 
-:- begin_particle(rdf_node, rdf_tree).
+:- begin_particle(rdf_node, []).
 
 %	Drop onto a node in the hierarchy
 
@@ -556,7 +588,7 @@ drop(change_type, Onto, From) :-
 	rdfe_transaction(rdfe_update(S, P, O, object(New)),
 			 change_type).
 drop(Command, Onto, From) :-
-	super::drop(Command, Onto, From).
+	outer::drop(Command, Onto, From).
 
 :- end_particle.
 
@@ -807,5 +839,10 @@ show_triple_cache(Cache) :-
 	get(@particle, self, Tool),
 	get(Tool, member, rdfs_sheet, Sheet),
 	send(Sheet, triples, Cache).
+
+view_owl_class_extension :-
+	get(@particle, self, Explorer),
+	send(Explorer, has_get_method, view_owl_class_extension),
+	get(Explorer, view_owl_class_extension, @on).
 
 :- end_particle.

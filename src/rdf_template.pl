@@ -32,6 +32,7 @@
 :- module(rdf_template,
 	  [ call_rules/2,		% +Object, :Goal
 	    call_outer/1,		% :Goal
+	    call_inner/1,		% :Goal
 	    container_with_get_method/3, % +Gr, +Method, -Container
 	    container_with_send_method/3
 	  ]).
@@ -360,8 +361,19 @@ rdf_container(N, Container:visual) :<-
 
 call_rules(Obj, Goal) :-
 	container_with_particle(Obj, Container, Particle),
-	current_predicate(_, Particle:Goal), !,
-	with_container(Container, Particle::Goal).
+	defined(Particle:Goal), !,
+	with_container(Container, Particle::Goal),
+	true.				% avoid tail recursion
+
+%	defined(:G)
+%	
+%	True  if  G  is  defined.  We  use  '$c_current_predicate'/2  as
+%	current_predicate/2 updates the foreign  library   index  and is
+%	therefore much too slow.
+
+defined(M:G) :-
+	default_module(M, S),
+	'$c_current_predicate'(_, S:G), !.
 
 %	call_outer(+Goal)
 %	
@@ -373,7 +385,7 @@ call_outer(Goal) :-
 	current_container(C0),
 	container(C0, C1),
 	container_with_particle(C1, Container, Particle),
-	current_predicate(_, Particle:Goal), !,
+	defined(Particle:Goal), !,
 	with_container(Container, Particle::Goal).
 
 with_container(_Container, Goal) :-
@@ -386,6 +398,25 @@ current_container(Cont) :-
 				   rdf_template:with_container(Cont, _))
 	->  true
 	;   throw(error(existence_error(container, current), _))
+	).
+
+%	call_inner(+Goal)
+%	
+%	Calls Goal starting from the same place as the original
+%	call_rules.
+
+call_inner(Goal) :-
+	current_inner(Obj),
+	container_with_particle(Obj, Container, Particle),
+	defined(Particle:Goal), !,
+	with_container(Container, Particle::Goal).
+
+current_inner(Obj) :-
+	(   prolog_current_frame(Frame),
+	    prolog_frame_attribute(Frame, parent_goal,
+				   rdf_template:call_rules(Obj, _))
+	->  true
+	;   throw(error(existence_error(container, inner), _))
 	).
 
 

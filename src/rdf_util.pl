@@ -35,6 +35,9 @@
 	    sort_by_label/2,		% +Resources, -Sorted
 	    rdf_default_file/2,		% +Resources, -File
 
+	    rdf_set_dialect/1,		% Set the RDF dialect
+	    rdf_current_dialect/1,	% Query the RDF dialect
+
 					% Edit operations
 	    rdf_set_object/4,		% +S, +P, +O, +NewObject
 	    rdf_set_object/3,		% +S, +P, +Object
@@ -81,6 +84,42 @@ user:goal_expansion(rdf_delete_hierarchy(Root0, Pred0, Opts0),
 	rdf_global_id(Root0, Root),
 	rdf_global_id(Pred0, Pred),
 	rdf_global_term(Opts0, Opts).
+
+
+		 /*******************************
+		 *     DIALECT SELECTION	*
+		 *******************************/
+
+:- dynamic
+	dialect/1.
+
+dialect(owl_full).			% initial default
+
+%	rdf_set_dialect(+Dialect)
+%	rdf_current_dialect(?Dialect).
+%	
+%	Set/query the current dialect. Allowed values are rdfs,
+%	owl_lite, owl_dl or owl_full.
+
+rdf_set_dialect(Dialect) :-
+	(   dialect(Dialect)
+	->  true
+	;   retractall(dialect(_)),
+	    assert(dialect(Dialect)),
+	    broadcast(rdf_dialect(Dialect))
+	).
+
+rdf_current_dialect(Dialect) :-
+	(   dialect(Dialect)
+	->  true
+	;   Dialect == owl
+	->  \+ dialect(rdfs)
+	).
+
+
+		 /*******************************
+		 *	PROPERTY HANDLING	*
+		 *******************************/
 
 
 %	property_domain(+Subject, +Property, -Domain)

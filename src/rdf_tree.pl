@@ -1,8 +1,34 @@
-/*  File:    tree.pl
-    Author:  Jan Wielemaker
-    Created: Jun  3 2003
-    Purpose: Visualise RDF hierarchy
+/*  $Id$
+
+    Part of SWI-Prolog
+
+    Author:        Jan Wielemaker
+    E-mail:        jan@swi.psy.uva.nl
+    WWW:           http://www.swi-prolog.org
+    Copyright (C): 1985-2002, University of Amsterdam
+
+    This program is free software; you can redistribute it and/or
+    modify it under the terms of the GNU General Public License
+    as published by the Free Software Foundation; either version 2
+    of the License, or (at your option) any later version.
+
+    This program is distributed in the hope that it will be useful,
+    but WITHOUT ANY WARRANTY; without even the implied warranty of
+    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+    GNU General Public License for more details.
+
+    You should have received a copy of the GNU Lesser General Public
+    License along with this library; if not, write to the Free Software
+    Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
+
+    As a special exception, if you link this library with other files,
+    compiled with a Free Software compiler, to produce an executable, this
+    library does not by itself cause the resulting executable to be covered
+    by the GNU General Public License. This exception does not however
+    invalidate any other reasons why the executable file might be covered by
+    the GNU General Public License.
 */
+
 
 :- module(rdf_tree_file, []).
 :- use_module(library(pce)).
@@ -58,6 +84,7 @@ initialise(H, Root:[name]) :->
 	send(H, root, RootNode),
 	listen(H, rdf_reset, send(H, clear)),
 	listen(H, rdf_journal(_), send(H, update)),
+	listen(H, rdf_dialect(_), send(H, update)),
 	listen(H, rdf_transaction(TID), send(H, update_transaction, TID)).
 
 unlink(H) :->
@@ -235,9 +262,15 @@ update_label(T) :->
 	"Check all nodes for updated label classes"::
 	send(T?root, for_all, message(@arg1, update_label)).
 
-update(T) :->
-	send(T?root, for_all, message(@arg1, update_label)),
-	send(T?root, for_all, message(@arg1, update)).
+update(T, Fast:[bool]) :->
+	"Force display update after large changes"::
+	get(T, root, Root),
+	(   Fast == @on
+	->  send(Root, for_all, message(@arg1, update_label)),
+	    send(Root, for_all, message(@arg1, update))
+	;   get(Root, state, State),
+	    send(Root, state, State)
+	).
 
 :- pce_group(search).
 
@@ -401,7 +434,8 @@ expand_role(N, Role:name, Cache:int, Prefix:[name], Before:[node]) :->
 	    ->	Found = @on
 	    ;	true
 	    ),
-	    send(Before, view, Start, 0, Prefix, Found)
+	    More is End + 1,
+	    send(Before, view, Start, More, Prefix, Found)
 	;   true
 	).
 
@@ -424,9 +458,10 @@ add_child_from_cache(N, Resource:name, Role:name, Cache:int, Before:[node]) :->
 	get(N, add_child, Resource, Role, Before, Son),
 	send(Son, slot, cache, Cache).
 	
-show_more(N, MoreNode:rdf_more_node, Role:name, Count:int) :->
+show_more(N, Role:name, Count:int) :->
 	"Show next Count nodes on Role"::
 	get(N?caches, value, Role, Cache),
+	get(N, more_node, Role, MoreNode),
 	get(MoreNode, here, Here),
 	End is Here + Count - 1,
 	rdf_cache_result_set(Cache, Set),
@@ -441,15 +476,18 @@ show_more(N, MoreNode:rdf_more_node, Role:name, Count:int) :->
 prefix_role(N, Role:name, Prefix:name) :->
 	"Collapse nodes of Role"::
 	get(N?caches, value, Role, Cache),
-	get(N?sons, find,
-	    and(message(@arg1, instance_of, rdf_more_node),
-		@arg1?cache == Cache),
-	    MoreNode),
+	get(N, more_node, Role, MoreNode),
 	send(N?sons, for_all,
 	     if(and(@arg1?cache == Cache, @arg1 \== MoreNode),
 		message(@arg1, delete_tree))),
 	send(N, expand_role, Role, Cache, Prefix, MoreNode).
 
+more_node(N, Role:name, MoreNode:rdf_more_node) :<-
+	"Find more node handling role"::
+	get(N?sons, find,
+	    and(message(@arg1, instance_of, rdf_more_node),
+		@arg1?role == Role),
+	    MoreNode).
 
 :- pce_group(changes).
 
@@ -653,6 +691,71 @@ print_cache(N, Role:name) :->
 	;   format('   ~w: ~w: <unknown>~n', [Role, Cache])
 	).
 
+:- pce_group(state).
+
+state(N, State:prolog) :<-
+	"Get state of role"::
+	get(N, class_name, Role),
+	get(N, resource, Resource),
+	get(N, expanded, Expanded),	% {full,partial}
+	get_chain(N, sons, Sons),
+	child_state(Sons, Childs),
+	State = node(Resource, Role, Expanded, Childs).
+
+child_state([], []).
+child_state([N|T0], [S|T]) :-
+	get(N, collapsed, @off), !,
+	get(N, state, S),
+	child_state(T0, T).
+child_state([N|T0], [more(Role, Here, Prefix)|T]) :-
+	send(N, instance_of, rdf_more_node), !,
+	get(N, role, Role),
+	get(N, here, Here),
+	get(N, prefix, Prefix),
+	child_state(T0, T).
+child_state([_|T0], T) :-
+	child_state(T0, T).
+
+
+state(N, State:prolog) :->
+	"Restore expansion to indicated state"::
+	send(N?sons, for_all, message(@arg1, delete_tree)),
+	send(N, update_can_expand),
+	(   get(N, collapsed, @on)
+	->  send(N, collapsed, @off),
+	    State = node(_R, _Role, _Expanded, MoreAndChilds),
+	    set_more_state(MoreAndChilds, N, Childs),
+	    set_child_state(Childs, N)
+	;   true
+	).
+
+set_more_state([], _, []).
+set_more_state([more(Role, Here, Prefix)|T0], N, T) :- !,
+	debug(state, '~p: showing first ~w/~w from ~w', [N, Here, Prefix, Role]),
+	(   Prefix == @nil
+	->  Extra is Here - 11,
+	    (   Extra > 0
+	    ->  send(N, show_more, Role, Extra)
+	    ;   true
+	    )
+	;   send(N, prefix_role, Role, Prefix)
+	),
+	set_more_state(T0, N, T).
+set_more_state([H|T0], N, [H|T]) :-
+	set_more_state(T0, N, T).
+
+set_child_state([], _).
+set_child_state([H|T], N) :-
+	H = node(R, Role, _Expanded, _Childs),
+	(   get(N?sons, find,
+		and(@arg1?class_name == Role,
+		    @arg1?resource == R),
+		Son)
+	->  send(Son, state, H)
+	;   true
+	),
+	set_child_state(T, N).
+
 :- pce_end_class(rdf_node).
 
 
@@ -700,7 +803,7 @@ delete_class_hierarchy(N) :->
 			     [ confirm(true)
 			     ]).
 
-:- pce_end_class.
+:- pce_end_class(rdf_class_node).
 
 
 :- pce_begin_class(rdf_individual_node, rdf_node).
@@ -734,7 +837,7 @@ view_triples(N) :->
 :- pce_begin_class(rdf_inferred_node, rdf_node).
 :- pce_end_class.
 
-:- pce_begin_class(rdf_root_node, rdf_node).
+:- pce_begin_class(rdf_root_node, rdf_class_node).
 :- pce_end_class.
 
 :- pce_begin_class(rdf_orphan_node, rdf_node).
@@ -865,7 +968,7 @@ more(N, More:[int]) :->
 	"Show N more childs on this role"::
 	get(N, parents, chain(Parent)),
 	get(N, role, Role),
-	send(Parent, show_more, N, Role, More).
+	send(Parent, show_more, Role, More).
 
 goto_prefix(N, Prefix:name) :->
 	"Start from prefix search"::

@@ -73,7 +73,10 @@ resource(open,		     image, image('16x16/open.xpm')).
 :- pce_begin_class(rdfs_explorer, persistent_frame,
 		   "Browse an RDFS database").
 
-variable(given_label,	name*,	 get, "User assigned label").
+variable(given_label,	      name*,  get, "User assigned label").
+variable(view_owl_class_extension, bool,   get, "Show/hide inferred class_extension").
+
+class_variable(view_owl_class_extension, bool, @on).
 
 initialise(OV, Domain0:[prolog], Label:[name]) :->
 	"Browse an RDFS ontology from given root"::
@@ -169,7 +172,10 @@ fill_tool_dialog(OV) :->
 
 	send_list(View, append,
 		  [ new(Label, popup(label,
-				     message(OV, view_label_as, @arg1)))
+				     message(OV, view_label_as, @arg1))),
+		    new(Dialect, popup(dialect,
+				       message(OV, dialect, @arg1))),
+		    new(OWL, popup(owl))
 		  ]),
 
 	send_list(Tools, append,
@@ -188,6 +194,7 @@ fill_tool_dialog(OV) :->
 		    delete_snapshots
 		  ]),
 
+					% label handling
 	send(Label, show_current, @on),
 	send_list(Label, append,
 		  [ label_only,
@@ -195,6 +202,26 @@ fill_tool_dialog(OV) :->
 		    resource
 		  ]),
 	send(Label, selection, namespace_and_label),
+
+					% dialect setting
+	send(Dialect, show_current, @on),
+	send_list(Dialect, append,
+		  [ menu_item(rdfs,     label := 'RDFS'),
+		    menu_item(owl_lite, label := 'OWL/Lite'),
+		    menu_item(owl_dl,   label := 'OWL/DL'),
+		    menu_item(owl_full, label := 'OWL/Full')
+		  ]),
+	send(Dialect, selection, owl_full),
+
+	send(OWL, multiple_selection, @on),
+	send(OWL, show_current, @on),
+	send_list(OWL, append,
+		  [ new(Entailment,
+			menu_item(class_extension,
+				  message(OV, view_owl_class_extension, @arg1)))
+		  ]),
+	send(Entailment, selected, OV?view_owl_class_extension),
+
 	send(SaveFile, update_message,
 	     message(OV, update_save_popup, SaveFile)),
 	send(Base, update_message,
@@ -428,6 +455,28 @@ view_label_as(OV, As:name) :->
 	    get(View, member, label, PopupItem),
 	    get(PopupItem, popup, Popup)
 	->  send(Popup, selection, As)
+	;   true
+	).
+
+view_owl_class_extension(OV, Show:bool) :->
+	(   get(OV, view_owl_class_extension, Show)
+	->  true
+	;   send(OV, slot, view_owl_class_extension, Show),
+	    get(OV, menu, view, View),
+	    get(View, member, owl, OWLItem),
+	    get(OWLItem, popup, OWLPopup),
+	    get(OWLPopup, member, class_extension, Item),
+	    send(Item, selected, Show),
+	    send(OV?tree, update)
+	).
+
+dialect(OV, Dialect:{rdfs,owl_lite,owl_dl,owl_full}) :->
+	"Select visualisation dialect"::
+	rdf_set_dialect(Dialect),
+	(   get(OV, menu, view, View),
+	    get(View, member, dialect, PopupItem),
+	    get(PopupItem, popup, Popup)
+	->  send(Popup, selection, Dialect)
 	;   true
 	).
 
