@@ -45,6 +45,7 @@
 :- use_module(semweb(rdf_edit)).
 :- use_module(pce_history).
 :- use_module(library(broadcast)).
+:- use_module(library(tabbed_window)).
 
 :- pce_autoload(report_dialog,	       library(pce_report)).
 :- pce_autoload(rdf_statistics_dialog, library(rdf_statistics)).
@@ -393,7 +394,7 @@ redo(OV) :->
 		 *	     RDF VIEW		*
 		 *******************************/
 
-:- pce_begin_class(rdfs_sheet, dialog,
+:- pce_begin_class(rdfs_sheet, tabbed_window,
 		   "Visualise a resource as instance or class").
 
 variable(show_namespace, bool := @on, get, "Show namespaces").
@@ -401,37 +402,31 @@ variable(history,	 history,     get, "Location history").
 
 initialise(OS) :->
 	send_super(OS, initialise),
-	send(OS, pen, 0),
 	send(OS, slot, history, history(message(OS, selection, @arg1))),
 	send(OS, size, size(500,350)),
 	send(OS, hor_stretch, 100),
 	send(OS, ver_stretch, 100),
 	send(OS, ver_shrink, 100),
-	send(OS, append, new(TS, tab_stack)),
-	send(OS, gap, size(0,0)),
-	send(OS, resize_message, message(TS, layout_dialog, @arg2)),
-	send_list(TS, append,
-		  [ table_tab(class,    new(rdfs_class_sheet)),
-		    table_tab(instance, new(rdfs_instance_sheet))
+	send_list(OS, append,
+		  [ table_window(class,    new(rdfs_class_sheet)),
+		    table_window(instance, new(rdfs_instance_sheet))
 		  ]).
 
 sheet(OS, Name:{class,instance}, Table:rdf_tabular) :<-
 	"Get named table"::
-	get(OS, member, tab_stack, TS),
-	get(TS, member, Name, Tab),
-	get(Tab?graphicals, head, Table).
+	get(OS, member, Name, Window),
+	get(Window?graphicals, head, Table).
 
 selection(OS, Resource:name) :->
 	"Show the indicated object"::
 	get(OS, sheet, instance, InstanceSheet),
 	get(OS, sheet, class, ClassSheet),
 	send(InstanceSheet, resource, Resource),
-	get(OS, member, tab_stack, TS),
 	(   rdfs_individual_of(Resource, rdfs:'Class')
 	->  send(ClassSheet, resource, Resource),
-	    send(TS, on_top, class)
+	    send(OS, on_top, class)
 	;   send(ClassSheet, resource, @nil),
-	    send(TS, on_top, instance)
+	    send(OS, on_top, instance)
 	),
 	send(OS?history, location, Resource).
 
@@ -451,22 +446,21 @@ node_label(OS, Id:name, Label:name) :<-
 :- pce_end_class(rdfs_sheet).
 
 
-:- pce_begin_class(table_tab, tab,
-		   "Tab for displaying a single tabular").
+:- pce_begin_class(table_window, dialog,
+		   "Window for displaying a single tabular").
 
 initialise(TT, Name:name, Table:tabular) :->
 	send_super(TT, initialise, Name),
-	send(TT, border, size(1,0)),
-	send(TT, append, Table).
+	send(TT, name, Name),
+	send(TT, display, Table).	% do not use automatic layout
 
-size(TT, Size:size) :->
+resize(TT) :->
 	get(TT?graphicals, head, Table),
-	get(Size, width, W),
-	TW is max(0, W-4),
-	send(Table, table_width, TW),
-	send_super(TT, size, Size).
+	get(TT?size, width, W),
+	TW is max(0, W-2),		% table-width excludes the border
+	send(Table, table_width, TW).
 	
-:- pce_end_class(table_tab).
+:- pce_end_class(table_window).
 
 
 		 /*******************************
