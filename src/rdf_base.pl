@@ -34,7 +34,8 @@
 	  [ load_base_ontology/1,	% +Id
 	    load_base_ontology/2,	% +Id, +Options
 	    current_base_ontology/1,	% -Id
-	    required_base_ontology/1	% -Id
+	    required_base_ontology/1,	% -Id
+	    register_default_ns/1	% +List
 	  ]).
 :- use_module(semweb(rdf_db)).
 :- use_module(semweb(rdf_edit)).
@@ -86,6 +87,35 @@ rdf_db:ns(aeneas,  'http://www.swi.psy.uva.nl/mia/aeneas#').
 rdf_db:ns(mia2,    'http://www.swi.psy.uva.nl/mia/mia2#').
 rdf_db:ns(rs,      'http://jena.hpl.hp.com/2003/03/result-set#').
 
+%	register_default_ns(NS=URL)
+%	
+%	Register a namespace as encounted in   the  namespace list of an
+%	RDF document. We only register if  both the abbreviation and URL
+%	are not already known. Is there a   better  way? This code could
+%	also do checks on the consistency   of  RDF and other well-known
+%	namespaces.
+
+register_default_ns(X) :-
+	var(X), !,
+	throw(error(instantiation_error, _)).
+register_default_ns([]) :- !.
+register_default_ns([NS=URL|T]) :- !,
+	register_default_ns(NS=URL),
+	register_default_ns(T).
+register_default_ns(NS=URL) :-
+	(   rdf_db:ns(NS, URL)
+	->  true
+	;   rdf_db:ns(NS, _)
+	->  true			% redefined abbreviation
+	;   rdf_db:ns(_, URL)
+	->  true			% redefined URL
+	;   rdf_register_ns(NS, URL)
+	).
+
+
+		 /*******************************
+		 *	  BASIC ONTOLOGIES	*
+		 *******************************/
 
 %	load_base_ontology(+Identifier)
 

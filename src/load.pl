@@ -75,8 +75,8 @@ user:file_search_path(snapshot, user_profile(Dir)) :-
 		 *	      VERSION		*
 		 *******************************/
 
-t20_version('0.3, November 2003').
-required_prolog_version(50211).
+t20_version('0.4, September 2004').
+required_prolog_version(50321).
 
 check_prolog_version :-
 	current_prolog_flag(version, MyVersion),
@@ -182,7 +182,12 @@ parse_argv([File|T]) :-
 	file_name_extension(_, Ext, File),
 	rdf_file_extension(Ext, _Name),
 	Ext \== rdfj, !,
-	rdfe_load(File),
+	rdfe_load(File, [namespaces(NSList)]),
+	register_default_ns(NSList),
+	(   access_file(File, write)
+	->  rdfe_set_file_property(File, default(fallback))
+	;   true
+	),
 	parse_argv(T).
 parse_argv(_) :-
 	usage,

@@ -372,7 +372,11 @@ load_ontology(_OV) :->
 		  tuple('OWL files', owl),
 		  tuple('RDF files', rdf)),
 	    FileName),
-	rdfe_transaction(rdfe_load(FileName), load_file(FileName)).
+	rdfe_transaction(rdfe_load(FileName,
+				   [ namespaces(NSList)
+				   ]),
+			 load_file(FileName)),
+	register_default_ns(NSList).
       
 open_project(OV) :->
 	"Open an existing journal file"::

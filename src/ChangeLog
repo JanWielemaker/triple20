@@ -1,3 +1,7 @@
+Sep 13, 2004
+
+  * ADDED: Read namespace identifiers from RDF sourcefiles.
+
 Dec 3, 2003
 
   * FIXED: generate proper blank nodes in manipulating lists.

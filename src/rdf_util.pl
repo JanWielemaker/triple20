@@ -33,7 +33,10 @@
 	  [ property_domain/3,		% +Subject, +Property, -Domain
 	    property_type/3,		% +Subject, +Property, -Type
 	    sort_by_label/2,		% +Resources, -Sorted
+
 	    rdf_default_file/2,		% +Resources, -File
+	    rdf_default_file/3,		% +Resources, -File, -NS
+	    rdf_set_default_ns/2,	% +File, +Namespace
 
 	    rdf_set_dialect/1,		% Set the RDF dialect
 	    rdf_current_dialect/1,	% Query the RDF dialect
@@ -225,6 +228,7 @@ remove_dups(_, L, L).
 same_label(L-_, L-_).
 
 
+%	rdf_default_file(+Resource, -File, -NS)
 %	rdf_default_file(+Resource, -File)
 %	
 %	Where to store facts about Resource? Should be extended to
@@ -235,26 +239,60 @@ same_label(L-_, L-_).
 %		File of resource as object
 %		File of resource as property
 
-rdf_default_file(_, File) :-
-	rdfe_get_file_property(File, default(all)), !.
 rdf_default_file(Resource, File) :-
-	rdf_has(Resource, rdf:type, Object, P),
-	Object \== '__not_filled',
-	rdf(Resource, P, Object, File:_),
-	\+ rdfe_get_file_property(File, access(ro)), !.
-rdf_default_file(Resource, File) :-
-	rdf(Resource, _, Object, File:_),
-	Object \== '__not_filled',
-	\+ rdfe_get_file_property(File, access(ro)), !.
-rdf_default_file(Resource, File) :-
-	rdf(_, _, Resource, File:_),
-	\+ rdfe_get_file_property(File, access(ro)), !.
-rdf_default_file(Resource, File) :-
-	rdf(_, Resource, _, File:_),
-	\+ rdfe_get_file_property(File, access(ro)), !.
-rdf_default_file(_, File) :-
-	rdfe_get_file_property(File, default(fallback)).
+	rdf_default_file(Resource, File, _NS).
 
+rdf_default_file(_, File, NS) :-
+	rdfe_get_file_property(File, default(all)), !,
+	rdf_default_ns(File, NS).
+rdf_default_file(Resource, File, NS) :-
+	(   rdf_has(Resource, rdf:type, Object, P),
+	    Object \== '__not_filled',
+	    rdf(Resource, P, Object, File:_)
+	;   rdf(Resource, _, Object, File:_),
+	    Object \== '__not_filled'
+	;   rdf(_, _, Resource, File:_)
+	;   rdf(_, Resource, _, File:_)
+	),
+	\+ rdfe_get_file_property(File, access(ro)), !,
+	(   rdf_global_id(NS:_, Resource)
+	->  true
+	;   rdf_default_ns(File, NS)
+	).
+rdf_default_file(_, File, NS) :-
+	rdfe_get_file_property(File, default(fallback)),
+	rdf_default_ns(File, NS).
+
+%	rdf_default_ns(+File, -NameSpace)
+%	
+%	Provide a default namespace  identifier  for   a  triple  to  be
+%	associated with the given File.
+
+:- dynamic
+	default_ns/2.
+
+rdf_default_ns(File, NS) :-
+	default_ns(File, NS), !.
+rdf_default_ns(_, 'foo:bar').
+
+%	rdf_set_default_ns(+File, +Namespace)
+%	
+%	Set  the  default  namespace  for   this    file.   If  File  is
+%	uninstantiated it will be added as a fallback clause at the end.
+
+rdf_set_default_ns(File, NS) :-
+	(   var(File)
+	->  (   clause(default_ns(V, _), _, Ref),
+	        var(V),
+		erase(Ref),
+		fail
+	    ;	true
+	    ),
+	    assertz(default_ns(File, NS))
+	;   retractall(default_ns(File, NS)),
+	    asserta(default_ns(File, NS))
+	).
+	    
 
 		 /*******************************
 		 *	  EDIT OPERATIONS	*
