@@ -41,6 +41,7 @@
 :- use_module(rdf_label).
 :- use_module(rdf_cache).
 :- use_module(rdf_util).
+:- use_module(owl).
 
 
 owl_description_attribute(X) :- rdf_equal(owl:oneOf, X).
@@ -310,11 +311,14 @@ child_cache(R, Cache, Class) :-
 	;   (   rdf_cache(lsorted(V), rdf_has(V, rdfs:subClassOf, R), Cache),
 	        Class = rdf_class_node
 	    ;   \+ rdfs_subclass_of(R, rdfs:'Class'),
-	        rdf_cache(lsorted(V), rdf_has(V, rdf:type, R), Cache),
+		(   rdfs_individual_of(R, owl:'Restriction')
+		->  rdf_cache(lsorted(V), owl_individual_of(V, R), Cache)
+		;   rdf_cache(lsorted(V), rdf_has(V, rdf:type, R), Cache)
+		),
 		Class = rdf_individual_node
 	    ;	rdfs_subclass_of(R, owl:'Restriction'),
 		rdf_cache(lsorted(V), rdf_has(V, rdf:type, R), Cache),
-		Class = owl_restriction_node	    
+		Class = owl_restriction_node
 	    )
 	).
 child_cache(R, Cache, rdf_individual_node) :-

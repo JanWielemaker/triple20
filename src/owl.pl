@@ -217,6 +217,66 @@ cardinality_on_subject(Subject, Predicate, cardinality(Min, Max)) :-
 	restriction_facet(RestrictionID, cardinality(Min, Max)).
 
 
+%	owl_satisfies_restriction(?Resource, +Restriction)
+%	
+%	True if Restriction satisfies the restriction imposed by Restriction.
+%	The current implementation makes the following assuptions:
+%	
+%		# Only one of hasValue, allValuesFrom or someValuesFrom
+%		  is present.
+
+owl_satisfies_restriction(Resource, Restriction) :-
+	rdf_has(Restriction, owl:onProperty, Property),
+	(   rdf_has(Restriction, owl:hasValue, Value)
+	->  rdf_has(Resource, Property, Value)
+	;   rdf_has(Restriction, owl:allValuesFrom, Class)
+	->  forall(rdf_has(Resource, Property, Value),
+		   owl_individual_of(Value, Class))
+	;   rdf_has(Restriction, owl:someValuesFrom, Class)
+	->  rdf_has(Resource, Property, Value),
+	    owl_individual_of(Value, Class)
+	;   rdf_subject(Resource)
+	),
+	owl_satisfies_cardinality(Resource, Property, Restriction).
+
+%	owl_satisfies_cardinality(?Resource[, +Property], +Restriction)
+%	
+%	True if Resource satisfies the cardinality restrictions on
+%	Property imposed by Restriction.
+
+owl_satisfies_cardinality(Resource, Restriction) :-
+	rdf_has(Restriction, owl:onProperty, Property),
+	owl_satisfies_cardinality(Resource, Property, Restriction).
+
+owl_satisfies_cardinality(Resource, Property, Restriction) :-
+	rdf_has(Restriction, owl:cardinality, literal(Atom)), !,
+	atom_number(Atom, Card), !,
+	findall(V, rdf_has(Resource, Property, V), Vs0),
+	sort(Vs0, Vs),			% remove duplicates
+	length(Vs, Card).
+owl_satisfies_cardinality(Resource, Property, Restriction) :-
+	rdf_has(Restriction, owl:minCardinality, literal(MinAtom)),
+	atom_number(MinAtom, Min), !,
+	findall(V, rdf_has(Resource, Property, V), Vs0),
+	sort(Vs0, Vs),			% remove duplicates
+	length(Vs, Count),
+	Count >= Min,
+	(   rdf_has(Restriction, owl:maxCardinality, literal(MaxAtom)),
+	    atom_number(MaxAtom, Max)
+	->  Count =< Max
+	;   true
+	).
+owl_satisfies_cardinality(Resource, Property, Restriction) :-
+	rdf_has(Restriction, owl:maxCardinality, literal(MaxAtom)),
+	atom_number(MaxAtom, Max), !,
+	findall(V, rdf_has(Resource, Property, V), Vs0),
+	sort(Vs0, Vs),			% remove duplicates
+	length(Vs, Count),
+	Count =< Max.
+owl_satisfies_cardinality(Resource, _, _) :-
+	rdf_subject(Resource).
+	
+
 		 /*******************************
 		 *	    DESCRIPTION		*
 		 *******************************/
@@ -329,7 +389,9 @@ in_all_domains([H|T], Resource) :-
 
 owl_individual_of(Resource, Description) :-
 	rdfs_individual_of(Description, owl:'Class'), !,
-	(   rdf_has(Description, owl:unionOf, Set)
+	(   rdfs_individual_of(Description, owl:'Restriction')
+	->  owl_satisfies_restriction(Resource, Description)
+	;   rdf_has(Description, owl:unionOf, Set)
 	->  rdfs_member(Sub, Set),
 	    owl_individual_of(Resource, Sub)
 	;   rdf_has(Description, owl:intersectionOf, Set)

@@ -329,8 +329,7 @@ new_file(_OV) :->
 	    FileName),
 	absolute_file_name(FileName, AbsName),
 	rdf_save(FileName, AbsName),
-	rdfe_transaction(rdfe_load(FileName), load_file(FileName),
-			 new_file).
+	rdfe_transaction(rdfe_load(FileName), new_file(FileName)).
 
 update_save_popup(_OV, Popup:popup) :->
 	"Update menu with all (modified) sources"::
