@@ -189,6 +189,8 @@ rdf_file(rdfs,	 	 rdfs, ontology('rdfs.rdfs')).
 rdf_file(owl,		 owl,  ontology('owl.owl')).
 rdf_file(owlfull,        owl,  ontology('owlfull.owl')).
 rdf_file(dc,	 	 dc,   ontology('dc.rdfs')).
+rdf_file(dc,	 	 dc,   ontology('dcterms.rdfs')).
+rdf_file(dc,	 	 dc,   ontology('dctypes.rdfs')).
 rdf_file(dc,	 	 eor,  ontology('eor.rdfs')).
 rdf_file(vra,	 	 vra,  ontology('vra.owl')).
 rdf_file(skos,		 skos, ontology('skos-core.rdfs')).
