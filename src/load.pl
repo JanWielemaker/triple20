@@ -77,6 +77,28 @@ user:file_search_path(snapshot, user_profile(Dir)) :-
 		 *******************************/
 
 rdf_version('0.3, November 2003').
+required_prolog_version(50211).
+
+check_prolog_version :-
+	current_prolog_flag(version, MyVersion),
+	required_prolog_version(Required),
+	(   MyVersion >= Required
+	->  true
+	;   user_version(MyVersion, MyV),
+	    user_version(Required, Req),
+	    send(@display, confirm,
+		 'This version of Triple20 requires SWI-Prolog %s\n\
+		  while you are running %s.  Triple20 may not function\n\
+		  properly.', Req, MyV)
+	->  true
+	;   halt
+	).
+
+user_version(N, Version) :-
+	Major is N // 10000,
+	Minor is (N // 100) mod 100,
+	Patch is N mod 100,
+	concat_atom([Major, Minor, Patch], '.', Version).
 
 
 		 /*******************************
@@ -101,6 +123,7 @@ go(Argv) :-
 	halt(0).
 go(Argv) :-
 	debug(cache),
+	check_prolog_version,
 	rdf_prepare_ontology_dirs,
 	debug_options(Argv, Argv0),
 	(   select(Journal, Argv0, Argv1),
