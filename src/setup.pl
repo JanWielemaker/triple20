@@ -37,6 +37,7 @@
 - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
 
 :- [load].
+:- use_module(rdf_file).
 
 win_setup :-
 	current_prolog_flag(windows, true), !,
@@ -88,7 +89,7 @@ add_start_menu(D) :->
 	    current_prolog_flag(executable, Exe),
 	    load_file(LoadFile),
 	    prolog_to_os_filename(IconFile, OsIconFile),
-	    sformat(CmdLine, '"~w" -s "~w" -L16m -G32m -T32m -g go',
+	    sformat(CmdLine, '"~w" -s "~w" -L16m -G32m -T32m -g triple20',
 		    [Exe, LoadFile]),
 	    absolute_file_name(ontology_root(.),
 			       [ file_type(directory),
@@ -124,7 +125,7 @@ win_register(Ext, Name) :-
 	atom_concat(IconFile, ',0', Icon),
 	current_prolog_flag(executable, Exe),
 	load_file(LoadFile),
-	sformat(Command, '"~w" -s "~w" -L16m -G32m -T32m -g winmain -- "%1"',
+	sformat(Command, '"~w" -s "~w" -L16m -G32m -T32m -g t20_winmain -- "%1"',
 		[Exe, LoadFile]),
 	shell_register_file_type(Ext, 'triple20.type', Name, Command, Icon).
 

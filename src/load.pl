@@ -36,7 +36,9 @@
 					% Misc
 	    t20/1,			% +Action
 					% Maintenance
-	    t20_save/1			% +File
+	    t20_save/1,			% +File
+
+	    t20_winmain/0		% Windows toplevel
 	  ]).
 	    
 
@@ -260,7 +262,12 @@ t20(Action) :-
 t20_save(X) :-
 	qsave_program(X, []).
 
-winmain :-
+%	t20_winmain/0
+%	
+%	MS-Windows toplevel when started by clicking a .RDF* file.  See
+%	setup.pl for associating .RDF, etc. with Triple20.
+
+t20_winmain :-
 	current_prolog_flag(argv, Argv),
 	append(_, [--,Assoc], Argv),
 	triple20([Assoc]).
