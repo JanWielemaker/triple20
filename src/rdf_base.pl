@@ -91,7 +91,7 @@ current_base_ontology(Id) :-
 	forall(rdf_file(Id, FileSpec),		% check existence
 	       absolute_file_name(FileSpec,
 				  [ access(read),
-				    file_errors(none)
+				    file_errors(fail)
 				  ],
 				  _File)).
 
