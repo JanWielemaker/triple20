@@ -56,7 +56,7 @@ user:file_search_path(semweb,   library(semweb)).
 		owl,			% OWL inferencing
 		rdf_text,		% basic text representation
 		rules,			% rendering rules
-		rdfs_explorer,		% visualization
+		rdfs_explorer		% visualization
 %		rdf_portray
 	      ],
 	      [ silent(true)
