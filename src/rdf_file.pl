@@ -104,7 +104,11 @@ sub_dir(Dir, Sub) :-
 	expand_file_name(Pattern, Subs),
 	member(Sub, Subs),
 	Sub \== 'CVS',
-	\+ sub_atom(Sub, _, _, 0, '/CVS'), % skip CVS directories
+	\+ sub_atom(Sub, 0, _, _, '_'),		% skip Windows hidden files
+	\+ sub_atom(Sub, _, _, _, '/_'),
+	\+ sub_atom(Sub, 0, _, _, '.'),		% skip Unix hidden files
+	\+ sub_atom(Sub, _, _, _, '/.'),
+	\+ sub_atom(Sub, _, _, 0, '/CVS'),	% skip CVS directories
 	exists_directory(Sub).
 
 
