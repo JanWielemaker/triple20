@@ -35,6 +35,7 @@
 :- use_module(semweb(rdf_db)).
 :- use_module(semweb(rdfs)).
 :- use_module(owl).
+:- use_module(rdf_dialog).
 
 resource(tree,	   image, image('16x16/hierarchy.xpm')).
 resource(search,   image, image('16x16/binocular.xpm')).
@@ -375,9 +376,9 @@ selected_completion(TI, Text:char_array, Apply:[bool]) :->
 initialise(F, Selector:rdfs_resource_item) :->
 	"Create for selector"::
 	send_super(F, initialise, 'Select term'),
-	send(F, append, new(D1, dialog(top))),
+	send(F, append, new(D1, rdf_search_dialog)),
+	send(D1, append, button(cancel, message(F, destroy)), right),
 	send(D1, name, top),
-	send(F, fill_top_dialog),
 	send(new(B, browser), right, new(P, picture)),
 	send(P, below, D1),
 	send(new(V, view(size := size(40,5))), below, P),
@@ -410,90 +411,20 @@ open(F) :->
 	send(F, modal, transient),
 	send_super(F, open, point(X, Y+H+5), normalise := @on).
 
-fill_top_dialog(F) :->
-	"Fill the seach/select dialog"::
-	get(F, member, top, D),
-	send(D, border, size(5,5)),
-	send(D, append, new(Fields, menu(search_in, toggle))),
-	send_list(Fields, append, [label, synonym, comment]),
-	send(Fields, selection, label),
-	send(Fields, layout, horizontal),
-	send(D, append, new(For, label(for, 'For', bold)), right),
-	send_list([Fields, For], alignment, left),
-	send(For, alignment, left),
-	send(D, append, new(SI, text_item(search))),
-	send(SI, show_label, @off),
-	send(D, append, new(ST, menu(how, cycle)), right),
-	send_list(ST, append, [substring, whole_word, prefix, exact]),
-	send(ST, show_label, @off),
-	send(D, append,
-	     new(Find, button(find,
-			      and(message(F, find,
-					  SI?selection, ST?selection,
-					  Fields?selection),
-				  message(@receiver, active, @off)))),
-	    right),
-	send(Find, default_button, @on),
-	send(Find, active, @off),
-	send(D, append, button(cancel, message(F, destroy)), right),
-	send(D, resize_message,
-	     message(F, resize_dialog, D, @arg2)).
-
-%	->resize_dialog
-%	
-%	Properly spread the items of the row holding the text-item,
-%	menu and button.  Something XPCE should be able to handle
-%	using the declarative layout, but this doesn't work.  Ugly
-%	but efficient as long as we can't do better.
-
-resize_dialog(_F, D:dialog, Size:size) :->
-	object(Size, size(W,_H)),
-	get(D, border, size(BW,_)),
-	get(D, gap, size(GW,_)),
-	send(D, layout, Size),
-	get(D, member, find, Find),
-	get(D, member, how, How),
-	get(D, member, search, TI),
-	get(D, member, cancel, C),
-	right_to_left([C,Find,How,TI], GW, W-BW).
-
-right_to_left([], _, _).
-right_to_left([T], _, R) :- !,
-	send(T, right_side, R).
-right_to_left([H|T], G, R) :-
-	get(H, width, W),
-	X is R-W,
-	send(H, x, X),
-	R2 is X - G,
-	right_to_left(T, G, R2).
-
 tree(F, Tree:rdfs_tree) :<-
 	"Get the tree object"::
 	get(F, member, picture, P),
 	get(P, member, rdfs_hierarchy, Tree).
 
-find(F, String:name, How:[name], In:[chain]) :->
+find(F, String:name, How:[name], Fields:[chain]) :->
 	"Highlight nodes search"::
 	get(F, member, picture, P),
 	get(F, tree, Tree),
 	send(P, scroll_to, point(0,0)),
 	send(Tree, collapse_domain),
-	(   In == @default
-	->  Fields = chain(label)
-	;   chain_list(In, F0),
-	    maplist(mkfield, F0, F1),
-	    Fields =.. [chain|F1]
-	),
 	send(P, clear_comment),
 	send(P, clear_relations),
 	send(Tree, find_from, String, How, Fields).
-
-mkfield(label,   P) :-
-	rdf_equal(rdfs:label, P).
-mkfield(comment, P) :-
-	rdf_equal(rdfs:comment, P).
-mkfield(synonym, P) :-			% must move to private namespace
-	rdf_equal(aat:synonym, P).
 
 locate(F, Term:name) :->
 	"Expand to given term"::
@@ -538,28 +469,19 @@ show_relations(F, Term:name) :->
 	rdfs_label(Term, Label),
 	get(F, member, browser, Browser),
 	send(Browser, clear),
-	(   rdf(Term, P, Obj, _),
-	    (	Obj = literal(Synonym),
-		sub_property(P, _:synonym),
-		Synonym \== Label
-	    ->	send(Browser, append, dict_item(Synonym, style := synonym))
-	    ;	(   rdf_global_id(_:identity, P)
-		;   rdf_global_id(_:map_to_expert, P)
-		),
-		rdfs_label(Obj, IdentLabel)
-	    ->	send(Browser, append, dict_item(Obj, IdentLabel,
-						style := identity))
-	    ;	true
-	    ),
+	(   rdf_has(Term, rdfs:label, literal(Synonym)),
+	    Synonym \== Label,
+	    send(Browser, append, dict_item(Synonym, style := synonym)),
+	    fail
+	;   true
+	),
+	(   rdf_has(Term, owl:sameAs, Obj),
+	    rdfs_ns_label(Obj, IdentLabel),
+	    send(Browser, append, dict_item(Obj, IdentLabel,
+					    style := identity)),
 	    fail
 	;   true
 	).
-
-sub_property(P, Of) :-
-	rdf_global_id(Of, P), !.
-sub_property(P, Of) :-
-	rdf(P, rdfs:subPropertyOf, P1, _),
-	sub_property(P1, Of).
 
 open_from_browser(F, DI:dict_item) :->
 	"User double-clicked in browser"::

@@ -46,43 +46,9 @@ find(OT) :->
 	send(D, transient_for, OT?frame),
 	send(D, open_centered, ?(@event, position, @display)).
 
-find_from(OT, String:name, How:[name], Fields:[chain], Max:[int], ReportTo:[object]) :->
-	statistics(cputime, CPU0),
-	default(How, substring, TheHow),
-	default(Max, 100, MaxCount),
-	send(OT, selection, @nil),
-	get(OT, domain, Domain),
-	(   Fields == @default
-	->  PlFields = [rdfs:label]
-	;   chain_list(Fields, PlFields)
-	),
-	new(Hits, hash_table),
-	(   rdfs_find(String, Domain, PlFields, TheHow, Subject),
-	    \+ get(Hits, member, Subject),
-	    send(Hits, append, Subject),
-	    send(OT, show_hit, Subject),
-	    get(Hits, size, Count),
-	    (   Count > MaxCount
-	    ->  true
-	    ;   send(ReportTo, report, progress, 'Found %d ...', Count),
-	        fail
-	    )
-	;   true
-	),
-	get(Hits, size, Count),
-	(   Count == 0
-	->  send(ReportTo, report, warning, 'No hits'),
-	    send(OT, expand_domain)
-	;   Count =< MaxCount
-	->  statistics(cputime, CPU1),
-	    CPU is CPU1 - CPU0,
-	    send(ReportTo, report, done, 'completed in %.2f seconds', CPU)
-	;   send(ReportTo, report, status, 'Shown first %d hits', MaxCount)
-	).
-
-show_hit(OT, Id:name) :->
-	"Show hit of search"::
-	get(OT, add, Id, Node),
-	send(Node, selected, @on).
+find_from(OT, String:for=name, How:how=[name],
+         Fields:predicates=[chain], Max:max=[int]) :->
+	"Compatibility"::
+	send_super(OT, find, String, How, Fields, Max).
 
 :- pce_end_class(rdfs_hierarchy).

@@ -106,13 +106,20 @@ resize_dialog(D, Size:size) :->
 	get(D, member, find, Find),
 	get(D, member, how, How),
 	get(D, member, search, TI),
-	get(Find, width, FW),
-	get(How, width, HW),
-	FX is W-BW-FW-4,
-	HX is FX-GW-HW,
-	send(Find, x, FX),
-	send(How, x, HX),
-	send(TI, right_side, HX-GW).
+	(   get(D, member, cancel, C)
+	->  right_to_left([C,Find,How,TI], GW, W-BW)
+	;   right_to_left([Find,How,TI], GW, W-BW)
+	).
+
+right_to_left([], _, _).
+right_to_left([T], _, R) :- !,
+	send(T, right_side, R).
+right_to_left([H|T], G, R) :-
+	get(H, width, W),
+	X is R-W,
+	send(H, x, X),
+	R2 is X - G,
+	right_to_left(T, G, R2).
 
 :- pce_end_class(rdf_search_dialog).
 
@@ -136,7 +143,7 @@ classify(TI, Typed:name) :->
 	    (   Field == resource
 	    ->  rdf_global_id(NS:SearchFor, Subject),
 		rdf(Subject, _, _)
-	    ;   rdf_has(Subject, Field, SearchFor),
+	    ;   rdf_has(Subject, Field, literal(SearchFor)),
 		(   nonvar(NS)
 		->  rdf_global_id(NS:_, Subject)
 		;   true

@@ -129,6 +129,7 @@ prompt_value(AL,
 	     Label:label=[name],
 	     For:for=[graphical]) :->
 	"Prompt for a (new) value"::
+	map_default(Default, TheDefault),
 	(   Label == @default
 	->  rdfs_ns_label(Subject, SubjectLabel),
 	    rdfs_ns_label(Property, PropertyLabel),
@@ -140,9 +141,9 @@ prompt_value(AL,
 	property_domain(Subject, Property, Domain),
 	(   Domain = all_values_from(LiteralClass),
 	    rdfs_subclass_of(LiteralClass, rdfs:'Literal')
-	->  new(Item, rdf_literal_item(Property, LiteralClass, Default)),
+	->  new(Item, rdf_literal_item(Property, LiteralClass, TheDefault)),
 	    Type = literal
-	;   new(Item, rdfs_resource_item(Property, Default, @nil, Domain)),
+	;   new(Item, rdfs_resource_item(Property, TheDefault, @nil, Domain)),
 	    Type = resource
 	),
 	send(D, append, Item),
@@ -160,6 +161,10 @@ prompt_value(AL,
 	;   get(For, display_position, point(X, Y)),
 	    send(D, open, point(X, Y+20))
 	).
+
+map_default('__not_filled', @default) :- !.
+map_default(X, X).
+
 
 :- pce_end_class(rdf_tabular).
 

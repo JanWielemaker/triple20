@@ -212,6 +212,50 @@ update(T) :->
 	send(T?root, for_all, message(@arg1, update_label)),
 	send(T?root, for_all, message(@arg1, update)).
 
+:- pce_group(search).
+
+find(OT, String:for=name, How:how=[name],
+         Fields:predicates=[chain], Max:max=[int]) :->
+	"Find from a string"::
+	ReportTo = OT,
+	statistics(cputime, CPU0),
+	default(How, substring, TheHow),
+	default(Max, 100, MaxCount),
+	send(OT, selection, @nil),
+	get(OT, domain, Domain),
+	(   Fields == @default
+	->  PlFields = [rdfs:label]
+	;   chain_list(Fields, PlFields)
+	),
+	new(Hits, hash_table),
+	(   rdfs_find(String, Domain, PlFields, TheHow, Subject),
+	    \+ get(Hits, member, Subject),
+	    send(Hits, append, Subject),
+	    send(OT, show_hit, Subject),
+	    get(Hits, size, Count),
+	    (   Count > MaxCount
+	    ->  true
+	    ;   send(ReportTo, report, progress, 'Found %d ...', Count),
+	        fail
+	    )
+	;   true
+	),
+	get(Hits, size, Count),
+	(   Count == 0
+	->  send(ReportTo, report, warning, 'No hits'),
+	    send(OT, expand_domain)
+	;   Count =< MaxCount
+	->  statistics(cputime, CPU1),
+	    CPU is CPU1 - CPU0,
+	    send(ReportTo, report, done, 'completed in %.2f seconds', CPU)
+	;   send(ReportTo, report, status, 'Shown first %d hits', MaxCount)
+	).
+
+show_hit(OT, Id:name) :->
+	"Show hit of search"::
+	get(OT, add, Id, Node),
+	send(Node, selected, @on).
+
 :- pce_end_class(rdf_tree).
 
 
