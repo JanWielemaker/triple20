@@ -67,6 +67,7 @@ rdf_db:ns(paint,   'http://www.swi.psy.uva.nl/mia/painting#').
 rdf_db:ns(subject, 'http://www.swi.psy.uva.nl/mia/subject#').
 rdf_db:ns(ic,	   'http://www.swi.psy.uva.nl/mia/iconclass#').
 rdf_db:ns(ghs,	   'http://www.swi.psy.uva.nl/mia/ghs#').
+rdf_db:ns(ann,	   'http://www.swi.psy.uva.nl/mia/ann#').
 rdf_db:ns(vin,     'http://www.w3.org/2001/sw/WebOnt/guide-src/wine#').
 rdf_db:ns(cyc,     'http://www.cyc.com/cyc#').
 rdf_db:ns(cyc03,   'http://www.cyc.com/2003/04/01/cyc#').
@@ -78,8 +79,9 @@ rdf_db:ns(fam,     'http://swi.psy.uva.nl/family#').
 rdf_db:ns(swrl,	   'http://www.w3.org/2003/11/swrl#').
 rdf_db:ns(mesh,    'http://www.nlm.nih.gov/mesh/2004#').
 rdf_db:ns(galen,   'http://example.org/factkb#').
-rdf_db:ns(skos,    'http://www.w3.org/2004/02/skos/core#').
 rdf_db:ns(gcl,     'http://www.govtalk.gov.uk/schemasstandards/gcl#').
+rdf_db:ns(skos,    'http://www.w3.org/2004/02/skos/core#').
+rdf_db:ns(skosm,   'http://www.w3.org/2004/02/skos/mapping#').
 
 %	load_base_ontology(+Identifier)
 
