@@ -458,9 +458,9 @@ label_class(Resource, Class) :-
 	super::label_class(Resource, Class).
 
 child_cache('__orphan_classes', Cache, rdf_class_node) :-
-	rdf_cache(X, orphan_class(X), Cache).
+	rdf_cache(lsorted(X), orphan_class(X), Cache).
 child_cache('__orphan_resources', Cache, rdf_individual_node) :-
-	rdf_cache(X, orphan_resource(X), Cache).
+	rdf_cache(lsorted(X), orphan_resource(X), Cache).
 child_cache(Resource, Cache, Role) :-
 	super::child_cache(Resource, Cache, Role).
 
@@ -471,6 +471,10 @@ orphan_class(Class) :-
 
 orphan_resource(Resource) :-
 	rdf_subject(Resource),
+	\+ rdf_has(Resource, rdf:type, _).
+orphan_resource(Resource) :-
+	rdf(_, _, Resource),
+	atom(Resource),
 	\+ rdf_has(Resource, rdf:type, _).
 
 :- end_particle.

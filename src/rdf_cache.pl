@@ -176,7 +176,12 @@ unique_unkey([H0|T0], [H|T]) :-
 
 remove_dups(H, [H|T0], T) :- !,
 	remove_dups(H, T0, T).
+remove_dups(P, [H|T0], [H|T]) :-	% Handle different resources with
+	same_label(P, H), !,		% same label
+	remove_dups(P, T0, T).
 remove_dups(_, L, L).
+
+same_label(L-_, L-_).
 
 
 %	rdf_cache_clear(+Cache)
