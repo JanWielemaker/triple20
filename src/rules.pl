@@ -185,24 +185,24 @@ menu_item(open,   diagram_).
 child_cache(R, Cache, Class) :-
 	rdfs_individual_of(R, rdfs:'Class'),
 	(   rdfs_subclass_of(R, rdf:'Property')
-	->  (   rdf_cache(V, rdf_has(V, rdfs:subClassOf, R), Cache),
+	->  (   rdf_cache(lsorted(V), rdf_has(V, rdfs:subClassOf, R), Cache),
 	        Class = rdf_class_node
-	    ;   rdf_cache(V, root_property(R,V), Cache),
+	    ;   rdf_cache(lsorted(V), root_property(R,V), Cache),
 		Class = rdf_property_node
 	    )
-	;   (   rdf_cache(V, rdf_has(V, rdfs:subClassOf, R), Cache),
+	;   (   rdf_cache(lsorted(V), rdf_has(V, rdfs:subClassOf, R), Cache),
 	        Class = rdf_class_node
 	    ;   % \+ rdfs_subclass_of(R, rdfs:'Class'),
-	        rdf_cache(V, rdf_has(V, rdf:type, R), Cache),
+	        rdf_cache(lsorted(V), rdf_has(V, rdf:type, R), Cache),
 		Class = rdf_individual_node
 	    ;	rdfs_subclass_of(R, owl:'Restriction'),
-		rdf_cache(V, rdf_has(V, rdf:type, R), Cache),
+		rdf_cache(lsorted(V), rdf_has(V, rdf:type, R), Cache),
 		Class = owl_restriction_node	    
 	    )
 	).
 child_cache(R, Cache, rdf_individual_node) :-
 	rdfs_individual_of(R, rdf:'List'), !,
-	rdf_cache(V, rdfs_member(V, R), Cache).
+	rdf_cache(lsorted(V), rdfs_member(V, R), Cache).
 
 
 %	parent(+Resource, -Parent, -Class)
@@ -265,7 +265,7 @@ menu_item(edit, delete=delete_resource).
 :- begin_particle(rdf_property_node, rdf_node).
 
 child_cache(R, Cache, rdf_property_node) :-
-	rdf_cache(V, rdf_has(V, rdfs:subPropertyOf, R), Cache).
+	rdf_cache(lsorted(V), rdf_has(V, rdfs:subPropertyOf, R), Cache).
 
 :- end_particle.
 

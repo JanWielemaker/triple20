@@ -40,6 +40,7 @@
 :- use_module(library(persistent_frame)).
 :- use_module(semweb(rdfs)).
 :- use_module(semweb(rdf_db)).
+:- use_module(rdf_cache).
 :- use_module(owl).
 :- use_module(semweb(rdfs)).
 :- use_module(rdf_table).
@@ -599,26 +600,57 @@ append_slot(AL, Slot:name, Class:[name]) :->
 		   "Show attributes of an instance").
 
 variable(resource,	name*,		get, "Displayed Instance").
+variable(cache,		int*,		get, "Cached result").
 
 initialise(AL, Instance:[name]) :->
 	"Create from instance"::
 	send_super(AL, initialise),
 	(   Instance \== @default
-	->  send(AL, selection, Instance)
+	->  send(AL, resource, Instance)
 	;   true
 	).
 
-resource(AL, Instance:name) :->
+
+unlink(AL) :->
+	send(AL, detach_cache),
+	send_super(AL, unlink).
+
+
+attach_cache(AL) :->
+	"Attach to the caching system"::
+	(   get(AL, resource, Resource),
+	    Resource \== @nil
+	->  rdf_cache(P=O, rdf(Resource, P, O), Cache),
+	    send(AL, slot, cache, Cache),
+	    rdf_cache_attach(Cache, AL),
+	    rdf_cache_cardinality(Cache, _Card) 	% force cache to update
+	;   true
+	).
+
+
+detach_cache(AL) :->
+	"Detach from the caching system"::
+	(   get(AL, cache, Cache), Cache \== @nil
+	->  rdf_cache_detach(Cache, AL),
+	    send(AL, slot, cache, @nil)
+	;   true
+	).
+
+
+resource(AL, Resource:name*) :->
+	(   get(AL, resource, Resource)
+	->  true
+	;   send(AL, detach_cache),
+	    send(AL, slot, resource, Resource),
+	    send(AL, attach_cache),
+	    send(AL, update)
+	).
+
+update(AL, _Cache:[int]) :->
 	send(AL, clear),
-	send(AL, slot, resource, Instance),
 	send(AL, display_title),
 	send(AL, display_predicates_title),
 	send(AL, append_slots).
-
-refresh(AL) :->
-	"Re-read the data from the RDF database"::
-	get(AL, resource, Resource),
-	send(AL, resource, Resource).
 
 display_title(AL) :->
 	"Display common information"::
@@ -630,7 +662,7 @@ display_title(AL) :->
 display_label(AL) :->
 	"Display the label (if any)"::
 	rdf_equal(rdfs:label, Property),
-	send(AL, append_property, Property).
+	ignore(send(AL, append_property, Property)).
 
 display_resource(AL) :->
 	get(AL, resource, I),
@@ -641,12 +673,12 @@ display_resource(AL) :->
 display_type(AL) :->
 	"Display class(es) I belong to"::
 	rdf_equal(rdf:type, Property),
-	send(AL, append_property, Property).
+	ignore(send(AL, append_property, Property)).
 
 display_comment(AL) :->
 	"Display the comment field"::
 	rdf_equal(rdfs:comment, Property),
-	send(AL, append_property, Property).
+	ignore(send(AL, append_property, Property)).
 
 display_predicates_title(AL) :->
 	new(D, device),

@@ -262,14 +262,6 @@ possible effort.  There are still two pitfalls:
 	  be added as last child.
 - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
 
-cache_updated(Cache) :-
-	debug(rdf_cache, 'Check cache ~w', [Cache]),
-	rdf_cache_attached(Cache, Node),
-	send(Node, update, Cache).
-
-:- listen(rdf_cache_updated(Cache),
-	  cache_updated(Cache)).
-
 update(N, Cache:[int]) :->
 	(   get(N, hypered, editor, _)
 	->  true
@@ -574,9 +566,13 @@ initialise(N, Parent:name, What:{class,individual}) :->
 	send(D, pen, 1),
 	send(N, collapsed, @nil).
 
-resource_created(N, Resource:name) :->
+resource_created(N, Resource:name, Mode:{class,individual}) :->
 	get(N, parents, chain(Parent)),
-	send(Parent, add_child, Resource, rdf_class_node, N).
+	(   Mode == class
+	->  Role = rdf_class_node
+	;   Role = rdf_individual_node
+	),
+	send(Parent, add_child, Resource, Role, N).
 
 get_focus(N) :->
 	send(N?image, advance).
@@ -622,7 +618,8 @@ create_resource(N) :->
 	send(IDI, clear),
 	(   get(N, contained_in, Container),
 	    send(Container, has_send_method, resource_created)
-	->  send(Container, resource_created, Resource)
+	->  get(N, mode, Mode),
+	    send(Container, resource_created, Resource, Mode)
 	;   true
 	).
 

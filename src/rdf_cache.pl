@@ -128,10 +128,7 @@ rdf_update_cache(Cache, false) :-
 	cache_attributes(Cache, Generation, _Size),
 	rdf_generation(Generation), !.
 rdf_update_cache(Cache, Modified) :-
-	cache_goal(Cache, Var, Goal),
-	findall(Label-Var, (Goal, (rdfs_label(Var, Label)->true)), Values0),
-	keysort(Values0, Values1),
-	unique_unkey(Values1, Values),
+	compute(Cache, Values),
 	Result =.. [values|Values],
 	(   cache_result(Cache, Result)
 	->  RawModified = false
@@ -147,6 +144,24 @@ rdf_update_cache(Cache, Modified) :-
 	assert(cache_attributes(Cache, Generation, Arity)),
 	retractall(cache_empty(Cache, _, _)),
 	Modified = RawModified.
+
+%	compute(+Cache, -ResultList)
+%	
+%	Computes the result-list.  By embedding Var in a term it allows
+%	for various sorting and merging operations.
+
+compute(Cache, Result) :-
+	cache_goal(Cache, lsorted(Var), Goal), !,
+	findall(Label-Var, (Goal, (rdfs_label(Var, Label)->true)), Values0),
+	keysort(Values0, Values1),
+	unique_unkey(Values1, Result).
+compute(Cache, Result) :-
+	cache_goal(Cache, sorted(Var), Goal), !,
+	findall(Var, Goal, Values0),
+	sort(Values0, Result).
+compute(Cache, Result) :-
+	cache_goal(Cache, Var, Goal), !,
+	findall(Var, Goal, Result).
 
 
 unique_unkey([], []).
@@ -232,7 +247,14 @@ update_cache :-
 update_cache.
 
 updated(Cache) :-
-	broadcast(rdf_cache_updated(Cache)).
+	(   rdf_cache_attached(Cache, Node),
+	    object(Node),
+	    debug(rdf_cache, '~p->update: ~w', [Node, Cache]),
+	    catch(send(Node, update, Cache), E,
+		  print_message(error, E)),
+	    fail
+	;   true
+	).
 
 :- initialization
    rdf_cache_create_update_thread.
