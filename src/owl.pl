@@ -244,7 +244,7 @@ merge_values_from(all, C1, all, C2, all, C) :-
 
 owl_cardinality_on_subject(Subject, Predicate, Cardinality) :-
 	findall(C, cardinality_on_subject(Subject, Predicate, C), L),
-	join_decls(L, Cardinality).
+	join_decls(L, [Cardinality]).
 
 cardinality_on_subject(Subject, Predicate, cardinality(Min, Max)) :-
 	rdf_has(Subject, rdf:type, Class),
