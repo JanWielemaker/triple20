@@ -1,22 +1,21 @@
 ================================================================
 * Editing:
 
-	+ Drag and drop
-		- Move classes and instances in the tree
-		- Drop resources to almost anything
 	+ Obligatory slots: add to create-node
 
 ================================================================
 * Bugs:
 
 	+ Discard empty transactions
-	+ Unclip window: wheelmouse, click, and other problems
-	+ Drop class on `Range' doesn't work
-	+ Particle/module conflict: rdfs_hierarchy
-
 
 ================================================================
 * rdf_db
-	- Automatically re-hash with bigger tables.
-	- Add explicit re-hash?
 
+	+ Automatically re-hash with bigger tables.
+	+ Add explicit re-hash?
+
+================================================================
+* MISC
+
+	+ Save modules as RDF
+	+ History visualisation (tag transactions with user?)
