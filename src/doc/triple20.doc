@@ -41,14 +41,70 @@ and installation of the toolkit.
 
 \section{Introduction}
 
-Triple20 is a toolkit for visualization and editing of data
-in the \pllib{rdf_db} \emph{triple store}.
+Triple20 is a toolkit for visualization and editing of data in the
+\pllib{rdf_db} \emph{triple store}.
 
+
+\section{The Triple20 User Interface}
+
+The interface is too unstable to document in any detail.  This section
+only provides some hints to get you started.
+
+\subsection{Drag till you Drop}
+
+Many edit operations require two arguments, making drag-and-drop an
+attractive interface technique.  Drag and drop is associated with most
+objects on both the left- and right mouse button.  While dragging, the
+system indicates the action taken in the status window.  On left-drag
+it executes the indicated action.  On right-drop it displays a menu with
+alternatives.  Some actions
+
+\begin{itemlist}
+    \item [Reorganise the hierarchy]
+The hierarchy in the left window can be reorganised using drag-and-drop.
+This can be used to modify the class hierarchy, property hierarchy and
+to change the type of instances.
+
+    \item [Change propterty values]
+Objects can be dropped on property values in the table to change the
+value of a property.  When an object is dropped on a predicate a new
+value is added.  Dropping a predicate on a predicate changes the
+relation.
+\end{itemlist}
+
+
+\subsection{Context menus}
+
+Most objects have a context menu associated with the right mouse-button.
+
+
+\subsection{Icons and Labels}
+
+Using the {\sf View/Label} menu the system can identify resources in
+three ways.  \emph{Label only} only displays the label.  The label is
+either the first value for the \const{rdfs:label} property, a subproperty
+thereof or the last part of the resource name.  \emph{Namespace and label}
+displays the namespace identifier (see \secref{namespaces}) before the
+label.  This is the default.  \emph{Resource} displays the namespace
+identifiers in front of the local resource name.
+
+In most situations the label is preceded by a small icon. The icons
+depend on the classification of the resource. In the hierarchy view,
+labels may have two icons. In this case the first icon represents the
+relation to the parent and the second represents the type
+classification.
 
 
 \section{Projects and files}
 
-\section{Namespaces}
+\section{Namespaces}				\label{sec:namespaces}
+
+Triple20 has an internal table of well-known namespaces and their common
+abbreviation.  This table is in the file \file{rdf_base.pl}.  If possible
+it will use the abbreviated form in the UI.  Namespaces can be added through
+the \textsf{File/Namespaces} menu option.  Registered namespaces are stored
+in the project file.
+
 
 \section{Project files and snapshots}
 
@@ -81,6 +137,66 @@ number of triples) as well as the MD5 digest. If the journal is replayed
 it will first try to locate the snapshot from the MD5 digest and name,
 loading exactly the same file.  If this fails Triple20 tries to locate
 the ontology file itself.
+
+
+\section{Downloading and Installation}
+
+The current snapshot of the Triple20 toolkit can be downloaded from
+\url[SWI-Prolog CVS server]{http://www.swi-prolog.org/cvs.html}.  As
+the system is under active development, the \emph{HEAD} revision is
+often unstable.	We use the symbolic (sticky) tag \emph{STABLE} to
+reflect the latest useable version.  The CVS download commands are:
+
+\begin{code}
+% cvs -d :pserver:pl@gollem.swi.psy.uva.nl:/usr/local/cvspl login
+Logging in to :pserver:pl@gollem.swi.psy.uva.nl:2401/usr/local/cvspl
+CVS password: prolog
+
+% cvs -z 9 -d :pserver:pl@gollem.swi.psy.uva.nl:/usr/local/cvspl co -r STABLE Triple20
+\end{code}
+
+This command both downloads the software and the public ontologies, some
+of which are very large. Alternatively you may use multiple CVS
+\const{co} commands to extract the required subdirectories.
+\Tabref{dirs} provides an overview of the directories.
+
+\begin{table}
+\begin{center}
+\begin{tabular}{|l|p{0.6\linewidth}|}
+\hline
+\tt Triple20/src		& The software \\
+\tt Triple20/Ontologies/Base	& Small basic ontologies: OWL, RDFS, etc. \\
+\tt Triple20/Ontologies/Demo	& Demos: wine.owl \\
+\tt Triple20/Ontologies/Public	& Large public ontologies: WordNet, OpenCyc
+				  $\pm 47Mb$.  Optional. \\
+\hline
+\end{tabular}
+\end{center}
+    \caption{Directories on the Triple20 CVS server}
+    \label{tab:dirs}
+\end{table}
+
+\subsection{Finishing in MS-Windows}
+
+After installing Prolog, double click \file{src/setup.pl} to register
+\fileext{RDFJ} project files to start Triple20.  Optionally 
+also associate \fileext{RDF}, \fileext{RDFS} and \fileext{OWL} to
+lauch Triple20 and load the file.
+
+To make Triple20 accessible from the Windows desktop, create a
+\emph{shortcut} from the desktop to \file{src/triple20.pl}.
+
+
+\subsection{Finishing in Unix}
+
+Edit \file{triple20.pl}, adjust \verb$#!$ path to point to the
+SWI-Prolog executable and file_search_path/2 with an absolute path to
+the directory where you installed the sources. Now copy (or make a
+symbolic link) triple20.pl to a directory in your \verb!$PATH!
+environment variable as \const{triple20}.
+
+After this you can run \verb$triple20 option ... file ...$.  Using
+\verb$triple20 --help$ for a list of commandline options.
 
 
 		 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
