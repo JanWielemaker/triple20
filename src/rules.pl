@@ -60,6 +60,8 @@ owl_description_attribute(X) :- rdf_equal(owl:intersectionOf, X).
 :- dynamic
 	view_label_as_setting/1.
 
+view_label_as_setting(resource).	% initial default
+
 label_text(Resource, Text) :-
 	view_label_as_setting(label_only), !,
 	rdfs_label(Resource, Text).
@@ -70,7 +72,7 @@ label_text(Resource, Text) :-
 label_text(Resource, Text) :-
 	rdfs_ns_label(Resource, Text).
 
-%	view_label_as(Style)
+%	view_label_as(?Style)
 %	
 %	This is not a rule, but intended to  be called to change the way
 %	labels are presented to the user.

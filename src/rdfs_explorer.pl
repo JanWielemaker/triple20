@@ -215,7 +215,8 @@ fill_tool_dialog(OV) :->
 		    namespace_and_label,
 		    resource
 		  ]),
-	send(Label, selection, namespace_and_label),
+	rdf_label_rules:view_label_as(LabelAs),
+	send(Label, selection, LabelAs),
 
 					% dialect setting
 	send(Dialect, show_current, @on),
