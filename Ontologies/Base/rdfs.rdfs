@@ -115,7 +115,7 @@
   <rdfs:comment>The class of RDF statements.</rdfs:comment>
 </rdfs:Class>
 
-<rdf:Property about="&rdf;subject">
+<rdf:Property rdf:about="&rdf;subject">
   <rdfs:isDefinedBy rdf:resource="&rdf;"/>
   <rdfs:label xml:lang="en">subject</rdfs:label>
   <rdfs:comment>The subject of an RDF statement.</rdfs:comment>
@@ -123,7 +123,7 @@
   <rdfs:range rdf:resource="&rdfs;Resource"/>
 </rdf:Property>
 
-<rdf:Property about="&rdf;predicate">
+<rdf:Property rdf:about="&rdf;predicate">
   <rdfs:isDefinedBy rdf:resource="&rdf;"/>
   <rdfs:label xml:lang="en">predicate</rdfs:label>
   <rdfs:comment>the predicate of an RDF statement.</rdfs:comment>
@@ -131,7 +131,7 @@
   <rdfs:range rdf:resource="&rdf;Property"/>
 </rdf:Property>
 
-<rdf:Property about="&rdf;object">
+<rdf:Property rdf:about="&rdf;object">
   <rdfs:isDefinedBy rdf:resource="&rdf;"/>
   <rdfs:label xml:lang="en">object</rdfs:label>
   <rdfs:comment>The object of an RDF statement.</rdfs:comment>
