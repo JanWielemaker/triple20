@@ -32,6 +32,7 @@
 
 :- module(rdf_base,
 	  [ load_base_ontology/1,	% +Id
+	    load_base_ontology/2,	% +Id, +Options
 	    current_base_ontology/1,	% -Id
 	    required_base_ontology/1	% -Id
 	  ]).
@@ -83,16 +84,25 @@ rdf_db:ns(gcl,     'http://www.govtalk.gov.uk/schemasstandards/gcl#').
 rdf_db:ns(skos,    'http://www.w3.org/2004/02/skos/core#').
 rdf_db:ns(skosm,   'http://www.w3.org/2004/02/skos/mapping#').
 rdf_db:ns(aeneas,  'http://www.swi.psy.uva.nl/mia/aeneas#').
-rdf_db:ns(mia2,  'http://www.swi.psy.uva.nl/mia/mia2#').
+rdf_db:ns(mia2,    'http://www.swi.psy.uva.nl/mia/mia2#').
+
+
 %	load_base_ontology(+Identifier)
 
 load_base_ontology(Category) :-
-	load_base_ontology(1, Category).
+	load_base_ontology(Category, []).
 
-load_base_ontology(C, Category) :-
-	findall(load_base(X), expand_category(Category, X), Goals0),
+load_base_ontology(Category, Options) :-
+	(   select(concurrent(Concur), Options, Options1)
+	->  true
+	;   Options1 = Options,
+	    Concur = 1
+	),
+	findall(load_base(X, Options1),
+		expand_category(Category, X),
+		Goals0),
 	list_to_set(Goals0, Goals),
-	concurrent(C, Goals).
+	concurrent(Concur, Goals).
 
 %	current_base_ontology(-Identifier)
 %	
@@ -109,13 +119,16 @@ current_base_ontology(Id) :-
 				  ],
 				  _File)).
 
-load_base(File) :-
+load_base(File, Options) :-
 	absolute_file_name(File,
 			   [ access(read),
 			     extensions([rdf,rdfs,owl,''])
 			   ], Path),
-	rdfe_load(Path),
-	rdfe_set_file_property(Path, access(ro)).
+	(   option(transactions(false), Options, true)
+	->  rdf_load(Path)
+	;   rdfe_load(Path),
+	    rdfe_set_file_property(Path, access(ro))
+	).
 
 
 %	rdf_file(+Identifier, -File)
