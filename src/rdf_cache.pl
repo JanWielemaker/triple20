@@ -151,6 +151,10 @@ rdf_update_cache(Cache, Modified) :-
 %	for various sorting and merging operations.
 
 compute(Cache, Result) :-
+	cache_goal(Cache, Var, Goal),
+	var(Var), !,
+	findall(Var, Goal, Result).
+compute(Cache, Result) :-
 	cache_goal(Cache, lsorted(Var), Goal), !,
 	findall(Label-Var, (Goal, (rdfs_label(Var, Label)->true)), Values0),
 	keysort(Values0, Values1),
@@ -160,7 +164,7 @@ compute(Cache, Result) :-
 	findall(Var, Goal, Values0),
 	sort(Values0, Result).
 compute(Cache, Result) :-
-	cache_goal(Cache, Var, Goal), !,
+	cache_goal(Cache, Var, Goal),
 	findall(Var, Goal, Result).
 
 

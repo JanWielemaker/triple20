@@ -1,25 +1,12 @@
+================================================================
+* Editing:
+
+	+ Drag and drop
+		- Move classes and instances in the tree
+		- Drop resources to almost anything
+	+ Obligatory slots: add to create-node
+
+================================================================
 * rdf_db
 	- Automatically re-hash with bigger tables.
 	- Add explicit re-hash?
-	- Deal with atom-references; especially after load
-
-* Hybrid hierarchy visualization:
-	- Maps
-	- rdfs:Class    --> rdfs:subClassOf
-	  rdfs:Property --> rdfs:subPropertyOf
-	  <any> rdf:type
-
-* rdf_reachable/3
-
-	Preformance on searching for `right', exact
-
-	- Was: 3.57 seconds (prolog-based rdfs.pl)
-	- Using rdf_reachable/3:
-		- First implementation: 3.44
-
-================================================================
-Checking
-================================================================
-
-	* Well-formed URL?
-		Objects not appearing as subject?

@@ -490,7 +490,8 @@ unlink(AL) :->
 	send_super(AL, unlink).
 
 property_cache(Cache) :-
-	rdf_cache(X, property(X), Cache).
+	rdf_cache(X, property(X), Cache),
+	rdf_cache_cardinality(Cache, _). % force update
 
 property(property(P,D,R)) :-
 	rdfs_individual_of(P, rdf:'Property'),
