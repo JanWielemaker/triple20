@@ -1,3 +1,9 @@
+Apr 3, 2005
+
+  * ADDED: "Show my subjects" to the graph vizualisation.
+
+  * CLEANUP: Some mode issues in the diagram vizualisation.
+
 Mar 30, 2005
 
   * Added loading Prolog plugins from the commandline

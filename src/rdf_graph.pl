@@ -75,8 +75,8 @@ fill_dialog(DF, TD) :->
 
 	send_list(View, append,
 		  [ menu_item(layout, message(D, layout)),
-		    menu_item(collapse_all, message(D, collapse_all)),
-		    menu_item(expand_all, message(D, expand_all)),
+		    menu_item(collapse_all, message(D, mode, label)),
+		    menu_item(expand_all, message(D, mode, sheet)),
 		    menu_item(clear, message(D, clear))
 		  ]).
 
@@ -104,6 +104,8 @@ open_resource(DF, R:name, How:name) :->
 		   "Display an RDF diagram").
 :- use_class_template(rdf_arm).
 
+variable(mode, {sheet,label}, get, "Current mode for members").
+
 initialise(D) :->
 	send_super(D, initialise),
 	send(D, recogniser, @arm_recogniser).	% allow arming window for
@@ -111,7 +113,9 @@ initialise(D) :->
 
 :- pce_group(content).
 
-append(D, Resource:name, Mode:[{sheet, label}], Where:[point]) :->
+append(D, Resource:resource=name,
+          Mode:mode=[{sheet, label}], Where:at=[point]) :->
+	"Display a resource in Mode at Where"::
 	(   get(D, rdf_object, Resource, Obj)
 	->  (   Mode \== @default
 	    ->	send(Obj, mode, Mode)
@@ -129,7 +133,11 @@ append(D, Resource:name, Mode:[{sheet, label}], Where:[point]) :->
 		)
 	    ;	true
 	    ),
-	    (	Mode == label
+	    (	Mode == @default
+	    ->	get(D, mode, TheMode)
+	    ;	TheMode = Mode
+	    ),
+	    (	TheMode == label
 	    ->	true
 	    ;	send(Obj, mode, sheet)
 	    )
@@ -183,17 +191,16 @@ layout(D) :->
 	    Objects),
 	send(Objects?head, layout, network := Objects).
 
-collapse_all(D) :->
-	send(D?graphicals, for_all,
+
+mode(D, Mode:{label,sheet}) :->
+	"Vizualisation mode of graphicals"::
+	(   get(D, mode, Mode)
+	->  true
+	;   send(D, slot, mode, Mode),
+	    send(D?graphicals, for_all,
 	     if(message(@arg1, instance_of, rdf_object),
-		message(@arg1, mode, label))).
-
-
-expand_all(D) :->
-	send(D?graphicals, for_all,
-	     if(message(@arg1, instance_of, rdf_object),
-		message(@arg1, mode, sheet))).
-
+		message(@arg1, mode, Mode)))
+	).
 
 
 :- pce_group(event).
@@ -286,15 +293,18 @@ update_content(O) :->
 	->  send(O, append, new(I, bitmap(resource(expand)))),
 	    send(I, recogniser, click_gesture(left, '', single,
 					      message(O, mode, sheet))),
-	    send(O, append_resource, Resource)
+	    send(O, append_resource, Resource),
+	    RelOnly = @on
 	;   send(O, append, new(I, bitmap(resource(collapse)))),
 	    send(I, recogniser, click_gesture(left, '', single,
 					      message(O, mode, label))),
 	    send(O, append_resource, Resource),
-	    get(O, sheet_attributes, Attrs),
-	    send(Attrs, for_all,
-		 message(O, show_attribute, @arg1))
-	).
+	    RelOnly = @off
+	),
+	get(O, sheet_attributes, Attrs),
+	send(Attrs, for_all,
+	     message(O, show_attribute, @arg1, RelOnly)).
+
 
 sheet_attributes(O, Atts:chain) :<-
 	"Return a chain holding the attributes for the sheet"::
@@ -303,12 +313,14 @@ sheet_attributes(O, Atts:chain) :<-
 	sort(Ps, Unique),
 	chain_list(Atts, Unique).
 
-show_attribute(V, P:name) :->
+show_attribute(V, P:name, RelOnly:[bool]) :->
 	"Add given attribute to visualization"::
 	get(V, resource, S),
 	findall(O, rdf(S, P, O), Os),
 	link_attributes(Os, P, V, Rest),
-	(   Rest == []
+	(   (   Rest == []
+	    ;   RelOnly == @on
+	    )
 	->  true
 	;   send(V, nl, 30),
 	    get(V, append_resource, P, Gr),
@@ -328,7 +340,14 @@ link_attributes2([H|T], P, V, Rest) :-
 	atom(H),
 	get(V, device, Dev),
 	get(Dev, rdf_object, H, RdfObject), !,
-	new(_, rdf_arc(V, P, RdfObject)),
+	(   get(V, connections, RdfObject, CList),
+	    get(CList, find,
+		and(message(@arg1, instance_of, rdf_arc),
+		    @arg1?resource == P),
+		_)
+	->  true			% existing connection
+	;   new(_, rdf_arc(V, P, RdfObject))
+	),
 	link_attributes2(T, P, V, Rest).
 link_attributes2([H|T], P, V, [H|Rest]) :-
 	link_attributes2(T, P, V, Rest).
@@ -354,6 +373,50 @@ link_to_me(V) :->
 	    fail
 	;   true
 	).
+
+show_my_subjects(V) :->
+	"Show objects having me as subject"::
+	get(V, device, Dev),
+	get(V, resource, O),
+	(   setof(S, P^rdf(S,P,O), List),
+	    length(List, Len)
+	->  (   Len > 10
+	    ->	get(V, ask_howmany, Len, Show)
+	    ;	Show = Len
+	    ),
+	    get(V, bottom_side, Bottom),
+	    get(V, left_side, Left),
+	    X  is Left + 150,
+	    Y0 is Bottom + 50,
+	    State = state(Y0, 0),
+	    (	member(S, List),
+		arg(1, State, Y),
+		send(Dev, append, S, label, point(X, Y)),
+		Y2 is Y + 30,
+		nb_setarg(1, State, Y2),
+		arg(2, State, C0),
+		C is C0+1,
+		nb_setarg(2, State, C),
+		C == Show
+	    ->	true
+	    ;	true
+	    ),
+	    send(V, update)
+	;   send(V, report, warning, 'No subjects link to me')
+	).
+
+ask_howmany(V, Count:int, Show:int) :<-
+	"Ask how many to display"::
+	new(D, rdf_dialog(V, 'Found many')),
+	sformat(Label, 'Found ~D subjects', Count),
+	send(D, append, label(title, Label)),
+	send(D, append, button(show_5, message(D, return, 5))),
+	send(D, append, button(show_25, message(D, return, 25))),
+	send(D, append, button(cancel, message(D, destroy))),
+	get(D, confirm, Show0),
+	send(D, destroy),
+	Show = Show0.
+
 
 :- pce_group(state).
 
@@ -529,6 +592,7 @@ initialise(C, Subject:rdf_object, Predicate:name, Object:rdf_object) :->
 menu_item(graph, close).
 menu_item(graph, close_other_nodes).
 menu_item(graph, close_related_nodes).
+menu_item(graph, show_my_subjects).
 menu_item(graph, values_to_nodes).
 menu_item(Group, Item) :-
 	super::menu_item(Group0, Item),
