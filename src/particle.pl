@@ -141,6 +141,15 @@ user:goal_expansion(::G, particle:particle_self(G)) :-
 
 particle_self(Goal) :-
 	(   prolog_current_frame(Frame),
+	    prolog_frame_attribute(Frame, parent_goal,
+				   particle:(::(Particle, _)))
+	->  Particle:Goal
+	;   throw(error(existence_error(particle, self), _))
+	).
+
+/*
+particle_self(Goal) :-
+	(   prolog_current_frame(Frame),
 	    find_self_particle(Frame, Particle)
 	->  Particle:Goal
 	;   throw(error(existence_error(particle, self), _))
@@ -154,7 +163,7 @@ find_self_particle(Frame, Particle) :-
 	find_self_particle(Parent, Particle).
 	
 goal_particle(_:(::(Particle, _Goal)), Particle).
-
+*/
 
 		 /*******************************
 		 *	  ADMINISTRATION	*
