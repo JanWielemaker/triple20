@@ -273,7 +273,7 @@ rdf_default_file(_, File, NS) :-
 
 rdf_default_ns(File, NS) :-
 	default_ns(File, NS), !.
-rdf_default_ns(_, 'foo:bar').
+rdf_default_ns(_, t20).			% unassigned, use triple20
 
 %	rdf_set_default_ns(+File, +Namespace)
 %	

@@ -86,6 +86,7 @@ rdf_db:ns(skosm,   'http://www.w3.org/2004/02/skos/mapping#').
 rdf_db:ns(aeneas,  'http://www.swi.psy.uva.nl/mia/aeneas#').
 rdf_db:ns(mia2,    'http://www.swi.psy.uva.nl/mia/mia2#').
 rdf_db:ns(rs,      'http://jena.hpl.hp.com/2003/03/result-set#').
+rdf_db:ns(t20,	   'http://www.swi-prolog.org/packages/Triple20/').
 
 %	register_default_ns(NS=URL)
 %	
@@ -248,6 +249,13 @@ required_base_ontology(skos) :-
 	(   rdf(_, skos:'preferred-label', _)
 	;   rdf(_, _, skos:'Concept')
 	) -> true.
+required_base_ontology(Base) :-
+	rdf_source(X),
+	file_name_extension(_, Ext, X),
+	required_by_ext(Ext, Base).
+
+required_by_ext(rdfs, rdfs).
+required_by_ext(owl, owl).
 
 
 		 /*******************************
