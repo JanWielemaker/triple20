@@ -41,6 +41,7 @@
 					% Edit operations
 	    rdf_set_object/4,		% +S, +P, +O, +NewObject
 	    rdf_set_object/3,		% +S, +P, +Object
+	    rdf_set_rev_object/4,	% +S, +P, +Rev, +Object
 	    rdf_add_object/3,		% +S, +P, +O
 	    rdf_new_property/2,		% +S, +P
 	    rdf_new_property/3,		% +S, +P, +O
@@ -71,6 +72,12 @@ user:goal_expansion(rdf_set_object(Subj0, Pred0, Obj0),
 		    rdf_set_object(Subj, Pred, Obj)) :-
 	rdf_global_id(Subj0, Subj),
 	rdf_global_id(Pred0, Pred),
+	rdf_global_id(Obj0, Obj).
+user:goal_expansion(rdf_set_rev_object(Subj0, Pred0, Rev0, Obj0),
+		    rdf_set_rev_object(Subj, Pred, Rev, Obj)) :-
+	rdf_global_id(Subj0, Subj),
+	rdf_global_id(Pred0, Pred),
+	rdf_global_id(Rev0, Rev),
 	rdf_global_id(Obj0, Obj).
 user:goal_expansion(rdf_set_object(Subj0, Pred0, Obj0, New0),
 		    rdf_set_object(Subj, Pred, Obj, New)) :-
@@ -280,10 +287,10 @@ set_object(Subject, Predicate, Old, New) :-
 
 rdf_set_object(Subject, Predicate, Object) :-
 	property_domain(Subject, Predicate, Domain),
-	(   owl_satisfies(Domain, New)
+	(   owl_satisfies(Domain, Object)
 	->  rdfe_transaction(set_object(Subject, Predicate, Object),
 			     modify_property_value)
-	;   throw(error(domain_error(Domain, New), _))
+	;   throw(error(domain_error(Domain, Object), _))
 	).
 
 set_object(Subject, Predicate, Object) :-
@@ -320,6 +327,38 @@ add_object(Subject, Predicate, Object) :-
 	;   rdf_default_file(Subject, File)
 	),
 	rdfe_assert(Subject, Predicate, Object, File).
+
+
+%	rdf_set_rev_object(+Subject, +Predicate, +Reverse, +New)
+%	
+%	Make a relation rdf(Subject, Predicate, New) and a relation
+%	rdf(New, Reverse, Subject) after deleting the old relations.
+
+rdf_set_rev_object(Subject, Predicate, Reverse, Obj) :-
+	property_domain(Subject, Predicate, Domain),
+	(   owl_satisfies(Domain, Obj)
+	->  rdfe_transaction(set_rev_object(Subject, Predicate, Reverse, Obj),
+			     modify_property_value)
+	;   throw(error(domain_error(Domain, Obj), _))
+	).
+
+set_rev_object(Subject, Predicate, Reverse, Object) :-
+	findall(O-Predicate, rdf_has(Subject, Predicate, O), Pairs0),
+	sort(Pairs0, Pairs),
+	(   Pairs = []
+	->  rdf_default_file(Subject, File),
+	    rdfe_assert(Subject, Predicate, Object, File),
+	    rdfe_assert(Object, Reverse, Subject, File)
+	;   Pairs = [Old-P|More]
+	->  rdfe_update(Subject, P, Old, object(Object)),
+	    ignore(rdfe_update(Old, Reverse, Subject, subject(Object))),
+	    (	member(OM-PM, More),
+		rdfe_retractall(Subject, PM, OM),
+		rdfe_retractall(OM, Reverse, Subject),
+		fail
+	    ;	true
+	    )
+	).
 
 
 %	rdf_new_property(+Subject, +Property, [Value])
