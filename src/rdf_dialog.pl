@@ -148,7 +148,8 @@ classify(TI, Typed:name) :->
 	),
 	(   member(Field, Fields),
 	    (   Field == resource
-	    ->  rdf_global_id(NS:SearchFor, Subject),
+	    ->  rdf_db:ns(NS, _),
+		rdf_global_id(NS:SearchFor, Subject),
 		rdf(Subject, _, _)
 	    ;   rdf_has(Subject, Field, literal(SearchFor)),
 		(   nonvar(NS)
