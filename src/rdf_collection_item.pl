@@ -75,7 +75,7 @@ fit(LB, MaxSize:[int]) :->
 	    WH is max(16, H),		% 1 line in current font?
 	    send(LB, size, size(W, WH))
 	;   H is Max*20,
-	    send(LB, heigth, H)
+	    send(LB, height, H)
 	).
 
 :- pce_end_class(rdf_list_browser).

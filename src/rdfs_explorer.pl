@@ -261,6 +261,8 @@ find(F, String:name, How:name, In:[chain]) :->
 	"Highlight nodes holding substring"::
 	get(F, tree, Tree),
 	send(Tree, collapse_domain),
+	get(F, member, picture, P),
+	send(P, scroll_to, point(0,0)),
 	(   In == @default
 	->  rdf_global_id(rdfs:label, Label),
 	    Fields = chain(Label)
