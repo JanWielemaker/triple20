@@ -334,7 +334,10 @@ rdf_new_property(Subject, Predicate) :-
 
 rdf_new_property(Subject, Predicate, Object) :-
 	var(Object), !,
-	call_rules(@display, rdf_default(Subject, Predicate, Object)),
+	(   call_rules(@display, rdf_default(Subject, Predicate, Object))
+	->  true
+	;   Object = '__not_filled'
+	),
 	rdf_new_property(Subject, Predicate, Object).
 rdf_new_property(Subject, Predicate, Default) :-
 	rdfe_transaction(add_object(Subject, Predicate, Default),

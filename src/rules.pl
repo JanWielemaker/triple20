@@ -214,6 +214,7 @@ item_method(Item,        Label, Item) :-
 item_label(new(rdf_class_node), new_subclass).
 item_label(new(rdf_individual_node), new_individual).
 item_label(new(rdf_property_node), new_property).
+item_label(new(owl_restriction_node), new_restriction).
 
 item_member(Method, Label, Items) :-
 	member(Item, Items),
@@ -910,5 +911,9 @@ view_owl_class_extension :-
 	get(@particle, self, Explorer),
 	send(Explorer, has_get_method, view_owl_class_extension),
 	get(Explorer, view_owl_class_extension, @on).
+
+open_resource(Resource, How) :-
+	get(@particle, self, Explorer),
+	send(Explorer, open_resource, Resource, How).
 
 :- end_rules.

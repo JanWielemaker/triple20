@@ -781,13 +781,6 @@ new(N, Role:name) :->
 	send(N?window, normalise, C, y),
 	send(C, show_dialog).
 
-unrelate_resource(N) :->
-	"Unlink from parent"::
-	get(N, resource, Subject),
-	get(N?parents?head, resource, Object),
-	rdf_has(Subject, rdfs:subClassOf, Object, P),
-	rdfe_transaction(rdfe_retractall(Subject, P, Object)).
-
 new_class(N) :->
 	"Create subclass of this class"::
 	send(N, new, rdf_class_node).
@@ -795,6 +788,13 @@ new_class(N) :->
 new_individual(N) :->
 	"Create indivisual of this class"::
 	send(N, new, rdf_individual_node).
+
+unrelate_resource(N) :->
+	"Unlink from parent"::
+	get(N, resource, Subject),
+	get(N?parents?head, resource, Object),
+	rdf_has(Subject, rdfs:subClassOf, Object, P),
+	rdfe_transaction(rdfe_retractall(Subject, P, Object)).
 
 delete_class_hierarchy(N) :->
 	"Delete all subclasses below N"::
@@ -1137,10 +1137,13 @@ initialise(N, Parent:name, Role:name) :->
 	send(N, collapsed, @nil).
 
 resource_created(N, Resource:name, Role:name) :->
+	"The create dialog has created a resource"::
 	get(N, parents, chain(Parent)),
-	send(Parent, add_child, Resource, Role, N).
+	send(Parent, add_child, Resource, Role, N),
+	call_rules(N, open_resource(Resource, table)).
 
 show_dialog(N) :->
+	"Show associated dialog at node position"::
 	get(N, image, Ghost),
 	send(Ghost, open).
 

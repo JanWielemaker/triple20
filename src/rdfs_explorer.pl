@@ -104,11 +104,11 @@ initialise(OV, Domain0:[prolog], Label:[name]) :->
 	send(Tree, name, hierarchy),
 	send(P, display, Tree, point(5,5)),
 	send(Tree, selectable, @nil),	% allow selecting all nodes
-	send(Tree, message, message(OV, show_resource, @arg1, table)),
+	send(Tree, message, message(OV, open_resource, @arg1, table)),
 	send(Tree, expand_domain),
 	send(OV, fill_tool_dialog),
 	get(Tree?root, resource, TheRoot),
-	send(OV, show_resource, TheRoot, table),
+	send(OV, open_resource, TheRoot, table),
 	listen(OV, rdf_undo(_,_), send(OV, refresh)),
 	listen(OV, rdf_transaction(_), send(OV, refresh)),
 	listen(OV, rdf_reset, send(OV, refresh)),
@@ -291,7 +291,7 @@ find(F, String:name, How:name, In:[chain]) :->
 		 *	      DETAILS		*
 		 *******************************/
 
-show_resource(OV, Resource:name, How:name) :->
+open_resource(OV, Resource:name, How:name) :->
 	"Show given resource"::
 	(   How == hierarchy
 	->  get(OV, tree, Tree),

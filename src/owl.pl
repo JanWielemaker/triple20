@@ -274,7 +274,7 @@ owl_satisfies_cardinality(Resource, Restriction) :-
 
 owl_satisfies_cardinality(Resource, Property, Restriction) :-
 	rdf_has(Restriction, owl:cardinality, literal(Atom)), !,
-	atom_number(Atom, Card), !,
+	atom_number(Atom, Card),
 	findall(V, rdf_has(Resource, Property, V), Vs0),
 	sort(Vs0, Vs),			% remove duplicates
 	length(Vs, Card).

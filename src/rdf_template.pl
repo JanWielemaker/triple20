@@ -139,9 +139,9 @@ arm_object(W, Gr:graphical*) :->
 show_details(T, How:{hierarchy,table}) :->
 	"Show details in format"::
 	(   get(T, frame, Frame),
-	    send(Frame, has_send_method, show_resource)
+	    send(Frame, has_send_method, open_resource)
 	->  get(T, resource, Resource),
-	    send(Frame, show_resource, Resource, How)
+	    send(Frame, open_resource, Resource, How)
 	).
 
 hierarchy_location(T) :->
@@ -152,7 +152,7 @@ details(T) :->
 can_show_details(T, _How:{hierarchy,table}) :->
 	"Test if we are embedded in a context that can show details"::
 	get(T, frame, Frame),
-	send(Frame, has_send_method, show_resource).
+	send(Frame, has_send_method, open_resource).
 
 
 view_rdf_source(T) :->
