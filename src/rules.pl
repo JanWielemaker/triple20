@@ -111,6 +111,9 @@ label_class(_, rdf_resource_text).
 
 :- end_particle.
 
+:- multifile
+	resource/3.
+
 resource(class,       image, image('16x16/class.xpm')).
 resource(metaclass,   image, image('16x16/Metaclass.gif')).
 resource(orphanclass, image, image('16x16/orphanclass.xpm')).
