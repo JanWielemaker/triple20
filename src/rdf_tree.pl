@@ -441,22 +441,28 @@ drop(N, R:name) :->
 	),
 	rdfe_transaction(drop(Cmd, C, R)).
 
-drop_command(C, R, move_subclass) :-
+drop_command(C, R, move_property) :-
+	rdfs_individual_of(C, rdf:'Property'),
+	rdfs_individual_of(R, rdf:'Property'), !.
+drop_command(C, R, move_class) :-
 	rdfs_individual_of(C, rdfs:'Class'),
 	rdfs_individual_of(R, rdfs:'Class').
-drop_command(C, R, add_subclass) :-
+drop_command(C, R, add_class) :-
 	rdfs_individual_of(C, rdfs:'Class'),
 	rdfs_individual_of(R, rdfs:'Class').
 drop_command(C, R, change_type) :-
 	rdfs_individual_of(C, rdfs:'Class'),
 	\+ rdfs_individual_of(R, rdfs:'Class').
 
-drop(move_subclass, C, R) :-				% drop R on C
+drop(move_class, C, R) :-				% drop R on C
 	rdfe_retractall(R, rdfs:subClassOf, _),
 	rdfe_assert(R, rdfs:subClassOf, C).
-drop(add_subclass, C, R) :-
+drop(add_class, C, R) :-
 	rdfe_retractall(R, rdfs:subClassOf, _),
 	rdfe_assert(R, rdfs:subClassOf, C).
+drop(move_property, C, R) :-
+	rdfe_retractall(R, rdfs:subPropertyOf, _),
+	rdfe_assert(R, rdfs:subPropertyOf, C).
 drop(change_type, C, R) :-
 	rdfe_retractall(R, rdf:type, _),
 	rdfe_assert(R, rdf:type, C).
