@@ -401,7 +401,7 @@ expand_role(N, Role:name, Cache:int, Prefix:[name], Before:[node]) :->
 	    ->	Found = @on
 	    ;	true
 	    ),
-	    send(Before, view, Start, More, Prefix, Found)
+	    send(Before, view, Start, 0, Prefix, Found)
 	;   true
 	).
 
