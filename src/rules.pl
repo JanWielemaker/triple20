@@ -130,9 +130,12 @@ resource(part,        image, image('16x16/part.xpm')).
 :- begin_particle(rdf_icon_rules, []).
 
 icon(R, Icon) :-
-	rdfs_individual_of(R, wns:'LexicalConcept'),
-	new(Icon, image(resource(wnclass))).
-icon(R, Icon) :-
+	::icon_resource(R, Resource),
+	new(Icon, image(resource(Resource))).
+
+icon_resource(R, wnclass) :-
+	rdfs_individual_of(R, wns:'LexicalConcept'), !.
+icon_resource(R, ResName) :-
 	rdfs_individual_of(R, rdfs:'Class'), !,
 	(   rdfs_individual_of(R, owl:'Restriction')
 	->  ResName = restriction
@@ -142,18 +145,13 @@ icon(R, Icon) :-
 	    rdf_has(R, Att, _)
 	->  ResName = description
 	;   ResName = class
-	),
-	new(Icon, image(resource(ResName))).
-icon(R, Icon) :-
-	rdfs_individual_of(R, rdf:'Property'), !,
-	new(Icon, image(resource(property))).
-icon(R, Icon) :-
-	rdfs_individual_of(R, rdf:'List'),
-	new(Icon, image(resource(list))).
-icon('__not_filled', Icon) :-
-	new(Icon, image(resource(nil))).
-icon(_, Icon) :-
-	new(Icon, image(resource(individual))).
+	).
+icon_resource(R, property) :-
+	rdfs_individual_of(R, rdf:'Property'), !.
+icon_resource(R, list) :-
+	rdfs_individual_of(R, rdf:'List'), !.
+icon_resource('__not_filled', nil) :- !.
+icon_resource(_, individual).
 
 :- end_particle.
 
@@ -535,12 +533,18 @@ drop(Command, Onto, From) :-
 
 :- begin_particle(rdf_individual_node, rdf_node).
 
+icon_resource(_, individual).
+icon_resource(R, Icon) :-
+	super::icon_resource(R, Icon),
+	Icon \== individual.
+
 :- end_particle.
 
 :- begin_particle(rdf_part_node, rdf_node).
 
-icon(_, Icon) :-
-	new(Icon, image(resource(part))).
+icon_resource(_, part).
+icon_resource(R, Icon) :-
+	super::icon_resource(R, Icon).
 
 :- end_particle.
 
@@ -579,12 +583,10 @@ label_text('__orphan_resources', '<Resources without rdf:type>').
 %label_text(Resource, Label) :-
 %	super::label_text(Resource, Label).
 
-icon('__orphan_classes', Icon) :-
-	new(Icon, image(resource(orphanclass))).
-icon('__orphan_resources', Icon) :-
-	new(Icon, image(resource(orphanres))).
-icon(Resource, Icon) :-
-	super::icon(Resource, Icon).
+icon_resource('__orphan_classes', orphanclass) :- !.
+icon_resource('__orphan_resources', orphanres) :- !.
+icon_resource(Resource, Icon) :-
+	super::icon_resource(Resource, Icon).
 
 label_class('__orphan_classes', rdfs_class_label).
 label_class('__orphan_resources', rdf_individual_label).

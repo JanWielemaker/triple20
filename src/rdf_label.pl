@@ -91,6 +91,20 @@ append_resource(T, Value:prolog) :->
 	rdf_label_rules::label(Value, Label),
 	send(T, append, Label).
 
+display_icons(T) :->
+	"Display (append) relevant icons"::
+	get(T, resource, Resource),
+	(   call_rules(T, icon(Resource, Icon)),
+	    send(T, icon, Icon),
+	    fail
+	;   true
+	).
+
+display_resource(T) :->
+	"Display resource text for <-resource"::
+	get(T, resource, Resource),
+	send(T, append, rdf_resource_text(Resource)).
+
 :- pce_group(event).
 
 event(T, Ev:event) :->
@@ -248,10 +262,8 @@ delete_member(L, Part:graphical) :->
 		   "Label for RDFS property declaration").
 
 update(L) :->
-	get(L, resource, Resource),
-	call_rules(L, icon(Resource, Icon)),
-	send(L, icon, Icon),
-	send(L, append, rdf_resource_text(Resource)).
+	send(L, display_icons),
+	send(L, display_resource).
 
 :- pce_end_class(rdf_property_label).
 
@@ -260,11 +272,8 @@ update(L) :->
 		   "Represent an RDFS class").
 
 update(L) :->
-	"Simple RDFS classes"::
-	get(L, resource, Resource),
-	call_rules(L, icon(Resource, Icon)),
-	send(L, icon, Icon),
-	send(L, append, rdf_resource_text(Resource)).
+	send(L, display_icons),
+	send(L, display_resource).
 
 :- pce_end_class(rdfs_class_label).
 
@@ -274,10 +283,8 @@ update(L) :->
 
 update(L) :->
 	"Simple RDFS classes"::
-	get(L, resource, Resource),
-	call_rules(L, icon(Resource, Icon)),
-	send(L, icon, Icon),
-	send(L, append, rdf_resource_text(Resource)).
+	send(L, display_icons),
+	send(L, display_resource).
 
 :- pce_end_class(rdfs_metaclass_label).
 
