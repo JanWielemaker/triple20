@@ -35,6 +35,7 @@
 :- use_module(semweb(rdf_db)).
 :- use_module(semweb(rdf_edit)).
 :- use_module(library(lists)).
+:- use_module(library(url)).
 :- use_module(rdf_util).
 
 :- pce_autoload(identifier_item, library(pce_identifier_item)).
@@ -73,8 +74,7 @@ create_resource(D) :->
 	rdf_db:ns(NSId, NS),
 	get(D, member, id, IDI),
 	get(IDI, selection, Label),
-	local_uri_from_label(NS, Label, Local),
-	atom_concat(NS, Local, Resource),
+	uri_from_label(NS, Label, Resource),
 	rdfe_transaction(send(D, do_create_resource, Resource, Label),
 			 create_resource),
 	send(IDI, clear),
@@ -104,12 +104,24 @@ do_create_resource(D, Resource:name, Label:name) :->
 	    rdfe_assert(Resource, rdfs:subClassOf, Super, File)
 	;   rdfe_assert(Resource, rdf:type, Super, File)
 	),
-	rdfe_assert(Resource, rdfs:label, literal(Label), File).
+	(   Label \== Resource
+	->  rdfe_assert(Resource, rdfs:label, literal(Label), File)
+	;   true
+	).
 
-local_uri_from_label(_, Label, Local) :-
+%	uri_from_label(+NS, +Typed, -URI)
+%	
+%	Deduce the URI from the entered namespace and identifier field.
+%	If the typed identifier is already an absolute URI we simply
+%	use that.
+
+uri_from_label(_, URI, URI) :-
+	is_absolute_url(URI), !.
+uri_from_label(NS, Label, URI) :-
 	new(S, string('%s', Label)),
 	send(S, translate, ' ', '_'),
-	get(S, value, Local),
+	send(S, prepend, NS),
+	get(S, value, URI),
 	free(S).
 
 :- pce_end_class(rdf_create_dialog).
