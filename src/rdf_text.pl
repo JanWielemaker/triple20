@@ -65,11 +65,9 @@ resource(T, Resource:name) :->
 make_resource_text_recogniser(G) :-
 	new(CG, click_gesture(left, '', single,
 			      message(@receiver, on_left_click))),
-	new(DG1, drag_and_drop_gesture(left, get_source := @arg1?resource)),
-	send(DG1, cursor, @default),	% copy from graphical
+	new(DG1, rdf_drop_gesture(left)),
 	new(PG, popup_gesture(@receiver?popup)),
-	new(DG2, drag_and_drop_gesture(right, get_source := @arg1?resource)),
-	send(DG2, cursor, @default),	% copy from graphical
+	new(DG2, rdf_drop_gesture(right)),
 	new(AE, handler(area_enter, message(@receiver, entered, @on))),
 	new(AX, handler(area_exit, message(@receiver, entered, @off))),
 	new(G, handler_group(@arm_recogniser, CG, DG1, PG, DG2, AE, AX)).
@@ -98,6 +96,29 @@ entered(TF, Enter:bool) :->
 	).
 
 :- pce_end_class(rdf_resource_text).
+
+:- pce_begin_class(rdf_drop_gesture, drag_and_drop_gesture).
+
+initialise(DD, Button:name) :->
+	send_super(DD, initialise, Button, get_source := @arg1?resource),
+	send(DD, cursor, @default).
+
+drag(DD, Ev:event) :->
+	(   send(DD, activate)
+	->  get(DD, source, Source),
+	    (   get(Ev, inside_sub_window, Frame),
+	        get(Ev, inside_sub_window, Frame, Window),
+		send(Window, has_get_method, arm),
+		get(Window, arm, drop, Target)
+	    ->  send(DD, target, Source, Ev, Target)
+	    ;	send(DD, target, Source, @nil, @nil)
+	    )
+	;   true
+	).
+
+:- pce_end_class(rdf_drop_gesture).
+
+
 
 
 		 /*******************************

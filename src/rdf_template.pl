@@ -39,11 +39,9 @@ event(W, Ev:event) :->
 	(   get(W, focus, Gr),
 	    Gr \== @nil
 	->  true
-	;   send(Ev, is_a, loc_move)
-	->  (   send_super(W, event, event(arm))
-	    ->	true
-	    ;	send(W, arm_object, @nil)
-	    )
+	;   send(Ev, is_a, loc_move),
+	    get(W, arm, _Target)
+	->  true
 	;   send(Ev, is_a, area_exit)
 	->  send(W, arm_object, @nil)
 	;   true
@@ -52,6 +50,18 @@ event(W, Ev:event) :->
 
 :- pce_group(arm).
 
+arm(W, For:[name], Target:graphical) :<-
+	(   new(Ev, event(arm)),
+	    (	For == @default
+	    ->	true
+	    ;	send(Ev, attribute, arm_for, For)
+	    ),
+	    send(Ev, post, W)
+	->  get(W, hypered, arm, Target)
+	;   send(W, arm_object, @nil),
+	    fail
+	).
+	
 arm_object(W, Gr:graphical*) :->
 	(   get(W, hypered, arm, Old)
 	->  send(W, delete_hypers, arm),
