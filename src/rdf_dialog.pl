@@ -376,3 +376,43 @@ rename(D) :->
 	send(D, destroy).
 
 :- pce_end_class(rdf_rename_dialog).
+
+
+		 /*******************************
+		 *	  IMAGE_BUTTON		*
+		 *******************************/
+
+:- pce_begin_class(image_button, bitmap,
+		   "Button created from an image").
+
+variable(message,    code*, get, "Associated message").
+
+initialise(IB, Image:image, Message:[code], Balloon:[char_array]) :->
+	send_super(IB, initialise, Image),
+	(   Message \== @default
+	->  send(IB, slot, message, Message)
+	;   true
+	),
+	(   Balloon \== @default
+	->  send(IB, help_message, tag, Balloon)
+	;   true
+	).
+
+:- pce_global(@image_button_recogniser,
+	      new(click_gesture(left, '', single,
+				message(@receiver, execute)))).
+
+event(IB, Ev:event) :->
+	(   send_super(IB, event, Ev)
+	->  true
+	;   send(@image_button_recogniser, event, Ev)
+	).
+
+execute(IB) :->
+	(   get(IB, message, Message),
+	    Message \== @nil
+	->  send(Message, forward_receiver, IB)
+	;   true
+	).
+
+:- pce_end_class(image_button).
