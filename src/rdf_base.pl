@@ -42,6 +42,10 @@
 This file defines commonly used namespaces,   base ontologies. etc. Note
 that the namespaces must be loaded *before*   they can be used in Prolog
 source-code.
+
+One  day  the  ontology  directories  should  be  holding  an  RDF  file
+describing the directory contents and  their   dependencies.  This  is a
+quick hack.
 - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
 
 
@@ -83,7 +87,13 @@ load_base_ontology(C, Category) :-
 current_base_ontology(Id) :-
 	findall(X, (rdf_file(X, _);requires(X, _)), Xs),
 	sort(Xs, List),
-	member(Id, List).
+	member(Id, List),
+	forall(rdf_file(Id, FileSpec),		% check existence
+	       absolute_file_name(FileSpec,
+				  [ access(read),
+				    file_errors(none)
+				  ],
+				  _File)).
 
 %	rdf_file(+Identifier, -File)
 %	
