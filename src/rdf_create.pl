@@ -52,7 +52,10 @@ initialise(D, Parent:name, Role:name, Client:[object]*) :->
 	send(D, slot, resource, Parent),
 	send(D, slot, client, Cntl),
 	send_super(D, initialise, string('Create %s', Role?label_name)),
-	rdf_global_id(NS:_, Parent),
+	(   rdf_global_id(NS:_, Parent)
+	->  true
+	;   NS = @default
+	),
 	rdf_default_file(Parent, File),
 	send(D, append, new(rdf_file_menu(File))),
 	send(D, append, new(rdf_ns_menu(NS))),
