@@ -821,7 +821,12 @@ update_more(N) :->
 	    ->  send(D, display, more_button(Left))
 	    ;   Left =< 100
 	    ->  send(D, display, more_button(10)),
-		send(D, display, more_button(Left))
+		send(D, display, more_button(Left)),
+		(   Left > 10
+		->  send(D, display, new(S, rdf_more_search)),
+		    send(S, keyboard_focus)
+		;   true
+		)
 	    ;   send(D, display, more_button(10)),
 		send(D, display, more_button(100)),
 		send(D, display, new(S, rdf_more_search)),
