@@ -607,8 +607,8 @@ image(Resource, Img) :-
 	downcase_atom(Ext0, Ext),	% avoid DOS/Unix trouble
 	image_extension(Ext),
 	new(I, url_image(Resource)),
-	get(I, exists, @on),		% demand existence
-	new(Img, scaled_bitmap(I)).
+%	get(I, exists, @on),		% demand existence not implemented BJW
+	new(Img, bitmap(I)).	        % dont scale BJW
 
 image_extension(jpeg).
 image_extension(jpg).
