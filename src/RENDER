@@ -1,15 +1,25 @@
-Select visualizer:
+How does the rendering work?
 
-	* Style
-		- Label Text
-		- Icon
-		- Descriptive text (text-area)
-	* Resource
-		- Class
-		- Properties (OWL restriction?)
-	* Role (subject, predicate, object)
+Visualisers decide about their rendering using call_rules/2. This
+predicate takes as argument a visualiser and a Prolog goal. The system
+walk up the XPCE `consists-of' hierachy of visual objects looking for a
+container that provides a rule. Objects that are being created and thus
+do not yet have a container must be created from inside a method defined
+on the container. A container is said to have a ruleset if the class of
+the container or one of its super-classes has an associated `particle'.
+The particles are defined in the file rules.pl. They are basically
+Prolog modules with two special properties: multiple particles can be
+defined in a file and they can have zero or more `super particles'.  There
+are two special constructs:
 
-Hierarchy (expansion)
+	Particle::Goal
+	Run Goal in Particle, setting `self' to Particle.
 
-	* Node `contains' subnodes (children)
-	
+	Particle:Goal
+	Normal cross-module call: call Goal in Particle.
+
+	::Goal
+	Must appear inside a particle calls Goal in `self'.
+
+	super::Goal
+	If particle has one super, call into this particle.
