@@ -31,6 +31,8 @@
 
 :- module(rdf_dialog, []).
 :- use_module(library(pce)).
+:- use_module(semweb(rdf_db)).
+:- use_module(library(lists)).
 
 
 /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -47,7 +49,7 @@ initialise(D) :->
 	send(D, append, new(Fields, menu(search_in, toggle))),
 	send(D, append, new(For, label(for, 'For', bold)), right),
 	send(For, alignment, left),
-	send(D, append, new(SI, text_item(search))),
+	send(D, append, new(SI, rdf_search_text_item(search))),
 	send(SI, show_label, @off),
 	send(D, append, new(ST, menu(how, cycle)), right),
 	send_list(ST, append, [substring, word, prefix, exact]),
@@ -81,6 +83,11 @@ search_field(D, Field:prolog, Selected:[bool]) :->
 	;   true
 	).
 
+selected_predicates(D, Selected:chain) :<-
+	"Get chain with fields we are searching in"::
+	get(D, member, search_in, Menu),
+	get(Menu, selection, Selected).
+
 find(D, What:string, How:name, Fields:chain) :->
 	send(D?frame, find, What, How, Fields).
 
@@ -108,3 +115,44 @@ resize_dialog(D, Size:size) :->
 	send(TI, right_side, HX-GW).
 
 :- pce_end_class(rdf_search_dialog).
+
+
+:- pce_begin_class(rdf_search_text_item, text_item,
+		   "Text item for entering search strings").
+
+typed(TI, Ev:'event|event_id') :->
+	send_super(TI, typed, Ev),
+	ignore(send(TI, classify, TI?value_text?string)).
+
+classify(TI, Typed:name) :->
+	"Classify the typed value"::
+	get(TI?device, selected_predicates, P),
+	chain_list(P, Fields),
+	(   concat_atom([NS,SearchFor], :, Typed)
+	->  true
+	;   SearchFor = Typed
+	),
+	(   member(Field, Fields),
+	    (   Field == resource
+	    ->  rdf_global_id(NS:SearchFor, Subject),
+		rdf(Subject, _, _)
+	    ;   rdf_has(Subject, Field, SearchFor),
+		(   nonvar(NS)
+		->  rdf_global_id(NS:_, Subject)
+		;   true
+		)
+	    )
+	->  send(TI, colour, blue)
+	;   send(TI, colour, black)
+	).
+	
+selection(TI, Selection:name) :<-
+	"Expand namespaces"::
+	get(TI?value_text?string, value, Typed),
+	(   concat_atom([NS,SearchFor], :, Typed)
+	->  rdf_global_id(NS:SearchFor, Selection)
+	;   Selection = Typed
+	),
+	send(TI, selection, Selection).
+
+:- pce_end_class.
