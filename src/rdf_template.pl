@@ -140,8 +140,11 @@ can_show_details(T, _How:{hierarchy,table}) :->
 view_rdf_source(T) :->
 	"Open Prolog editor on RDF source"::
 	get(T, resource, Id),
-	(   rdf_source_location(Id, File:Line)
+	(   rdf_source_location(Id, File:Line),
+	    integer(Line)
 	->  edit(file(File, line(Line)))
+	;   rdf_source_location(Id, File:Line)
+	->  edit(file(File))
 	;   send(T, report, warning, 'Cannot find source for %s', Id)
 	).
 
