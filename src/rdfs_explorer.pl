@@ -453,6 +453,7 @@ button(OS, Dir:{forward,backward}, B:tool_button) :<-
 
 initialise(TT, Name:name, Table:tabular) :->
 	send_super(TT, initialise, Name),
+	send(TT, pen, 0),
 	send(TT, scrollbars, vertical),
 	send(TT, name, Name),
 	send(TT, display, Table).	% do not use automatic layout
