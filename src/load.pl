@@ -39,7 +39,12 @@
 :- dynamic
 	user:file_search_path/2.
 
-user:file_search_path(semweb, library(semweb)).
+user:file_search_path(semweb,   library(semweb)).
+user:file_search_path(snapshot, user_profile(Dir)) :-
+	(   current_prolog_flag(unix, true)
+	->  Dir = '.triple20'
+	;   Dir = 'Triple20'
+	).
 
 :- retractall(file_search_path(triple20, _)),
    prolog_load_context(directory, Dir),
@@ -94,6 +99,22 @@ rdf_file_extension(rdfj, 'OntoShow project file').
 
 
 		 /*******************************
+		 *	    ENVIRONMENT		*
+		 *******************************/
+
+ensure_snapshot_directory :-
+	absolute_file_name(snapshot(.),
+			   [ file_type(directory),
+			     access(write),
+			     file_errors(fail)
+			   ],
+			   Dir), !,
+	debug(snapshot, 'Using snapshot directory ~w', [Dir]).
+ensure_snapshot_directory :-
+	tbd.
+
+
+		 /*******************************
 		 *	     TOPLEVEL		*
 		 *******************************/
 
@@ -144,7 +165,9 @@ go(Argv) :-
 	->  true
 	;   rdfe_transaction(parse_argv(Argv3), load_argv)
 	),
-	(   NoBase == true
+	(   (   NoBase == true
+	    ;	Mode == append
+	    )
 	->  true
 	;   rdfe_transaction(forall(required_base_ontology(O),
 				    load_base_ontology(O)),

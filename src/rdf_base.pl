@@ -129,7 +129,7 @@ requires(ic,	   rdfs).
 requires(world,	   owl).
 requires(world,	   aat).
 requires(world,	   ulan).
-requires(world,	   wn).
+requires(world,	   wnrdfs).
 requires(world,	   ic).
 
 

@@ -89,7 +89,7 @@ show_source(ST, Source:name) :->
 	send(ST, append, Source),
 	rdf_statistics(triples_by_file(Source, Triples)),
 	send(ST, append, Triples, halign := right),
-	rdf_db:rdf_source(Source, _, Loaded),
+	rdf_db:rdf_source(Source, _, Loaded, _MD5),
 	send(ST, append, Loaded, halign := right),
 	send(ST, next_row).
 
