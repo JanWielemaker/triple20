@@ -117,13 +117,13 @@ initialise(B) :->
 	send_list(P, append,
 		  [ menu_item(set_fallback,
 			      message(B, set_fallback, Item?key),
-			      HasItem),
-		    menu_item(delete,
-			      message(B, delete_ns, Item?key),
 			      HasItem)
 		  ]),
 	listen(B, rdf_ns(_),
-	       send(B, update)).
+	       send(B, update)),
+	listen(B, rdf_default_ns(File, _NS),
+	       (   var(File),
+		   send(B, update_default_ns))).
 
 unlink(B) :->
 	unlisten(B),
@@ -149,6 +149,23 @@ append(B, Id:name) :->
 	    sformat(Label, '~w\t~w', [Id, Name])
 	),
 	send_super(B, append, dict_item(Id, Label, Name, Style)).
+
+update_default_ns(B) :->
+	"Update indication of default namespace"::
+	get(B, dict, Dict),
+	send(Dict?members, for_all, message(B, update_default_ns1, @arg1)).
+
+update_default_ns1(_B, DI:dict_item) :->
+	get(DI, key, Id),
+	get(DI, object, Name),
+	(   rdf_default_ns([], Id)
+	->  send(DI, style, fallback),
+	    sformat(Label, '~w\t~w (fallback)', [Id, Name]),
+	    send(DI, label, Label)
+	;   send(DI, style, @default),
+	    sformat(Label, '~w\t~w', [Id, Name]),
+	    send(DI, label, Label)
+	).
 
 :- pce_group(edit).
 

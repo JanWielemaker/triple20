@@ -69,7 +69,8 @@ cancel(D) :->
 create_resource(D) :->
 	"Create (new) resource from dialog contents"::
 	get(D, member, namespace, NSI),
-	get(NSI, selection, NS),
+	get(NSI, selection, NSId),
+	rdf_db:ns(NSId, NS),
 	get(D, member, id, IDI),
 	get(IDI, selection, Label),
 	local_uri_from_label(NS, Label, Local),
@@ -118,18 +119,18 @@ local_uri_from_label(_, Label, Local) :-
 		   "Prompt for namespace").
 
 initialise(M, Default:[name], Msg:[code]*) :->
+	"Create from Default (short id)"::
 	send_super(M, initialise, namespace, cycle, Msg),
 	findall(NS, rdf_db:ns(NS, _), List0),
 	sort(List0, List),
 	(   member(NS, List),
-	    rdf_db:ns(NS, Full),
-	    send(M, append, menu_item(Full, @default, NS)),
+	    send(M, append, menu_item(NS, @default, NS)),
 	    fail
 	;   true
 	),
 	(   Default \== @default,
-	    rdf_db:ns(Default, FullDefault)
-	->  send(M, selection, FullDefault)
+	    get(M, member, Default, MI)
+	->  send(M, selection, MI)
 	;   true
 	),
 	send(M, show_label, @off).

@@ -62,6 +62,7 @@
 :- use_module(owl).
 :- use_module(library(option)).
 :- use_module(library(lists)).
+:- use_module(library(broadcast)).
 :- use_module(rdf_rules).
 
 %	user:goal_expansion(+NSGoal, -Goal)
@@ -273,8 +274,10 @@ rdf_default_file(_, File, NS) :-
 	default_ns/2.
 
 rdf_default_ns(File, NS) :-
-	default_ns(File, NS), !.
-rdf_default_ns(_, t20).			% unassigned, use triple20
+	(   default_ns(File, NS0)
+	->  NS = NS0
+	;   NS = t20
+	).
 
 %	rdf_set_default_ns(+File, +Namespace)
 %	
@@ -292,7 +295,8 @@ rdf_set_default_ns(File, NS) :-
 	    assertz(default_ns(File, NS))
 	;   retractall(default_ns(File, NS)),
 	    asserta(default_ns(File, NS))
-	).
+	),
+	broadcast(rdf_default_ns(File, NS)).
 	    
 
 		 /*******************************
