@@ -9,6 +9,7 @@
 	  ]).
 :- use_module(particle).
 :- use_module(semweb(rdfs)).
+:- use_module(semweb(rdf_db)).
 :- use_module(rdf_text).
 :- use_module(rdf_label).
 :- use_module(rdf_cache).
@@ -120,9 +121,10 @@ icon(_, Icon) :-
 
 :- begin_particle(class_hierarchy, []).
 
-root_property(Class, P) :-
-	rdf_has(P, rdf:type, Class),
-	\+ rdf_has(P, rdfs:subPropertyOf, _).
+%	child_cache(+Resource, -Cache, -Class)
+%	
+%	Create a cache (see rdf_cache/3) for generating the childs of
+%	Resource.  The child-nodes are created as instances of Class.
 
 child_cache(R, Cache, Class) :-
 	rdfs_individual_of(R, rdfs:'Class'),
@@ -137,8 +139,32 @@ child_cache(R, Cache, Class) :-
 	    ;   \+ rdfs_subclass_of(R, rdfs:'Class'),
 	        rdf_cache(V, rdf_has(V, rdf:type, R), Cache),
 		Class = rdf_individual_node
+	    ;	rdfs_subclass_of(R, owl:'Restriction'),
+		rdf_cache(V, rdf_has(V, rdf:type, R), Cache),
+		Class = owl_restriction_node	    
 	    )
 	).
+
+%	parent(+Resource, -Parent, -Class)
+%	
+%	Find parent relations to expand the hierarchy selectively for
+%	showing Resource.
+
+parent(R, Parent, rdf_class_node) :-
+	rdf_has(R, rdfs:subClassOf, Parent), !.
+parent(R, Parent, rdf_property_node) :-
+	rdf_has(R, rdfs:subPropertyOf, Parent), !.
+parent(R, Parent, rdf_individual_node) :-
+	rdf_has(R, rdf:type, Parent), !.
+
+%	root_property(+Class, -Property)
+%	
+%	Generate the instances of Class (a subclass of rdf:Property)
+%	that have no super property.
+
+root_property(Class, P) :-
+	rdf_has(P, rdf:type, Class),
+	\+ rdf_has(P, rdfs:subPropertyOf, _).
 
 :- end_particle.
 

@@ -265,7 +265,7 @@ find(F, String:name, How:name, In:[chain]) :->
 	"Highlight nodes holding substring"::
 	get(F, tree, Tree),
 	send(Tree, collapse_domain),
-	get(F, member, picture, P),
+	get(Tree, device, P),
 	send(P, scroll_to, point(0,0)),
 	(   In == @default
 	->  rdf_global_id(rdfs:label, Label),
@@ -447,6 +447,7 @@ button(OS, Dir:{forward,backward}, B:tool_button) :<-
 
 :- pce_begin_class(table_window, dialog,
 		   "Window for displaying a single tabular").
+:- use_class_template(rdf_arm).
 
 initialise(TT, Name:name, Table:tabular) :->
 	send_super(TT, initialise, Name),

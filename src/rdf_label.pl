@@ -13,20 +13,7 @@
 :- use_module(particle).
 :- use_module(rdf_template).
 
-
-resource(class,       image, image('16x16/class.xpm')).
-resource(metaclass,   image, image('16x16/Metaclass.gif')).
-resource(orphanclass, image, image('16x16/orphanclass.xpm')).
-resource(individual,  image, image('16x16/Instance.gif')).
-resource(property,    image, image('16x16/SlotDirect.gif')).
-resource(list,        image, image('16x16/list.xpm')).
-resource(list_member, image, image('16x16/list_member.xpm')).
-resource(untyped,     image, image('16x16/untyped.xpm')).
-resource(resource,    image, image('16x16/resource.xpm')).
-resource(restriction, image, image('16x16/restriction.xpm')).
-resource(description, image, image('16x16/description.xpm')).
-resource(wnclass,     image, image('16x16/wnclass.xpm')).
-
+:- pce_autoload(ulan_timestamp_label,    ulan).
 
 		 /*******************************
 		 *	  COMPOSITE LABEL	*
@@ -75,11 +62,14 @@ event(T, Ev:event) :->
 	;   send(@rdf_resource_text_recogniser, event, Ev)
 	).
 
-entered(TF, Entered:bool) :->
-	(   Entered == @on
+arm(TF, Val:bool) :->
+	"Preview activiity"::
+	(   Val == @on
 	->  send(TF, pen, 1)
 	;   send(TF, pen, 0)
-	),
+	).
+
+entered(TF, Entered:bool) :->
 	(   Entered == @on,
 	    send(TF, clipped_by_window)
 	->  send(@unclip_window, attach, TF)
@@ -115,7 +105,6 @@ update(L) :->
 
 update(L) :->				% TBD: limit length
 	get(L, resource, RDFList),
-	send(L, print, '['),
 	rdfs_list_to_prolog_list(RDFList, List),
 	(   List == []
 	->  send(L, print, '[]')

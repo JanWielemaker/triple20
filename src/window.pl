@@ -9,6 +9,7 @@
 
 :- pce_begin_class(constrained_scroll_picture, picture,
 		   "Picture that cannot be scrolled too far").
+:- use_class_template(rdf_arm).
 
 scroll_vertical(TW,
 		Direction:{forwards,backwards,goto},

@@ -13,6 +13,45 @@
 :- use_module(particle).
 :- use_module(library(debug)).
 
+:- pce_begin_class(rdf_arm, template,
+		   "(Un)arm objects in a window").
+
+:- pce_group(event).
+
+event(W, Ev:event) :->
+	(   send(Ev, is_a, loc_move)
+	->  send(W, check_arm, Ev)
+	;   send(Ev, is_a, area_exit)
+	->  send(W, arm_object, @nil)
+	;   true
+	),
+	send_super(W, event, Ev).
+
+:- pce_group(arm).
+
+check_arm(W, Ev:event) :->
+	(   get(W, find, Ev,
+		message(@arg1, has_send_method, arm),
+		Gr)
+	->  send(W, arm_object, Gr)
+	;   send(W, arm_object, @nil)
+	).
+
+arm_object(W, Gr:graphical*) :->
+	(   get(W, hypered, arm, Old)
+	->  send(W, delete_hypers, arm),
+	    send(Old, arm, @off)
+	;   true
+	),
+	(   Gr \== @nil
+	->  send(Gr, arm, @on),
+	    new(_, hyper(W, Gr, arm, arm_window))
+	;   true
+	).
+
+:- pce_end_class(rdf_arm).
+
+
 :- pce_begin_class(rdf_visual, template,
 		   "Common behaviour to all RDF visualisers").
 
@@ -74,9 +113,9 @@ rdf_container(N, Container:visual) :<-
 :- pce_end_class.
 
 
-
-
-
+		 /*******************************
+		 *	       RULES		*
+		 *******************************/
 
 %	call_rules(+Obj, +Goal)
 %	

@@ -94,8 +94,11 @@ event(T, Ev:event) :->
 	;   send(@rdf_resource_text_recogniser, event, Ev)
 	).
 
+arm(TF, Arm:bool) :->
+	send(TF, underline, Arm).
+	
+
 entered(TF, Enter:bool) :->
-	send(TF, underline, Enter),
 	(   Enter == @on,
 	    send(TF, clipped_by_window)
 	->  send(@unclip_window, attach, TF)
@@ -259,6 +262,9 @@ forward(T) :->
 	->  send(Dev, rdf_modified, T, literal(OldText), literal(NewText))
 	;   true
 	).
+
+arm(T, Arm:bool) :->
+	send(T, underline, Arm).
 
 :- pce_end_class(rdf_literal_text).
 

@@ -7,7 +7,6 @@
 :- module(rdf_tree, []).
 :- use_module(library(pce)).
 :- use_module(library(pce_unclip)).
-:- use_module(rdf_vtree).
 :- use_module(semweb(rdf_db)).
 :- use_module(semweb(rdfs)).
 :- use_module(particle).
@@ -72,16 +71,19 @@ add(OT, Resource:name, _Role:[name], Node:rdf_node) :<-
 	    display_path(P0, OT, Node)
 	).
 	
-path(Resource, Resource, _, [Resource]) :- !.
-path(Resource, Root, Tree, [Resource|T]) :-
-	call_rules(Tree, parent(Resource, Parent)),
+path(Resource, Resource, _, [Resource-[]]) :- !.
+path(Resource, Root, Tree, [Resource-Role|T]) :-
+	call_rules(Tree, parent(Resource, Parent, Role)),
 	path(Parent, Root, Tree, T).
 
-display_path([H|_], OT, Node) :-
-	get(OT, member, H, Node), !.
-display_path([H|T], OT, Node) :-
+display_path([H-Role|_], OT, Node) :-
+	get(OT, member, H, Node),
+	(   Role == []
+	;   get(Node, class_name, Role)
+	), !.
+display_path([H-Role|T], OT, Node) :-
 	display_path(T, OT, Parent),
-	get(Parent, add_child, H, Node),
+	get(Parent, add_child, H, Role, Node),
 	send_class(Parent, node, collapsed(@off)).
 
 
@@ -115,6 +117,9 @@ open_node(OT, Node:rdf_node) :->
 	    send(M, forward, Term)	% @arg1 = term
 	;   true
 	).
+
+arm(_, _:bool) :->
+	fail.
 
 :- pce_end_class(rdf_tree).
 
@@ -211,10 +216,10 @@ show_more(N, MoreNode:rdf_more_node, Role:name, Count:int) :->
 	get(N?caches, value, Role, Cache),
 	get(MoreNode, here, Here),
 	End is Here + Count,
-	(   between(Here, End, I),
-	    rdf_cache_result(Cache, I, Value),
+	(   rdf_cache_result(Cache, I, Value),
+	    I >= Here,
 	    send(N, add_child, Value, Role, MoreNode),
-	    fail
+	    I >= End, !
 	;   true
 	),
 	rdf_cache_cardinality(Cache, Cardinality),
@@ -290,6 +295,10 @@ on_double_left_click(N) :->
 
 
 :- pce_begin_class(rdf_property_node, rdf_node).
+:- pce_end_class.
+
+
+:- pce_begin_class(owl_restriction_node, rdf_node).
 :- pce_end_class.
 
 
