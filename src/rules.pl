@@ -218,6 +218,11 @@ standard_predicate(Resource, Pred) :-
 	;   rdf_equal(Pred, rdf:predicate)
 	;   rdf_equal(Pred, rdf:object)
 	).
+standard_predicate(Resource, Pred) :-
+	rdfs_individual_of(Resource, rdfs:'Property'), !,
+	(   rdf_equal(Pred, rdfs:range)
+	;   rdf_equal(Pred, rdfs:domain)
+	).
 
 %	visible_predicate(+Resource, -Predicate)
 %	

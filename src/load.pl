@@ -81,6 +81,7 @@ go :-
 %		--owl			Load OWL
 %		--aat			Load AAT
 %		--wn			Load Wordnet
+%		--wnrdfs		Load Wordnet as RDFS classes
 %		--ulan			Load ULAN
 %		--world			Load everything we know
 %		<file>.{rdf,rdfs,owl}	Load this file
@@ -128,6 +129,9 @@ parse_argv(['--aat'|T]) :-
 parse_argv(['--wn'|T]) :-
 	load_base_ontology(wn),
 	parse_argv(T).
+parse_argv(['--wnrdfs'|T]) :-
+	load_base_ontology(wnrdfs),
+	parse_argv(T).
 parse_argv(['--ulan'|T]) :-
 	load_base_ontology(ulan),
 	parse_argv(T).
@@ -163,6 +167,7 @@ prolog:message(rdf(usage)) -->
 	  '    --world             Load the whole world', nl,
 	  '    --aat               Load AAT', nl,
 	  '    --wn                Load WordNet', nl,
+	  '    --wnrdfs            Load WordNet as RDFS Classes', nl,
 	  '    --ulan              Load ULAN', nl, nl,
 	  '  Files:', nl,
 	  '    file.rdf            Load RDF file', nl,

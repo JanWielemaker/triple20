@@ -6,34 +6,37 @@
    Do not edit!
 */
 
-start([time(1064321575), version(1)]).
-rdf_load([1], '/staff/jan/projects/mia/jan/semweb/ulan.rdfs', [pwd('/staff/jan/projects/mia/jan/semweb'), size(4015), modified(1055967036), triples(60)]).
-rdf_load([1], '/staff/jan/projects/mia/jan/semweb/ulan.rdf', [pwd('/staff/jan/projects/mia/jan/semweb'), size(30516537), modified(1055967036), triples(808963)]).
+start([time(1064343360), version(1)]).
 rdf_load([1], '/staff/jan/projects/mia/jan/semweb/rdfs.rdfs', [pwd('/staff/jan/projects/mia/jan/semweb'), size(8949), modified(1055967034), triples(158)]).
-commit([1], 1064321583.83).
-rdf_load([2], '/staff/jan/projects/mia/jan/semweb/wnclass.rdfs', [pwd('/staff/jan/projects/mia/jan/semweb'), size(969), modified(1055967036), triples(6)]).
-rdf_load([2], '/staff/jan/projects/mia/jan/semweb/wordnet-20000620.rdfs', [pwd('/staff/jan/projects/mia/jan/semweb'), size(3428), modified(1055967036), triples(37)]).
-rdf_load([2], '/staff/jan/projects/mia/jan/semweb/wordnet_glossary-20010201.rdf', [pwd('/staff/jan/projects/mia/jan/semweb'), size(15161489), modified(1055967038), triples(99642)]).
-rdf_load([2], '/staff/jan/projects/mia/jan/semweb/wordnet_hyponyms-20010201.rdf', [pwd('/staff/jan/projects/mia/jan/semweb'), size(8258513), modified(1055967038), triples(78445)]).
-rdf_load([2], '/staff/jan/projects/mia/jan/semweb/wordnet_nouns-20010201.rdf', [pwd('/staff/jan/projects/mia/jan/semweb'), size(9891489), modified(1055967039), triples(273644)]).
-rdf_load([2], '/staff/jan/projects/mia/jan/semweb/wordnet_similar-20010201.rdf', [pwd('/staff/jan/projects/mia/jan/semweb'), size(1805459), modified(1055967039), triples(21858)]).
-rdf_load([2], '/staff/jan/projects/mia/jan/semweb/rdfs.rdfs', [pwd('/staff/jan/projects/mia/jan/semweb'), size(8949), modified(1055967034), triples(158)]).
-commit([2], 1064321592.25).
-end([time(1064321597)]).
-resume([time(1064321607), version(1)]).
-update([0, 1], 'http://www.swi.psy.uva.nl/mia/ulan#role', 'http://www.w3.org/2000/01/rdf-schema#label', literal(art), object('http://www.w3.org/2000/01/rdf-schema#domain')).
-commit([0, 1], 1064326558.29).
-commit([0], 1064326558.29).
-update([1], 'http://www.swi.psy.uva.nl/mia/ulan#role', 'http://www.w3.org/2000/01/rdf-schema#label', 'http://www.w3.org/2000/01/rdf-schema#domain', object(literal(art))).
-commit([1], 1064326565.66).
-end([time(1064326589)]).
-resume([time(1064326614), version(1)]).
-end([time(1064326621)]).
-resume([time(1064327047), version(1)]).
-update([0, 1], 'http://www.swi.psy.uva.nl/mia/ulan#16023', 'http://www.swi.psy.uva.nl/mia/ulan#region', literal('Netherlands'), object('http://www.cogsci.princeton.edu/~wn/concept#106536741')).
-commit([0, 1], 1064327125.00).
-commit([0], 1064327125.00).
-end([time(1064327253)]).
-resume([time(1064327264), version(1)]).
-end([time(1064329619)]).
-resume([time(1064329629), version(1)]).
+commit([1], 1064343370.27).
+assert([2], 'http://www.w3.org/1999/02/22-rdf-syntax-ns#test', 'http://www.w3.org/1999/02/22-rdf-syntax-ns#type', 'http://www.w3.org/1999/02/22-rdf-syntax-ns#Property', '/staff/jan/projects/mia/jan/semweb/rdfs.rdfs').
+assert([2], 'http://www.w3.org/1999/02/22-rdf-syntax-ns#test', 'http://www.w3.org/2000/01/rdf-schema#label', literal(test), '/staff/jan/projects/mia/jan/semweb/rdfs.rdfs').
+commit([2], 1064343395.05).
+assert([3], 'http://www.w3.org/1999/02/22-rdf-syntax-ns#test', 'http://www.w3.org/2000/01/rdf-schema#subPropertyOf', 'http://www.w3.org/2000/01/rdf-schema#label', user).
+commit([3], 1064343401.02).
+assert([4], 'http://www.w3.org/1999/02/22-rdf-syntax-ns#aap', 'http://www.w3.org/1999/02/22-rdf-syntax-ns#type', 'http://www.w3.org/1999/02/22-rdf-syntax-ns#Statement', '/staff/jan/projects/mia/jan/semweb/rdfs.rdfs').
+assert([4], 'http://www.w3.org/1999/02/22-rdf-syntax-ns#aap', 'http://www.w3.org/2000/01/rdf-schema#label', literal(aap), '/staff/jan/projects/mia/jan/semweb/rdfs.rdfs').
+commit([4], 1064343426.56).
+assert([5, 1], 'http://www.w3.org/1999/02/22-rdf-syntax-ns#aap', 'http://www.w3.org/1999/02/22-rdf-syntax-ns#type', 'http://www.w3.org/1999/02/22-rdf-syntax-ns#test', user).
+commit([5, 1], 1064343444.51).
+commit([5], 1064343444.51).
+retract([6], 'http://www.w3.org/1999/02/22-rdf-syntax-ns#aap', 'http://www.w3.org/1999/02/22-rdf-syntax-ns#type', 'http://www.w3.org/1999/02/22-rdf-syntax-ns#test', user).
+commit([6], 1064343446.85).
+assert([10], 'http://www.w3.org/1999/02/22-rdf-syntax-ns#test', 'http://www.w3.org/2000/01/rdf-schema#domain', '__not_filled', user).
+commit([10], 1064343503.29).
+assert([11], 'http://www.w3.org/1999/02/22-rdf-syntax-ns#test', 'http://www.w3.org/2000/01/rdf-schema#range', '__not_filled', user).
+commit([11], 1064343505.52).
+update([12, 1], 'http://www.w3.org/1999/02/22-rdf-syntax-ns#test', 'http://www.w3.org/2000/01/rdf-schema#domain', '__not_filled', source('/staff/jan/projects/mia/jan/semweb/rdfs.rdfs')).
+update([12, 1], 'http://www.w3.org/1999/02/22-rdf-syntax-ns#test', 'http://www.w3.org/2000/01/rdf-schema#domain', '__not_filled', object('http://www.w3.org/1999/02/22-rdf-syntax-ns#Statement')).
+commit([12, 1], 1064343515.74).
+commit([12], 1064343515.74).
+update([13, 1], 'http://www.w3.org/1999/02/22-rdf-syntax-ns#test', 'http://www.w3.org/2000/01/rdf-schema#range', '__not_filled', source('/staff/jan/projects/mia/jan/semweb/rdfs.rdfs')).
+update([13, 1], 'http://www.w3.org/1999/02/22-rdf-syntax-ns#test', 'http://www.w3.org/2000/01/rdf-schema#range', '__not_filled', object('http://www.w3.org/2000/01/rdf-schema#Literal')).
+commit([13, 1], 1064343526.55).
+commit([13], 1064343526.55).
+assert([14], 'http://www.w3.org/1999/02/22-rdf-syntax-ns#aap', 'http://www.w3.org/1999/02/22-rdf-syntax-ns#test', literal(''), user).
+commit([14], 1064343535.93).
+rollback([15]).
+update([16], 'http://www.w3.org/1999/02/22-rdf-syntax-ns#aap', 'http://www.w3.org/1999/02/22-rdf-syntax-ns#test', literal(''), object(literal(aapje))).
+commit([16], 1064343715.77).
+end([time(1064343808)]).

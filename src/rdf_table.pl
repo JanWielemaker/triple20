@@ -36,11 +36,18 @@ initialise(AL) :->
 	send_super(AL, initialise),
 	send(AL, layout_manager, new(T, rdf_property_manager)),
 	send(T, rules, all),
-	send(T, cell_spacing, -1).
+	send(T, cell_spacing, -1),
+	listen(AL, rdf_transaction(TID), send(AL, update_transaction, TID)).
 
 unlink(AL) :->
 	send(AL, detach_cache),
 	send_super(AL, unlink).
+
+clear(AL) :->
+	"Delete all rows"::
+	send(AL, delete_rows).
+
+:- pce_group(update).
 
 detach_cache(AL) :->
 	"Detach from the caching system"::
@@ -54,9 +61,19 @@ update(_AL, _Cache:[int]) :->
 	"Called after update of the cache"::
 	true.
 
-clear(AL) :->
-	"Delete all rows"::
-	send(AL, delete_rows).
+update_label(AL) :->
+	"Update all labels"::
+	get(AL, layout_manager, Table),
+	send(Table?rows, for_all,
+	     if(@arg1 \== @nil,
+		message(@arg1, for_all,
+			if(message(@arg1, has_send_method, update_label),
+			   message(@arg1, update_label))))).
+
+update_transaction(AL, TID:int) :->
+	"Update after a transaction"::
+	rdfe_transaction_member(TID, file(_)),
+	send(AL, update_label).
 
 :- pce_group(edit).
 
@@ -126,6 +143,16 @@ prompt_value(AL,
 initialise(C, R:prolog) :->
 	call_rules(C, label(R, Label)),
 	send_super(C, initialise, Label).
+
+update_label(C) :->
+	"Check for possibly changed label classification"::
+	get(C, resource, Resource),
+	call_rules(C, label_class(Resource, LabelClass)),
+	(   get(C?image, class_name, LabelClass)
+	->  true
+	;   call_rules(C, label(Resource, NewLabel)),
+	    send(C, image, NewLabel)
+	).
 
 resource(C, Value:prolog) :<-
 	"Represented value"::
