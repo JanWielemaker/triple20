@@ -399,6 +399,7 @@ view_owl_class_extension.
 
 owl_inferred_member(R, Class) :-
 	owl_individual_of(R, Class),
+	atom(R),			% avoid literals
 	\+ rdf_has(R, rdf:type, Class).
 
 ordered_restriction(R, Class) :-
