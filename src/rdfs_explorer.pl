@@ -861,6 +861,22 @@ variable(object_colspan,  int := 1,	get, "# columns for object").
 variable(displayed_slots, chain := new(chain), get,
 	 "Slots displayed in this sheet").
 
+initialise(AL) :->
+	send_super(AL, initialise),
+	get(AL, table, Table),
+	(   between(1, 2, ColN),
+	    get(Table, column, ColN, @on, Col),
+	    new(ColRubber, rubber),
+	    send(ColRubber, minimum, 150),
+	    (	Col == 2
+	    ->	send(ColRubber, slot, shrink, 100)
+	    ;	send(ColRubber, slot, shrink, 0)
+	    ),
+	    send(Col, rubber, ColRubber),
+	    fail
+	;   true
+	).
+
 clear(AL) :->
 	send(AL?displayed_slots, clear),
 	send_super(AL, clear).
