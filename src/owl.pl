@@ -35,6 +35,7 @@
 	    owl_restriction/2,		% +Resource, -Restriction
 	    owl_description/2,		% +Resource, -Description
 	    owl_cardinality_on_subject/3, % +Subject, +Predicate, -Card
+	    owl_cardinality_on_class/3,	% idem BJW
 	    owl_satisfies/2,		% +Spec, +Resource
 	    owl_individual_of/2,	% ?Resource, +Description
 	    owl_subclass_of/2,		% ?Resource, ?Class
@@ -251,6 +252,18 @@ cardinality_on_subject(Subject, Predicate, cardinality(Min, Max)) :-
 	rdfs_individual_of(RestrictionID, owl:'Restriction'),
 	rdf_has(RestrictionID, owl:onProperty, Predicate),
 	restriction_facet(RestrictionID, cardinality(Min, Max)).
+
+owl_cardinality_on_class(Class, Predicate, Cardinality) :-
+	findall(C, cardinality_on_class(Class, Predicate, C), L),
+	join_decls(L, [Cardinality]).
+
+cardinality_on_class(Class, Predicate, cardinality(Min, Max)) :-
+	rdfs_subclass_of(Class, RestrictionID),
+	rdfs_individual_of(RestrictionID, owl:'Restriction'),
+	rdf_has(RestrictionID, owl:onProperty, Predicate),
+	restriction_facet(RestrictionID, cardinality(Min, Max)).
+
+
 
 
 %	owl_satisfies_restriction(?Resource, +Restriction)
