@@ -238,6 +238,44 @@ show_more(N, MoreNode:rdf_more_node, Role:name, Count:int) :->
 	;   send(MoreNode, destroy)
 	).
 	
+:- pce_group(changes).
+
+cache_updated(Cache) :-
+	rdf_cache_attached(Cache, Node),
+	send(Node, update, Cache).
+
+:- listen(rdf_cache_updated(Cache),
+	  cache_updated(Cache)).
+
+update(N, Cache:[int]) :->
+	(   get(N, sons, Sons),
+	    \+ send(Sons, empty)
+	->  format('~p: must update nodes for ~w~n', [N, Cache])
+	;   send(N, update_can_expand)
+	).
+
+update_role(N, Role:name, Cache:int) :->
+	"Update results for a cache"::
+	get(N, sons, Sons),
+	get(Sons, find_all, @arg1?class_name == Role, Existing),
+	chain_list(Existing, ExList),
+	(   get(Sons, find, and(message(@arg1, instance_of, rdf_more_node),
+				@arg1?role == Role), MoreNode)
+	->  format('~p: Updated with displayed more-node ~p~n', [N, MoreNode])
+	;   (   rdf_cache_cardinality(Cache, SetSize),
+	        SetSize < 15
+	    ->	findall(R, rdf_cache_result(Cache, _, R), Set),
+		update(Set, ExList, N, Role)
+	    ;	format('~p: too many solutions~n', [])
+	    )
+	).
+	
+
+
+
+
+
+
 :- pce_group(event).
 
 :- pce_global(@rdf_node_recogniser, make_rdf_node_recogniser).

@@ -12,11 +12,13 @@
 	    rdf_cache_clear/1,		% +Cache
 	    rdf_cache_clear/0,
 	    rdf_cache_attach/2,		% +Cache, +Term
-	    rdf_cache_detach/2		% +Cache, -Term
+	    rdf_cache_detach/2,		% +Cache, -Term
+	    rdf_cache_attached/2	% ?Cache, ?Term
 	  ]).
 :- use_module(semweb(rdf_db)).
 :- use_module(semweb(rdfs)).
 :- use_module(library(broadcast)).
+:- use_module(pcecall).
 
 :- dynamic
 	cache_directory/2,		% +Key, -Index
@@ -24,6 +26,7 @@
 	cache_attributes/3,		% +Index, -Generation, -Size
 	cache_result/2,			% +Index, -ResultSet
 	cache_attached/2,		% +Index, +Satelite
+	cache_empty/3,			% +Index, +Generation, Bool
 	next_cache/1.			% +Index
 
 :- meta_predicate
@@ -69,15 +72,42 @@ rdf_cache_cardinality(Cache, Cardinality) :-
 
 %	rdf_cache_empty(+Cache)
 %	
-%	Succeeds if the goal associated cache is empty
+%	Succeeds if the goal associated cache is empty. The fact is
+%	cached for speedup as well as to facilitate the update thread.
 
 rdf_cache_empty(Cache) :-
 	cache_attributes(Cache, Generation, Size),
 	rdf_generation(Generation), !,
 	Size == 0.
 rdf_cache_empty(Cache) :-
+	cache_empty(Cache, Generation, Empty),
+	rdf_generation(Generation), !,
+	Empty == true.
+rdf_cache_empty(Cache) :-
 	cache_goal(Cache, _Var, Goal),
-	\+ Goal.
+	rdf_generation(Generation), !,
+	(   Goal
+	->  assert(cache_empty(Cache, Generation, false)),
+	    fail
+	;   assert(cache_empty(Cache, Generation, true))
+	).
+
+rdf_update_empty(Cache, Modified) :-
+	cache_goal(Cache, _Var, Goal),
+	rdf_generation(Generation),
+	(   Goal
+	->  Empty = false
+	;   Empty = true
+	),
+	(   cache_empty(Cache, _, Empty)
+	->  Modified = false
+	;   retract(cache_empty(Cache, _, _))
+	->  assert(cache_empty(Cache, Generation, Empty)),
+	    Modified = true
+	;   assert(cache_empty(Cache, Generation, Empty)),
+	    Modified = new
+	).
+
 
 %	rdf_cache_result(+Cache, ?Index, ?Result)
 %	
@@ -114,6 +144,7 @@ rdf_update_cache(Cache, Modified) :-
 	functor(Result, _, Arity),
 	retractall(cache_attributes(Cache, _, _)),
 	assert(cache_attributes(Cache, Generation, Arity)),
+	retractall(cache_empty(Cache, _, _)),
 	Modified = RawModified.
 
 
@@ -154,6 +185,9 @@ rdf_cache_attach(Cache, Satelite) :-
 rdf_cache_detach(Cache, Satelite) :-
 	retract(cache_attached(Cache, Satelite)), !.
 
+rdf_cache_attached(Cache, Satelite) :-
+	cache_attached(Cache, Satelite).
+
 
 		 /*******************************
 		 *	       UPDATE		*
@@ -181,14 +215,20 @@ update_loop :-
 
 update_cache :-
 	cache_attached(Cache, _Satelite),
-	cache_result(Cache, _),		% don't do non-existing caches
-	(   rdf_update_cache(Cache, Modified),
-	    debug(rdf_cache, '~w: modified = ~w~n', [Cache, Modified]),
-	    Modified == true,
-	    broadcast(rdf_cache_updated(Cache)),
-	    fail
-	;   true
-	).
+	(   cache_result(Cache, _)
+	->  rdf_update_cache(Cache, Modified),
+	    debug(rdf_cache, '~w: modified = ~w~n', [Cache, Modified])
+	;   cache_empty(Cache, _, _),
+	    rdf_update_empty(Cache, Modified),
+	    debug(rdf_cache, '~w: empty modified = ~w~n', [Cache, Modified])
+	),
+	Modified == true,
+	in_pce_thread(updated(Cache)),
+	fail.
+update_cache.
+
+updated(Cache) :-
+	broadcast(rdf_cache_updated(Cache)).
 
 :- initialization
    rdf_cache_create_update_thread.
