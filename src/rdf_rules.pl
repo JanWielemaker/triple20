@@ -236,7 +236,8 @@ current_inner(Obj) :-
 	    prolog_frame_attribute(Frame, parent_goal,
 				   rdf_rules:call_rules(Obj, _))
 	->  true
-	;   throw(error(existence_error(container, inner), _))
+	;   gtrace, current_inner(Obj)
+	    %throw(error(existence_error(container, inner), _))
 	).
 
 

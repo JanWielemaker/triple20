@@ -93,7 +93,7 @@ print(T, Text:char_array) :->
 
 append_resource(T, Value:prolog) :->
 	"Append a resource value"::
-	rdf_label_rules::label(Value, Label),
+	call_rules(T, label(Value, Label)),
 	send(T, append, Label).
 
 display_icons(T) :->
@@ -251,7 +251,7 @@ unlink(T) :->
 
 update(L, _Cache:[int]) :->
 	get(L, cache, Cache),
-	send(L, clear),
+	send(L, clear, destroy),
 	(   Cache == @nil		% rdf:nil
 	->  send(L, print, '[]')
 	;   get(L, max_size, Max),
@@ -319,7 +319,7 @@ unlink(L) :->
 
 update(L) :->
 	"OWL Specialised labels"::
-	send(L, clear),
+	send(L, clear, destroy),
 	send(L, slot, predicate, @nil),
 	get(L, resource, Resource),
 	call_rules(L, icon(Resource, Icon)),

@@ -54,7 +54,7 @@ owl_description_attribute(X) :- rdf_equal(owl:intersectionOf, X).
 		 *	       LABELS		*
 		 *******************************/
 
-:- begin_particle(rdf_label_rules, []).
+:- begin_rules(rdf_label_rules, default).
 
 :- dynamic
 	view_label_as/1.
@@ -110,7 +110,7 @@ label_class(Obj, rdf_individual_label) :-
 label_class('__not_filled', rdf_not_filled_label).
 label_class(_, rdf_resource_text).
 
-:- end_particle.
+:- end_rules.
 
 :- multifile
 	resource/3.
@@ -132,7 +132,7 @@ resource(nil,         image, image('16x16/DisketteBoxEmpty.xpm')).
 resource(part,        image, image('16x16/part.xpm')).
 resource(inferred,    image, image('16x16/think.xpm')).
 
-:- begin_particle(rdf_icon_rules, []).
+:- begin_rules(rdf_icon_rules, default).
 
 icon(R, Icon) :-
 	inner::icon_resource(R, Resource),
@@ -158,10 +158,10 @@ icon_resource(R, list) :-
 icon_resource('__not_filled', nil) :- !.
 icon_resource(_, individual).
 
-:- end_particle.
+:- end_rules.
 
 
-:- begin_particle(rdf_resource_menu, []).
+:- begin_rules(rdf_resource_menu, default).
 
 popup(Gr, Popup) :-
 	new(Popup, popup),
@@ -260,14 +260,14 @@ menu_item(edit,   rename_resource).
 sub_menu(copy).
 sub_menu(view).
 
-:- end_particle.
+:- end_rules.
 
 
 		 /*******************************
 		 *		EDIT		*
 		 *******************************/
 
-:- begin_particle(rdf_predicate, []).
+:- begin_rules(rdf_predicate, default).
 
 %	standard_predicate(+Resource, -Predicate)
 %	
@@ -307,14 +307,14 @@ class_predicate(Class, Predicate) :-
 	sort_by_label(Ps, Predicates),
 	member(Predicate, Predicates).
 
-:- end_particle.
+:- end_rules.
 
 
 		 /*******************************
 		 *	      HIERARCHY		*
 		 *******************************/
 
-:- begin_particle(class_hierarchy, []).
+:- begin_rules(class_hierarchy, default).
 
 %	child_cache(+Resource, -Cache, -Class)
 %	
@@ -439,14 +439,14 @@ root_property(Class, P) :-
 	rdf_has(P, rdf:type, Class),
 	\+ rdf_has(P, rdfs:subPropertyOf, _).
 
-:- end_particle.
+:- end_rules.
 
 
 		 /*******************************
 		 *	   DRAG-AND-DROP	*
 		 *******************************/
 
-:- begin_particle(rdf_drag_and_drop, []).
+:- begin_rules(rdf_drag_and_drop, default).
 
 %	drop(Graphical, Resource)
 %	
@@ -510,18 +510,18 @@ drop_resource_command(C, R, change_type) :-
 	rdfs_individual_of(C, rdfs:'Class'),
 	\+ rdfs_individual_of(R, rdfs:'Class').
 
-:- end_particle.
+:- end_rules.
 
-:- begin_particle(rdf_click, []).
+:- begin_rules(rdf_click, default).
 
 clicked(V) :-
 	get(V, resource, R),
 	format('Clicked ~p representing ~p~n', [V, R]).
 
-:- end_particle.
+:- end_rules.
 
 
-:- begin_particle(rdf_tab, []).
+:- begin_rules(rdf_tab, default).
 
 %	resource_tab(-Name, -Window)
 %	
@@ -545,7 +545,7 @@ default_resource_tab(Resource, class) :-
 	rdfs_individual_of(Resource, rdfs:'Class').
 default_resource_tab(_, instance).
 	
-:- end_particle.
+:- end_rules.
 
 
 
@@ -570,20 +570,20 @@ default_resource_tab(_, instance).
 		 *	       LABELS		*
 		 *******************************/
 
-:- begin_particle(rdf_resource_id_text, display).
+:- begin_rules(rdf_resource_id_text, default).
 
 label_text(Resource, Text) :-
 	rdf_global_id(NS:Local, Resource),
 	concat_atom([NS, :, Local], Text).
 
-:- end_particle.
+:- end_rules.
 
 
 		 /*******************************
 		 *	     HIERARCHY		*
 		 *******************************/
 
-:- begin_particle(rdf_tree, []).
+:- begin_rules(rdf_tree, default).
 
 clicked(V) :-
 	get(V, resource, R),
@@ -612,9 +612,9 @@ menu_item(Gr, Group, Item, Receiver) :-
 	outer::menu_item(Gr, Group, Item, Receiver),
 	Item \== hierarchy_location.
 
-:- end_particle.
+:- end_rules.
 
-:- begin_particle(rdf_node, []).
+:- begin_rules(rdf_node, default).
 
 %	Drop onto a node in the hierarchy
 
@@ -635,27 +635,27 @@ drop(change_type, Onto, From) :-
 drop(Command, Onto, From) :-
 	outer::drop(Command, Onto, From).
 
-:- end_particle.
+:- end_rules.
 
 
-:- begin_particle(rdf_individual_node, rdf_node).
+:- begin_rules(rdf_individual_node, default).
 
 icon_resource(_, individual).
 icon_resource(R, Icon) :-
 	super::icon_resource(R, Icon),
 	Icon \== individual.
 
-:- end_particle.
+:- end_rules.
 
-:- begin_particle(rdf_part_node, rdf_node).
+:- begin_rules(rdf_part_node, default).
 
 icon_resource(_, part).
 icon_resource(R, Icon) :-
 	super::icon_resource(R, Icon).
 
-:- end_particle.
+:- end_rules.
 
-:- begin_particle(rdf_property_node, rdf_node).
+:- begin_rules(rdf_property_node, default).
 
 child_cache(R, Cache, rdf_property_node) :-
 	rdf_cache(lsorted(V), rdf_has(V, rdfs:subPropertyOf, R), Cache).
@@ -664,9 +664,9 @@ menu_item(Group, Item) :-
 	outer::menu_item(Group, Item).
 menu_item(view, triples=view_triples).
 
-:- end_particle.
+:- end_rules.
 
-:- begin_particle(rdf_root_node, rdf_node).
+:- begin_rules(rdf_root_node, default).
 
 child_cache(R, Cache, Role) :-
 	rdf_equal(R, rdfs:'Resource'),
@@ -684,10 +684,10 @@ orphan_resource('__orphan_classes') :-
 orphan_resource('__orphan_resources') :-
 	rdf_orphan_node:orphan_resource(_) -> true.
 
-:- end_particle.
+:- end_rules.
 
 
-:- begin_particle(rdf_orphan_node, rdf_node).
+:- begin_rules(rdf_orphan_node, default).
 
 label_text('__orphan_classes', '<Classes without rdfs:subClassOf>').
 label_text('__orphan_resources', '<Resources without rdf:type>').
@@ -727,21 +727,21 @@ orphan_resource(Resource) :-
 	atom(Resource),
 	\+ rdf_has(Resource, rdf:type, _).
 
-:- end_particle.
+:- end_rules.
 
 
 		 /*******************************
 		 *	      TABLE		*
 		 *******************************/
 
-:- begin_particle(rdf_tabular, []).
+:- begin_rules(rdf_tabular, default).
 
 clicked(V) :-
 	send(V?device, selection, V).
 
-:- end_particle.
+:- end_rules.
 
-:- begin_particle(rdf_object_cell, []).
+:- begin_rules(rdf_object_cell, default).
 
 menu_item(Group, Item) :-
 	super::menu_item(Group, Item).
@@ -756,10 +756,10 @@ drop(modify, Gr, V) :-
 	get(Gr, triple, rdf(Subject, Predicate, Old)),
 	rdf_set_object(Subject, Predicate, Old, Resource).
 
-:- end_particle.
+:- end_rules.
 
 
-:- begin_particle(rdf_predicate_cell, []).
+:- begin_rules(rdf_predicate_cell, default).
 
 menu_item(Group, Item) :-
 	super::menu_item(Group, Item).
@@ -782,29 +782,29 @@ drop(modify, Gr, V) :-
 	rdfe_transaction(forall(rdf(S,P,O),
 				rdfe_update(S, P, O, predicate(NewP)))).
 
-:- end_particle.
+:- end_rules.
 
-:- begin_particle(rdf_range_cell, []).
-
-drop(modify, _Gr, V) :-
-	get(V, resource, Resource),
-	get(@particle, triple, rdf(Subject, Predicate, Old)),
-	rdf_set_object(Subject, Predicate, Old, Resource).
-
-:- end_particle.
-
-
-:- begin_particle(rdf_domain_cell, []).
+:- begin_rules(rdf_range_cell, default).
 
 drop(modify, _Gr, V) :-
 	get(V, resource, Resource),
 	get(@particle, triple, rdf(Subject, Predicate, Old)),
 	rdf_set_object(Subject, Predicate, Old, Resource).
 
-:- end_particle.
+:- end_rules.
 
 
-:- begin_particle(rdf_not_filled_label, []).
+:- begin_rules(rdf_domain_cell, default).
+
+drop(modify, _Gr, V) :-
+	get(V, resource, Resource),
+	get(@particle, triple, rdf(Subject, Predicate, Old)),
+	rdf_set_object(Subject, Predicate, Old, Resource).
+
+:- end_rules.
+
+
+:- begin_rules(rdf_not_filled_label, default).
 
 menu_item(edit, delete).
 menu_item(edit, fill=modify).
@@ -813,18 +813,14 @@ menu_item(edit, literal_value=type(literal)).
 clicked(V) :-
 	send(V, modify).
 
-:- end_particle.
+:- end_rules.
 
 
 		 /*******************************
 		 *	      LISTS		*
 		 *******************************/
 
-:- begin_particle(rdf_list_label,
-		  [ rdf_resource_menu,
-		    rdf_icon_rules
-		  ]).
-		    
+:- begin_rules(rdf_list_label, default).
 
 menu_item(Group, Item) :-
 	rdf_resource_menu:menu_item(Group, Item).
@@ -840,7 +836,7 @@ drop(Action, Gr, V) :-
 	debug(drop, 'Drop ~w: ~w on ~w~n', [Action, Resource, Triple]),
 	rdf_list_operation(Action, Triple, Resource).
 
-:- end_particle.
+:- end_rules.
 
 
 		 /*******************************
@@ -848,7 +844,7 @@ drop(Action, Gr, V) :-
 		 *******************************/
 
 
-:- begin_particle(owl_description_label, rdf_resource_menu).
+:- begin_rules(owl_description_label, default).
 
 menu_item(Group, Item) :-
 	super::menu_item(Group, Item).
@@ -865,23 +861,23 @@ sub_menu(Popup) :-
 	super::sub_menu(Popup).
 sub_menu(type).
 
-:- end_particle.
+:- end_rules.
 
 
-:- begin_particle(rdf_inferred_node, rdf_node).
+:- begin_rules(rdf_inferred_node, default).
 
 icon_resource(_, inferred).
 icon_resource(R, Icon) :-
 	super::icon_resource(R, Icon).
 
-:- end_particle.
+:- end_rules.
 
 
 		 /*******************************
 		 *	      TOOL		*
 		 *******************************/
 
-:- begin_particle(rdfs_explorer, []).
+:- begin_rules(rdfs_explorer, default).
 
 show_triple_cache(Cache) :-
 	get(@particle, self, Tool),
@@ -893,4 +889,4 @@ view_owl_class_extension :-
 	send(Explorer, has_get_method, view_owl_class_extension),
 	get(Explorer, view_owl_class_extension, @on).
 
-:- end_particle.
+:- end_rules.
