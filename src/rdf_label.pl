@@ -100,6 +100,10 @@ append_resource(T, Value:prolog) :->
 	"Append a resource value"::
 	call_rules(T, label(Value, Label)),
 	send(T, append, Label).
+append_resource(T, Value:prolog, Label:graphical) :<-
+	"Append a resource value"::
+	call_rules(T, label(Value, Label)),
+	send(T, append, Label).
 
 display_icons(T) :->
 	"Display (append) relevant icons"::

@@ -139,6 +139,10 @@ arm_object(W, Gr:graphical*) :->
 	    )
 	).
 
+armed(W, Gr:graphical) :<-
+	"Find currently armed graphical"::
+	get(W, hypered, arm, Gr).
+
 :- pce_end_class(display).
 
 
