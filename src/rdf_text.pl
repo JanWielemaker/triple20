@@ -121,6 +121,10 @@ arm(TF, Arm:bool) :->
 
 :- pce_end_class(rdf_resource_text).
 
+:- pce_begin_class(rdf_resource_id_text, rdf_resource_text).
+:- pce_end_class.
+
+
 :- pce_begin_class(rdf_drop_gesture, drag_and_drop_gesture).
 
 initialise(DD, Button:name) :->

@@ -608,7 +608,7 @@ display_resource(AL, As:name) :->
 	send(AL, append, As?label_name, bold, right),
 	get(AL, resource, Resource),
 	get(AL, object_colspan, ColSpan),
-	send(AL, append, rdf_resource_text(Resource), colspan := ColSpan),
+	send(AL, append, rdf_resource_id_text(Resource), colspan := ColSpan),
 	send(AL, next_row).
 
 display_label(AL) :->

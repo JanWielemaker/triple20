@@ -31,6 +31,8 @@
 
 :- module(rdf_dialog, []).
 :- use_module(library(pce)).
+:- use_module(library(pce_identifier_item)).
+:- use_module(library(hyper)).
 :- use_module(semweb(rdf_db)).
 :- use_module(library(lists)).
 :- use_module(rdf_util).
@@ -171,6 +173,57 @@ selection(TI, Selection:name) :<-
 
 
 		 /*******************************
+		 *	  GENERIC DIALOG	*
+		 *******************************/
+
+:- pce_begin_class(rdf_dialog, dialog,
+		   "Generic parts").
+
+initialise(D, Client:client=[graphical], Label:label=[name]) :->
+	send_super(D, initialise, Label),
+	send(D, client, Client).
+
+client(D, For:[graphical]) :->
+	(   For == @default
+	->  true
+	;   new(_, partof_hyper(For, D, dialog, client))
+	).
+	    
+open(D, Pt:[point]) :->
+	(   Pt = @default,
+	    get(D, hypered, client, Client),
+	    get(Client, frame, Frame),
+	    get(Client, display_position, point(X, Y)),
+	    get(Client?area, height, H)
+	->  send(D, transient_for, Frame),
+	    send(D, modal, transient),
+	    send_super(D, open, point(X, Y+H+5))
+	;   send_super(D, open, Pt)
+	).
+
+item_selection(F, From:name, Warn:[bool], Selection:any) :<-
+	"Get selection of an item"::
+	get(F, member, From, Item),
+	(   Warn == @off
+	->  pce_catch_error(_, get(Item, selection, Selection))
+	;   get(Item, selection, Selection)
+	).
+
+standard_buttons(F, Name:name) :->
+	"Append action and cancel buttons"::
+	send(F, append, new(B, button(Name))),
+	send(B, active, @off),
+	send(B, default_button, @on),
+	send(F, append, button(cancel)).
+
+cancel(F) :->
+	send(F, destroy).
+
+:- pce_end_class(rdf_dialog).
+
+
+
+		 /*******************************
 		 *	       FILE		*
 		 *******************************/
 
@@ -236,3 +289,36 @@ merge(D) :->
 	send(D, destroy).
 
 :- pce_end_class.
+
+
+		 /*******************************
+		 *	       RESOURCE		*
+		 *******************************/
+
+:- pce_begin_class(rdf_rename_dialog, rdf_dialog,
+		   "Rename a resource").
+
+initialise(D, Resource:name, Client:[graphical]) :->
+	send_super(D, initialise, Client, 'Rename resource'),
+	send(D, append, new(From, identifier_item(from, Resource))),
+	send(From, editable, @off),
+	send(D, append, new(To, identifier_item(into, Resource))),
+	send_list([From, To], length(40)),
+	send(D, standard_buttons, rename).
+
+modified_item(D, _Gr:graphical, _M:bool) :->
+	get(D, member, rename, Button),
+	(   get(D, item_selection, from, @off, From),
+	    get(D, item_selection, into, @off, Into),
+	    Into \== From
+	->  send(Button, active, @on)
+	;   send(Button, active, @off)
+	).
+
+rename(D) :->
+	get(D, item_selection, from, From),
+	get(D, item_selection, into, Into),
+	rdf_change_resource(From, Into),
+	send(D, destroy).
+
+:- pce_end_class(rdf_rename_dialog).

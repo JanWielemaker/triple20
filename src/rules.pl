@@ -231,6 +231,8 @@ menu_item(copy,   copy_text).
 menu_item(view,   view_rdf_source).
 menu_item(view,   diagram_).
 
+menu_item(edit,   rename_resource).
+
 %	sub_menu(Group)
 %	
 %	Group of items to place in a sub-menu
@@ -468,6 +470,19 @@ clicked(V) :-
 		    rdf_click,
 		    rdf_predicate
 		  ]).
+:- end_particle.
+
+
+		 /*******************************
+		 *	       LABELS		*
+		 *******************************/
+
+:- begin_particle(rdf_resource_id_text, display).
+
+label_text(Resource, Text) :-
+	rdf_global_id(NS:Local, Resource),
+	concat_atom([NS, :, Local], Text).
+
 :- end_particle.
 
 

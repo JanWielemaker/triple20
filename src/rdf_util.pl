@@ -34,19 +34,23 @@
 	    property_type/3,		% +Subject, +Property, -Type
 	    sort_by_label/2,		% +Resources, -Sorted
 	    rdf_default_file/2,		% +Resources, -File
+
+					% Edit operations
 	    rdf_set_object/4,		% +S, +P, +O, +NewObject
 	    rdf_set_object/3,		% +S, +P, +Object
 	    rdf_add_object/3,		% +S, +P, +O
 	    rdf_new_property/2,		% +S, +P
 	    rdf_list_operation/3,	% +Action, +Triple, +Resource
 	    rdf_delete_hierarchy/3,	% +Root, +Relation, +Options
-	    rdf_merge_files/2		% +Into, +From
+	    rdf_merge_files/2,		% +Into, +From
+	    rdf_change_resource/2	% +From, +To
 	  ]).
 :- use_module(semweb(rdf_db)).
 :- use_module(semweb(rdfs)).
 :- use_module(semweb(rdf_edit)).
 :- use_module(owl).
 :- use_module(library(option)).
+:- use_module(library(lists)).
 
 %	user:goal_expansion(+NSGoal, -Goal)
 %	
@@ -363,7 +367,8 @@ rdf_delete_hierarchy(Root, Property, Options) :-
 delete_hierarchy(Root, Property, Options) :-
 	rdf_equal(rdfs:'Resource', RdfsResource),
 	option(unless_reachable_from(Keep), Options, RdfsResource),
-	rdfe_retractall(Root, Property, _),
+	forall(rdfs_subproperty_of(P, Property),
+	       rdfe_retractall(Root, P, _)),
 	findall(X, rdf_reachable(X, Property, Root), Set0),
 	findall(X, rdf_reachable(X, Property, Keep), KeepSet0),
 	sort(Set0, Set1),
@@ -384,7 +389,7 @@ delete_hierarchy(Root, Property, Options) :-
 		 *	      FILES		*
 		 *******************************/
 	
-%	rdf_merge_files(Into, From)
+%	rdf_merge_files(+Into, +From)
 %	
 %	Merge all triple that have From as their payload into Into.
 
@@ -398,3 +403,47 @@ merge_files(Into, From) :-
 	    fail
 	;   true
 	).
+
+		 /*******************************
+		 *	      RESOURCES		*
+		 *******************************/
+
+%	rdf_change_resource(+From, +To)
+%	
+%	Change the resource From into To.
+
+rdf_change_resource(To, To) :- !.
+rdf_change_resource(From, To) :-
+	(   (   rdf(To, _, _)
+	    ;	rdf(_, To, _)
+	    ;	rdf(_, _, To)
+	    )
+	->  send(@display, confirm, 'Target resource %s already exists.\n\
+				     Do you want to merge these resources?',
+		 To)
+	;   true
+	),
+	rdfe_transaction(change_resource(From, To),
+			 change_resource(From, To)).
+
+change_resource(From, To) :-
+	change_subject(From, To),
+	change_predicate(From, To),
+	change_object(From, To).
+
+change_subject(From, To) :-
+	S = From,
+	findall(rdf(S,P,O), rdf(S, P, O), Set),
+	forall(member(rdf(S,P,O), Set),
+	       rdfe_update(S,P,O,subject(To))).
+change_predicate(From, To) :-
+	P = From,
+	findall(rdf(S,P,O), rdf(S, P, O), Set),
+	forall(member(rdf(S,P,O), Set),
+	       rdfe_update(S,P,O,predicate(To))).
+change_object(From, To) :-
+	O = From,
+	findall(rdf(S,P,O), rdf(S, P, O), Set),
+	forall(member(rdf(S,P,O), Set),
+	       rdfe_update(S,P,O,object(To))).
+	    

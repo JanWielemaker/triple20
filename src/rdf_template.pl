@@ -162,6 +162,11 @@ copy_id(T)                :-> send(T, copy, resource).
 copy_as_xml_identifier(T) :-> send(T, copy, xml_identifier).
 copy_as_xml_attribute(T)  :-> send(T, copy, xml_attribute).
 
+rename_resource(T) :->
+	"Change the name of a resource"::
+	get(T, resource, R),
+	send(new(rdf_rename_dialog(R, T)), open).
+
 
 :- pce_group(diagram).
 
