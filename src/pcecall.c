@@ -1,13 +1,18 @@
 #include <SWI-Stream.h>
 #include <SWI-Prolog.h>
+
+#ifdef WIN32
+
+#include <windows.h>
+
+#else /*WIN32*/
+
 #include "/staff/jan/src/pl/packages/xpce/src/h/interface.h"
 #include <X11/Xlib.h>
 #include <X11/Intrinsic.h>
-
-#ifdef WIN32
-#else
 #define HAVE_UNISTD_H 1
-#endif
+
+#endif /*WIN32*/
 
 #ifdef HAVE_SYS_SELECT_H
 #include <sys/select.h>
@@ -50,8 +55,13 @@ typedef struct
 
 
 typedef struct
-{ int		pipe[2];
+{
+#ifdef WIN32
+  HWND		window;
+#else /*WIN32*/
+  int		pipe[2];
   XtInputId 	id;
+#endif /*WIN32*/
 } context_t;
 
 static int init_prolog_goal(prolog_goal *g, term_t goal);
@@ -88,6 +98,107 @@ type_error(term_t actual, const char *expected)
 
   return PL_raise_exception(ex);
 }
+
+#ifdef WIN32
+
+		 /*******************************
+		 *	  WINDOWS SOLUTION	*
+		 *******************************/
+
+#define WM_CALL	(WM_USER+56)
+
+static int WINAPI
+call_wnd_proc(HWND hwnd, UINT message, UINT wParam, LONG lParam)
+{ switch( message )
+  { case WM_CALL:
+    { prolog_goal *g = (prolog_goal *)lParam;
+
+      call_prolog_goal(g);
+      PL_free(g);
+
+      return 0;
+    }
+  }
+
+  return DefWindowProc(hwnd, message, wParam, lParam);
+}
+
+static char *
+HiddenFrameClass()
+{ static char *name;
+  static WNDCLASS wndClass;
+
+  if ( !name )
+  { char buf[50];
+
+    hinstance = GetModuleHandle("xpce2pl");
+    sprintf(buf, "PceCallWin%d", (int)hinstance);
+    name = strdup(buf);
+
+    wndClass.style		= 0;
+    wndClass.lpfnWndProc	= (LPVOID) call_wnd_proc;
+    wndClass.cbClsExtra		= 0;
+    wndClass.cbWndExtra		= 0;
+    wndClass.hInstance		= hinstance;
+    wndClass.hIcon		= NULL;
+    wndClass.hCursor		= NULL;
+    wndClass.hbrBackground	= GetStockObject(WHITE_BRUSH);
+    wndClass.lpszMenuName	= NULL;
+    wndClass.lpszClassName	= name;
+
+    RegisterClass(&wndClass);
+  }
+
+  return name;
+}
+
+
+static void
+shutdown(void *closure)
+{ if ( context.window )
+  { DestroyWindow(context.window);
+    context.window = 0;
+  }
+}
+
+
+static int
+setup()
+{ if ( context.window )
+    return TRUE;
+  
+  DLOCK();
+  if ( !context.window )
+  { context.window = CreateWindow(HiddenFrameClass(),
+				  "XPCE/SWI-Prolog call window",
+				  WS_POPUP,
+				  0, 0, 32, 32,
+				  NULL, NULL, hinstance, NULL);
+    PL_on_halt(shutdown, NULL);
+  }
+  DUNLOCK;
+
+  return TRUE;
+}
+
+
+static foreign_t
+pl_pce_call(term_t goal)
+{ prolog_goal *g = PL_malloc(sizeof(*g));
+  int rc;
+
+  if ( !init_prolog_goal(g, goal) )
+  { PL_free(g);
+    return FALSE;
+  }
+
+  PostMessage(context.window, WM_CALL, (WPARAM)0, (LPARAM)g);
+
+  return TRUE;
+}
+
+
+#else /*WIN32*/
 
 		 /*******************************
 		 *	   X11 SCHEDULING	*
@@ -151,6 +262,8 @@ pl_pce_call(term_t goal)
   return FALSE;
 }
 
+#endif /*WIN32*/
+
 
 		 /*******************************
 		 *	CREATE/EXECUTE GOAL	*
@@ -193,7 +306,11 @@ call_prolog_goal(prolog_goal *g)
 install_t
 install_pcecall()
 {
-#ifndef WIN32
+#ifdef WIN32
+  if ( PL_thread_self() != 1 )
+    PL_warning("in_pce_thread/1 must be loaded from main thread");
+  setup();
+#else
   context.pipe[0] = context.pipe[1] = -1;
 #endif
 
