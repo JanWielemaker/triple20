@@ -441,7 +441,8 @@ update_save_popup(OV, Popup:popup) :->
 	
 save_file(_OV, File:name) :->
 	"Save (export) given file"::
-	rdf_save(File, File),
+	send(File, backup),
+	rdf_save(File, [db(File)]),
 	rdfe_clear_modified(File).
 
 save_all(_OV) :->
