@@ -1258,6 +1258,7 @@ append_inferred_slots(AL) :->
 	
 append_slot_values(AL, Pairs:prolog) :->
 	"Append list of Predicate-ListOfValues"::
+	get(AL, resource, I),
 	sort_by_predicate_label(Pairs, ByPred),
 	(   member(Pred-Values, ByPred),
 	    \+ reserved_instance_slot(Pred),
