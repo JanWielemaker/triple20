@@ -178,8 +178,11 @@ map_default(X, X).
 :- pce_begin_class(rdf_resource_cell, table_cell).
 
 initialise(C, R:prolog) :->
-	call_rules(C, label(R, Label)),
+	get(C, create_label, R, Label),
 	send_super(C, initialise, Label).
+
+create_label(C, R:prolog, Label:graphical) :<-
+	call_rules(C, label(R, Label)).
 
 update_label(C) :->
 	"Check for possibly changed label classification"::
@@ -240,7 +243,7 @@ view_triples(N) :->
 
 :- pce_end_class.
 
-:- pce_begin_class(rdf_object_cell, rdf_resource_cell).
+:- pce_begin_class(rdf_inferred_object_cell, rdf_resource_cell).
 
 variable(predicate, name*, get, "Related predicate").
 
@@ -250,6 +253,14 @@ initialise(C, R:prolog, P:[name]) :->
 	->  send(C, slot, predicate, P)
 	;   true
 	).
+
+create_label(C, R:prolog, Label:graphical) :<-
+	call_rules(C, label(R, Label)).
+
+:- pce_end_class(rdf_inferred_object_cell).
+
+
+:- pce_begin_class(rdf_object_cell, rdf_inferred_object_cell).
 
 delete(Cell) :->
 	"Delete triple from database"::

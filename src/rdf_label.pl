@@ -183,6 +183,10 @@ update(L) :->
 :- pce_end_class(rdf_icon_label).
 
 
+:- pce_begin_class(rdf_resource_label, rdf_icon_label,
+		   "Untyped resource").
+:- pce_end_class(rdf_resource_label).
+
 
 :- pce_begin_class(rdf_individual_label, rdf_icon_label,
 		   "Typed individual").

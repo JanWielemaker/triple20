@@ -108,7 +108,7 @@ label_class(Obj, rdf_list_label) :-
 label_class(Obj, rdf_individual_label) :-
 	rdf_has(Obj, rdf:type, _).
 label_class('__not_filled', rdf_not_filled_label).
-label_class(_, rdf_resource_text).
+label_class(_, rdf_resource_label).
 
 :- end_rules.
 
@@ -120,6 +120,7 @@ resource(metaclass,   image, image('16x16/Metaclass.gif')).
 resource(orphanclass, image, image('16x16/orphanclass.xpm')).
 resource(orphanres,   image, image('16x16/orphanres.xpm')).
 resource(individual,  image, image('16x16/instance.xpm')).
+resource(resource,    image, image('16x16/resource.xpm')).
 resource(property,    image, image('16x16/SlotDirect.gif')).
 resource(list,        image, image('16x16/list.xpm')).
 resource(list_member, image, image('16x16/list_member.xpm')).
@@ -156,7 +157,10 @@ icon_resource(R, property) :-
 icon_resource(R, list) :-
 	rdfs_individual_of(R, rdf:'List'), !.
 icon_resource('__not_filled', nil) :- !.
-icon_resource(_, individual).
+icon_resource(R, individual) :-
+	rdf_has(R, rdf:type, _), !.
+icon_resource(_, resource).
+
 
 :- end_rules.
 
@@ -427,7 +431,7 @@ parent('__orphan_resources', Root, rdf_orphan_node) :-
 parent(R, '__orphan_classes', rdf_class_node) :-
 	rdfs_individual_of(R, rdfs:'Class'),
 	\+ rdf_has(R, rdfs:subClassOf, _).
-parent(R, '__orphan_resources', rdf_individual_node) :-
+parent(R, '__orphan_resources', rdf_node) :-
 	\+ rdf_has(R, rdf:type, _).
 
 %	root_property(+Class, -Property)
@@ -711,7 +715,7 @@ label_class(Resource, Class) :-
 
 child_cache('__orphan_classes', Cache, rdf_class_node) :-
 	rdf_cache(lsorted(X), orphan_class(X), Cache).
-child_cache('__orphan_resources', Cache, rdf_individual_node) :-
+child_cache('__orphan_resources', Cache, rdf_node) :-
 	rdf_cache(lsorted(X), orphan_resource(X), Cache).
 child_cache(Resource, Cache, Role) :-
 	super::child_cache(Resource, Cache, Role).
@@ -760,6 +764,16 @@ drop(modify, Gr, V) :-
 	get(V, resource, Resource),
 	get(Gr, triple, rdf(Subject, Predicate, Old)),
 	rdf_set_object(Subject, Predicate, Old, Resource).
+
+:- end_rules.
+
+
+:- begin_rules(rdf_inferred_object_cell, default).
+
+icon_resource(_, inferred).
+icon_resource(R, Icon) :-
+	super::icon_resource(R, Icon),
+	Icon \== inferred.
 
 :- end_rules.
 

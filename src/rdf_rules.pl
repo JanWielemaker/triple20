@@ -136,9 +136,6 @@ rdf_particle(O, Particle:name) :<-
 	;   update_class_particle(ClassName, Particle)
 	).
 
-rdf_container(O, Container:visual) :<-
-	get(O, contained_in, Container).
-
 :- pce_end_class.
 
 :- pce_extend_class(class).
@@ -155,6 +152,13 @@ rdf_particle(Class, Particle:name) :->
 	get(Class, name, ClassName),
 	retractall(class_particle(ClassName, _, _)),
 	assert(class_particle(ClassName, Particle, explicit)).
+
+:- pce_end_class.
+
+:- pce_extend_class(visual).
+
+rdf_container(O, Container:visual) :<-
+	get(O, contained_in, Container).
 
 :- pce_end_class.
 
@@ -199,10 +203,17 @@ rdf_container(O, Container:device) :<-
 %	defining Goal and call it.
 
 call_rules(Obj, Goal) :-
-	container_with_particle(Obj, Container, Particle),
-	defined(Particle:Goal), !,
+	container_with_particle_defining(Obj, Goal, Container, Particle),
 	with_container(Container, Particle::Goal),
 	true.				% avoid tail recursion
+
+container_with_particle_defining(Obj, Goal, Container, Particle) :-
+	debug(container,
+	      'Searching container of ~p to call ~p', [Obj, Goal]),
+	container_with_particle(Obj, Container, Particle),
+	defined(Particle:Goal), !,
+	debug(container,
+	      '~p: calling ~w::~p~n', [Obj, Particle, Goal]).
 
 %	defined(:G)
 %	
@@ -246,8 +257,7 @@ current_container(Cont) :-
 
 call_inner(Goal) :-
 	current_inner(Obj),
-	container_with_particle(Obj, Container, Particle),
-	defined(Particle:Goal), !,
+	container_with_particle_defining(Obj, Goal, Container, Particle),
 	with_container(Container, Particle::Goal).
 
 current_inner(Obj) :-
@@ -280,7 +290,7 @@ container(Obj, Container) :-
 	->  debug(container,
 		  'Try container of ~p: ~p', [Obj, Container])
 	;   get(Obj, create_context,
-		message(@arg1, instance_of, visual),
+		message(@arg1, has_get_method, rdf_container),
 		Container)
 	->  debug(container,
 		  'Try create context of ~p: ~p~n', [Obj, Container])

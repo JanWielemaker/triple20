@@ -856,7 +856,7 @@ append_property(AL, Property:name) :->
 	    send(AL, append, rdf_object_cell(V1, P), colspan := ColSpan),
 	    send(AL, next_row),
 	    forall(member(V, Values),
-		   send(AL, append_continuation_value, V, P)),
+		   send(AL, append_continuation_value, R, P, V)),
 	    fail
 	;   true
 	).
@@ -871,11 +871,15 @@ ordered_has(R, P, O, SP) :-
 	rdf_has(R, P, O, SP),
 	SP \== P.
 
-append_continuation_value(AL, V:prolog, Property:[name]) :->
+append_continuation_value(AL, Subject:name, Property:[name], Object:prolog) :->
 	"Append value in the 2nd column"::
 	send(AL, append, new(graphical)),
 	get(AL, object_colspan, ColSpan),
-	send(AL, append, rdf_object_cell(V, Property), colspan := ColSpan),
+	(   rdf_has(Subject, Property, Object)
+	->  Cell = rdf_object_cell(Object, Property)
+	;   Cell = rdf_inferred_object_cell(Object, Property)
+	),
+	send(AL, append, Cell, colspan := ColSpan),
 	send(AL, next_row).
 
 :- pce_end_class(rdf_resource_tabular).
@@ -1102,6 +1106,7 @@ initialise(AL, Instance:[name]) :->
 	->  send(AL, resource, Instance)
 	;   true
 	),
+	listen(AL, rdf_dialect(_), send(AL, update)),
 	listen(AL, rdf_reset, send(AL, resource, @nil)).
 
 unlink(AL) :->
@@ -1166,6 +1171,13 @@ display_predicates_title(AL) :->
 
 	
 append_slots(AL) :->
+	(   rdf_current_dialect(owl)
+	->  send(AL, append_inferred_slots)
+	;   send(AL, append_plain_slots)
+	).
+
+append_plain_slots(AL) :->
+	"Append plain RDFS slots"::
 	get(AL, resource, I),
 	(   call_rules(AL, visible_predicate(I, Property)),
 	    \+ reserved_instance_slot(Property),
@@ -1176,15 +1188,10 @@ append_slots(AL) :->
 	    send(AL, append, rdf_object_cell(V1, Property)),
 	    send(AL, next_row),
 	    forall(member(V, RestValues),
-		   send(AL, append_continuation_value, V, Property)),
+		   send(AL, append_continuation_value, I, Property, V)),
 	    fail
 	;   true
-	),
-	(   rdf_current_dialect(owl)
-	->  send(AL, append_inferred_slots)
-	;   true
 	).
-
 
 reserved_instance_slot(Type) :-
 	rdfs_subproperty_of(Type, rdf:type).
@@ -1202,24 +1209,22 @@ reserved_instance_slot(Label) :-
 append_inferred_slots(AL) :->
 	"Append slots that can be inferred"::
 	get(AL, resource, I),
-	(   setof(P-Vs, setof(V, owl_has_inferred(I, P, V, AL), Vs), Pairs),
-	    send(AL, append_inferred_slots_title),
+	(   setof(P-Vs, setof(V, owl_has(I, P, V), Vs), Pairs),
 	    sort_by_predicate_label(Pairs, ByPred),
 	    member(Pred-Values, ByPred),
+	    \+ reserved_instance_slot(Pred),
 	    sort_by_label(Values, [V1|RestValues]),
 	    send(AL, append, rdf_predicate_cell(Pred)),
-	    send(AL, append, rdf_object_cell(V1, Pred)),
+	    (	rdf_has(I, Pred, V1)
+	    ->	send(AL, append, rdf_object_cell(V1, Pred))
+	    ;	send(AL, append, rdf_inferred_object_cell(V1, Pred))
+	    ),
 	    send(AL, next_row),
 	    forall(member(V, RestValues),
-		   send(AL, append_continuation_value, V, Pred)),
+		   send(AL, append_continuation_value, I, Pred, V)),
 	    fail
 	;   true
 	).
-
-owl_has_inferred(S, P, O, AL) :-
-	get(AL, displayed_slots, Displayed),
-	owl_has(S, P, O),
-	\+ send(Displayed, member, P).
 
 sort_by_predicate_label(Pairs, Sorted) :-
 	tag_label(Pairs, Tagged),
@@ -1234,14 +1239,6 @@ tag_label([P-V|T0], [N-(P-V)|T]) :-
 untag([], []).
 untag([_-V|T0], [V|T]) :-
 	untag(T0, T).
-
-
-append_inferred_slots_title(AL) :->
-	"Add the title for inferred slot values"::
-	send(AL, append, text(inferred_slots?label_name, @default, bold),
-	     halign := center, colspan := 2, background := khaki1),
-	send(AL, next_row).
-
 
 :- pce_group(edit).
 
