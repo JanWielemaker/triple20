@@ -1,0 +1,133 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE rdfs [
+	<!ENTITY rdf "http://www.w3.org/1999/02/22-rdf-syntax-ns#">
+	<!ENTITY rdfs "http://www.w3.org/2000/01/rdf-schema#">
+	<!ENTITY dc "http://purl.org/dc/elements/1.1/">
+	<!ENTITY dct "http://purl.org/dc/terms/">
+]>
+	<!-- NOTE: This is probably not the latest version.  Modified
+	     the namespace just to make GCL load.  Jan Wielemaker.
+	-->
+<rdf:RDF xmlns:rdf="&rdf;" xmlns:rdfs="&rdfs;" xmlns:dc="&dc;" xmlns:dct="&dct;" xml:base="http://www.w3.org/2004/02/skos/core">
+	<!-- Description of this schema -->
+	<rdf:Description rdf:about="">
+		<dc:title>SKOS RDF Vocabulary</dc:title>
+		<dc:description>An RDF vocabulary for defining simple conceptual schemes such as thesauri, taxonomies and classification schemes.  This is a pure RDF schema version.  Features such as transitivity of properties and equivalence with properties from other schema are described in the comments.  These will be formally specified in a later OWL version of this schema.</dc:description>
+		<dc:author>Alistair Miles</dc:author>
+		<rdfs:seeAlso rdf:resource="http://www.w3c.rl.ac.uk/SWAD/deliverables/8.1.html"/>
+		<dct:modified>2003-11-21</dct:modified>
+	</rdf:Description>
+	<!-- Fundamental classes -->
+	<rdfs:Class rdf:ID="Concept">
+		<rdfs:label>Concept</rdfs:label>
+		<rdfs:comment>Use this class to indicate that a node may be considered to be an abstract concept that is part of some conceptual scheme such as a thesaurus.</rdfs:comment>
+	</rdfs:Class>
+	<rdfs:Class rdf:ID="Facet">
+		<rdfs:label>Facet</rdfs:label>
+		<rdfs:subClassOf rdf:resource="#Concept"/>
+		<rdfs:comment>Facets provide a means of organising concepts along orthogonal dimensions.  A facet is treated as a concept.  A facet may have member concepts.  A concept may be a member of only one facet.</rdfs:comment>
+	</rdfs:Class>
+	<!-- Basic properties of concepts -->
+	<rdf:Property rdf:ID="prefLabel">
+		<rdfs:label>preferred-label</rdfs:label>
+		<rdfs:subPropertyOf rdf:resource="&rdfs;label"/>
+		<rdfs:comment>Use this property to indicate a literal which is the preferred label for a resource.  If a resource has this property, all other rdfs:label properties are considered to be the 'alternative' (i.e. non-preferred) labels.</rdfs:comment>
+	</rdf:Property>
+	<rdf:Property rdf:ID="descriptor">
+		<rdfs:label>descriptor</rdfs:label>
+		<rdfs:subPropertyOf rdf:resource="#prefLabel"/>
+		<rdfs:subPropertyOf rdf:resource="&rdf;value"/>
+		<rdfs:domain rdf:resource="#Concept"/>
+		<rdfs:comment>A 'descriptor' is a label that uniquely identifies a concept within a conceptual scheme.  A descriptor must be unambiguous.  Examples of good descriptors are 'Orange (fruit)' and 'Java programming language'.   Examples of poor descriptors are 'Orange' and 'Java'.  </rdfs:comment>
+	</rdf:Property>
+	<rdf:Property rdf:ID="externalID">
+		<rdfs:label>external-identifier</rdfs:label>
+		<rdfs:subPropertyOf rdf:resource="&rdf;value"/>
+		<rdfs:domain rdf:resource="#Concept"/>
+		<rdfs:comment>An 'externalID' is any non-lexical identifying code that is used to uniquely identify a concept within a conceptual scheme.</rdfs:comment>
+	</rdf:Property>
+	<rdf:Property rdf:ID="semanticRelation">
+		<rdfs:label>semantic-relation</rdfs:label>
+		<rdfs:domain rdf:resource="#Concept"/>
+		<rdfs:range rdf:resource="#Concept"/>
+		<rdfs:comment>This property is the super-property of all properties used to make statements about how concepts relate to each other.  </rdfs:comment>
+	</rdf:Property>
+	<!-- Generic semantic relation properties -->
+	<rdf:Property rdf:ID="broader">
+		<rdfs:label>has-broader-concept</rdfs:label>
+		<rdfs:subPropertyOf rdf:resource="#semanticRelation"/>
+		<rdfs:comment>This property carries very weak semantics.  It may be used to state that the object is in some way more general in meaning than the subject.  Essentially it provides a means of organising concepts into hierarchical structures, without being restrictive about the exact semantic implications of the hierarchical structure itself.  Extend this property to create properties that carry stronger semantics, but may be reduced to a hierarchical structure for simple visual displays.  This property may be considered to be transitive.</rdfs:comment>
+	</rdf:Property>
+	<rdf:Property rdf:ID="narrower">
+		<rdfs:label>has-narrower-concept</rdfs:label>
+		<rdfs:subPropertyOf rdf:resource="#semanticRelation"/>
+		<rdfs:comment>This property should be considered to be the inverse of the 'broader' property.</rdfs:comment>
+	</rdf:Property>
+	<rdf:Property rdf:ID="related">
+		<rdfs:label>has-related-concept</rdfs:label>
+		<rdfs:subPropertyOf rdf:resource="#semanticRelation"/>
+		<rdfs:comment>This property carries very weak semantics.  It may be used to state that that the object is in some way related to the subject, and the nature of that relationship is NOT to be treated as hierarchical.  Extend this property to create properties with stronger semantics, but may still be reduced to an associative structure for simple visual display.  This property should be considered to be symmetric. </rdfs:comment>
+	</rdf:Property>
+	<!-- Semantic relation property extensions -->
+	<rdf:Property rdf:ID="inFacet">
+		<rdfs:label>member-of-facet</rdfs:label>
+		<rdfs:subPropertyOf rdf:resource="#broader"/>
+		<rdfs:range rdf:resource="#Facet"/>
+		<rdfs:comment>This property indicates that a concept is a member of a facet.  A concept may have only one inFacet property.  This property is a sub-property of the 'broader' property.  Thus faceted conceptual structures may be reduced to simple hierarchical displays by applications that do not comprehend facets.</rdfs:comment>
+	</rdf:Property>
+	<rdf:Property rdf:ID="broaderInstantive">
+		<rdfs:label>instance-of</rdfs:label>
+		<rdfs:subPropertyOf rdf:resource="#broader"/>
+		<rdfs:comment>An extension of the 'broader' property to specify the instantiation relationship between two concepts.  This property is semantically equivalent to the 'rdf:type' property. </rdfs:comment>
+	</rdf:Property>
+	<rdf:Property rdf:ID="narrowerInstantive">
+		<rdfs:label>has-instance</rdfs:label>
+		<rdfs:subPropertyOf rdf:resource="#narrower"/>
+		<rdfs:comment>An extension of the 'narrower' property to specify the instantiation relationship between two concepts.  This property should be considered the inverse of 'broaderInstantive'. </rdfs:comment>
+	</rdf:Property>
+	<rdf:Property rdf:ID="broaderGeneric">
+		<rdfs:label>sub-class-of</rdfs:label>
+		<rdfs:subPropertyOf rdf:resource="#broader"/>
+		<rdfs:comment>An extension of the 'broader' property to specify the class subsumption relationship between two concepts.  This property is semantically equivalent to the 'rdfs:subClassOf' property.</rdfs:comment>
+	</rdf:Property>
+	<rdf:Property rdf:ID="narrowerGeneric">
+		<rdfs:label>super-class-of</rdfs:label>
+		<rdfs:subPropertyOf rdf:resource="#narrower"/>
+		<rdfs:comment>An extension of the 'narrower' property to specify the class subsumption relationship between two concepts.  This property should be considered the inverse of 'broaderGeneric'. </rdfs:comment>
+	</rdf:Property>
+	<rdf:Property rdf:ID="broaderPartitive">
+		<rdfs:label>part-of</rdfs:label>
+		<rdfs:subPropertyOf rdf:resource="#broader"/>
+		<rdfs:comment>An extension of the 'broader' property to specify a partitive relationship between two concepts.</rdfs:comment>
+	</rdf:Property>
+	<rdf:Property rdf:ID="narrowerPartitive">
+		<rdfs:label>has-part</rdfs:label>
+		<rdfs:subPropertyOf rdf:resource="#narrower"/>
+		<rdfs:comment>An extension of the 'narrower' property to specify a partitive relationship between two concepts.  This property should be considered to be the inverse of 'broaderPartitive'.</rdfs:comment>
+	</rdf:Property>
+	<!-- Scope and other notes -->
+	<rdf:Property rdf:ID="scopeNote">
+		<rdfs:label>scope-note</rdfs:label>
+		<rdfs:subPropertyOf rdf:resource="&rdfs;comment"/>
+		<rdfs:comment>A scope note is a piece of text that in some way helps to further elucidate the intended meaning of a concept.</rdfs:comment>
+		<rdfs:domain rdf:resource="#Concept"/>
+	</rdf:Property>
+	<rdf:Property rdf:ID="generalNote">
+		<rdfs:label>general-note</rdfs:label>
+		<rdfs:subPropertyOf rdf:resource="&rdfs;comment"/>
+	</rdf:Property>
+	<rdf:Property rdf:ID="hierarchyNote">
+		<rdfs:label>hierarchy-note</rdfs:label>
+		<rdfs:subPropertyOf rdf:resource="&rdfs;comment"/>
+		<rdfs:comment>A note on the hierarchical location of a concept.</rdfs:comment>
+	</rdf:Property>
+	<rdf:Property rdf:ID="editorNote">
+		<rdfs:label>editor-note</rdfs:label>
+		<rdfs:subPropertyOf rdf:resource="&rdfs;comment"/>
+	</rdf:Property>
+	<rdf:Property rdf:ID="historyNote">
+		<rdfs:label>history-note</rdfs:label>
+		<rdfs:subPropertyOf rdf:resource="&rdfs;comment"/>
+		<rdfs:comment>A note providing information about the history of change of a concept.</rdfs:comment>
+	</rdf:Property>
+</rdf:RDF>
