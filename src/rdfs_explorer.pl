@@ -119,7 +119,7 @@ set_label(OV) :->
 	(   get(OV, given_label, Format),
 	    Format \== @nil
 	->  true
-	;   Format = 'RDS Browser -- %s'
+	;   Format = 'Triple20 -- %s'
 	),
 	(   rdfe_current_journal(Path)
 	->  true

@@ -35,6 +35,7 @@
 	    current_particle/1,		% ?Particle
 	    (::)/2			% +Particle, +Goal
 	  ]).
+:- use_module(library(lists)).
 
 :- op(600, xfy, user:(::)).
 :- op(600, fy,  user:(::)).
@@ -87,9 +88,8 @@ begin_particle(Name, Super0) :-
 	    set_import_modules(Name, Supers)
 	),
 	source_location(File, Line),
-	catch('$declare_module'(Name, File, Line), _,
-	      '$declare_module'(Name, File)), 	% =< 5.2.8
 	'$set_source_module'(Old, Name),
+	'$declare_module'(Name, File, Line),
 	asserta(loading_particle(Name, Old)).
 
 end_particle :-
