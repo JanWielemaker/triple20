@@ -11,6 +11,7 @@
 :- use_module(semweb(rdf_db)).
 :- use_module(library(pce_graphical_browser)).
 :- use_module(library(rdf_template)).
+:- use_module(particle).
 	  
 :- pce_begin_class(rdf_list_browser, graphical_browser,
 		   "Browse a collection as a list").
@@ -55,9 +56,9 @@ append_list(LB, Collection:name) :->
 	;   rdf_equal(rdf:first, First),
 	    rdf_has(Collection, First, Element),
 	    get(LB, rules, RuleSet),
-	    RuleSet:collection_item_class(rdf(Collection, First, Element),
-					  LB,
-					  Class),
+	    RuleSet::collection_item_class(rdf(Collection, First, Element),
+					   LB,
+					   Class),
 	    NewTerm =.. [Class, Collection, First, Element, LB],
 	    new(Gr, NewTerm),
 	    send(LB, append, Gr),

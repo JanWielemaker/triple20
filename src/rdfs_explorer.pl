@@ -282,7 +282,7 @@ show_resource(OV, Resource:name, How:name) :->
 	    get(Tree, add, Resource, Node),
 	    send(Tree, compute),
 	    send(Tree, selection, Node?image),
-	    send(Tree?window, normalise, Node?image)
+	    send(Tree?window, normalise, Node?image, y)
 	;   How == table
 	->  get(OV, member, rdfs_sheet, Sheet),
 	    send(Sheet, selection, Resource)
@@ -507,17 +507,12 @@ display_title(AL, Class:name) :->
 	send(AL, append, rdf_resource_text(Class, AL), colspan := 2),
 	send(AL, next_row),
 	send(AL, append, 'Meta Class', bold, right),
-	rdf_equal(rdf:type, TypeProperty),
-	send(AL, append,
-	     rdf_object_text(Class, TypeProperty, Meta, AL),
-	     colspan := 2),
+	send(AL, append, rdf_resource_text(Meta), colspan := 2),
 	send(AL, next_row),
+	send(AL, append_owl_properties, Class),
 	(   rdf_has(Class, rdfs:comment, literal(Comment))
-	->  rdf_equal(rdfs:comment, CommentProperty),
-	    send(AL, append, 'Comment', bold, right),
-	    send(AL, append,
-		 rdf_literal_text(Class, CommentProperty, Comment, AL),
-		 colspan := 2),
+	->  send(AL, append, 'Comment', bold, right),
+	    send(AL, append, rdf_literal_text(Comment), colspan := 2),
 	    send(AL, next_row)
 	;   true
 	),
@@ -528,6 +523,22 @@ display_title(AL, Class:name) :->
 	send(AL, append, 'Domain',   bold, center),
 	send(AL, append, 'Range',    bold, center),
 	send(AL, next_row).
+
+append_owl_properties(AL, Class:name) :->
+	(   owl_property(P),
+	    rdf_has(Class, P, Set, Prop),
+	    send(AL, append_resource, Prop),
+	    send(AL, append_resource, Set, colspan := 2),
+	    send(AL, next_row),
+	    fail
+	;   true
+	).
+
+owl_property(P) :- rdf_equal(owl:oneOf, P).
+owl_property(P) :- rdf_equal(owl:intersectionOf, P).
+owl_property(P) :- rdf_equal(owl:unionOf, P).
+owl_property(P) :- rdf_equal(owl:complementOf, P).
+
 
 append_slots_of(AL, Class:name) :->
 	"Append normal properties"::
@@ -608,7 +619,7 @@ display_label(AL) :->
 	(   rdfs_subproperty_of(P, rdfs:label),
 	    rdf(I, P, Label)
 	->  send(AL, append, 'Label', bold, right),
-	    send(AL, append_value, I, P, Label),
+	    send(AL, append_resource, Label),
 	    send(AL, next_row)
 	;   true
 	).
@@ -625,11 +636,10 @@ display_type(AL) :->
 	setof(Class, rdf_has(I, rdf:type, Class), Classes),
 	(   Classes = [C1|T]
 	->  send(AL, append, 'Class', bold, right),
-	    rdf_equal(rdf:type, TypeProperty),
-	    send(AL, append_value, I, TypeProperty, C1),
+	    send(AL, append_resource, C1),
 	    send(AL, next_row),
 	    forall(member(C, T),
-		   send(AL, append_continuation_value, I, TypeProperty, C))
+		   send(AL, append_continuation_value, C))
 	;   true
 	).
 
@@ -637,10 +647,8 @@ display_comment(AL) :->
 	"Display the comment field"::
 	get(AL, resource, I),
 	(   rdf_has(I, rdfs:comment, literal(Comment))
-	->  rdf_equal(rdfs:comment, CommentProperty),
-	    send(AL, append, 'Comment', bold, right),
-	    send(AL, append,
-		 rdf_literal_text(I, CommentProperty, Comment, AL)),
+	->  send(AL, append, 'Comment', bold, right),
+	    send(AL, append, rdf_literal_text(Comment)),
 	    send(AL, next_row)
 	;   true
 	).
@@ -666,10 +674,10 @@ append_slots(AL) :->
 	    \+ reserved_instance_slot(Property),
 	    send(AL, append,
 		 rdf_predicate_text(I, Property, AL)),
-	    send(AL, append_value, I, Property, V1),
+	    send(AL, append_resource, V1),
 	    send(AL, next_row),
 	    forall(member(V, Values),
-		   send(AL, append_continuation_value, I, Property, V)),
+		   send(AL, append_continuation_value, V)),
 	    fail
 	;   true
 	).
@@ -689,10 +697,10 @@ append_predicate(AL, P:name) :->
 	rdfs_label(P, Label),
 	send(AL, append, Label).
 
-append_continuation_value(AL, Subj:name, Property:name, V:prolog) :->
+append_continuation_value(AL, V:prolog) :->
 	"Append value in the 2nd column"::
 	send(AL, append, new(graphical)),
-	send(AL, append_value, Subj, Property, V),
+	send(AL, append_resource, V),
 	send(AL, next_row).
 
 :- pce_group(edit).

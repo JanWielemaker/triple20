@@ -8,6 +8,7 @@
 :- use_module(library(pce)).
 :- use_module(semweb(rdf_db)).
 :- use_module(semweb(rdfs)).
+:- use_module(particle).
 
 :- pce_begin_class(rdf_vnode, dict_item, "Virtual node").
 
@@ -94,7 +95,7 @@ expand(VN) :->
 	get(VN, resource, Resource),
 	get(VN, role, Role),
 	get(VN, rules, Rules),
-	(   Rules:child(Resource, Role, Child, ChildRole),
+	(   Rules::child(Resource, Role, Child, ChildRole),
 	    get(VN, add_child, Child, ChildRole, _ChildNode),
 	    fail
 	;   true
@@ -122,7 +123,7 @@ update(VN) :->
 	    get(VN, generation, G),
 	    rdf_generation(G)
 	->  true
-	;   send(G, expand)
+	;   send(VN, expand)
 	).
 
 children(VN, Children:sheet) :<-
@@ -143,7 +144,7 @@ can_expand(VN) :->
 	;   get(VN, resource, Resource),
 	    get(VN, role, Role),
 	    get(VN, rules, Rules),
-	    Rules:child(Resource, Role, _Child, _ChildRole)
+	    Rules::child(Resource, Role, _Child, _ChildRole)
 	->  true
 	).
 
@@ -159,7 +160,7 @@ child(VN, Child:name, Create:[bool], ChildNode:rdf_vnode) :<-
 	    get(VN, resource, Resource),
 	    get(VN, role, Role),
 	    get(VN, rules, Rules),
-	    Rules:child(Resource, Role, Child, ChildRole)
+	    Rules::child(Resource, Role, Child, ChildRole)
 	->  get(VN, add_child, Child, ChildRole, ChildNode),
 	    send(VN, slot, expand_status, partial)
 	).

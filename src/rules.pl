@@ -4,8 +4,47 @@
     Purpose: Define rendering and other rules
 */
 
-:- module(rdf_rules, []).
+:- module(rdf_rules,
+	  [
+	  ]).
 :- use_module(particle).
+:- use_module(semweb(rdfs)).
+
+
+		 /*******************************
+		 *	       LABELS		*
+		 *******************************/
+
+:- begin_particle(rdf_label_rules, []).
+
+label(Resource, Label) :-
+	::label_class(Resource, Class),
+	Term =.. [Class, Resource],
+	new(Label, Term).
+
+%	label_class(+Resource, -Class) 
+%	
+%	Determine the visualiser to use for a short textual description
+%	of a resource.  Resource is the resource for which to create a 
+%	visualisation.  Role is one of subject, predicate or object and
+%	Class is the XPCE class to use.
+
+label_class(literal(_), rdf_literal_text) :- !.
+label_class(Obj, rdf_resource_text) :-
+	rdf_has(Obj, rdfs:label, _), !.
+label_class(Obj, rdf_resource_text) :-	% anonymous node id
+	\+ sub_atom(Obj, _, _, _, '__'), !.
+label_class(Obj, ulan_timestamp_object_item) :-
+	rdfs_individual_of(Obj, ulan:'TimeStamp').
+label_class(Obj, owl_restriction_text) :-
+	rdfs_individual_of(Obj, owl:'Restriction').
+label_class(Obj, owl_class_text) :-
+	rdfs_individual_of(Obj, owl:'Class').
+label_class(Obj, rdf_list_label) :-
+	rdfs_individual_of(Obj, rdf:'List').
+label_class(_, rdf_resource_text).
+
+:- end_particle.
 
 
 		 /*******************************
@@ -17,7 +56,7 @@
 
 child(Resource, Role, Child, SubRole) :-
 	rdfs_individual_of(Resource, rdfs:'Class'),
-	isa_class(Role, rdf_class_node),
+	send(class(Role), is_a, rdf_class_node),
 	(   rdf_has(Child, rdfs:subClassOf, Resource),
 	    (	rdfs_subclass_of(Child, rdfs:'Class')
 	    ->	SubRole = rdf_metaclass_node
@@ -39,10 +78,10 @@ child(Resource, Role, Child, SubRole) :-
 	    SubRole = rdf_orphan_node
 	).
 child(Resource, Role, Child, Role) :-
-	isa_class(Role, rdf_property_node),
+	send(class(Role), is_a, rdf_property_node),
 	rdf_has(Child, rdfs:subPropertyOf, Resource).
 child(Resource, Role, Child, SubRole) :-
-	isa_class(Role, rdf_list_node),
+	send(class(Role), is_a, rdf_list_node),
 	SubRole = rdf_list_member_node,
 	rdfs_member(Child, Resource).
 child('<Orphan Classes>', rdf_orphan_node, Orphan, SubRole) :-
@@ -93,7 +132,7 @@ parent(Resource, Parent) :-
 :- begin_particle(rdf_table_rules, []).
 
 object_visual(rdf(S,P,O), Table, ObjGraphical) :-
-	object_visual_class(rdf(S,P,O), Class),
+	::object_visual_class(rdf(S,P,O), Class),
 	NewTerm =.. [Class, S, P, O, Table],
 	new(ObjGraphical, NewTerm).
 

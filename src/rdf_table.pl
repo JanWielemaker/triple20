@@ -12,6 +12,7 @@
 :- use_module(owl).
 :- use_module(semweb(rdf_edit)).
 :- use_module(library(rdf_template)).
+:- use_module(particle).
 
 :- pce_autoload(rdfs_resource_item,	 library(rdfs_resource_item)).
 :- pce_autoload(rdf_literal_item,	 library(rdf_literal_item)).
@@ -50,19 +51,10 @@ clear(AL) :->
 	send(AL, delete_rows).
 
 
-append_resource(AL, Range:name) :->
+append_resource(AL, Resource:prolog, ColSpan:colspan=[int]) :->
 	"Append a general resource"::
-	send(AL, append, rdf_resource_text(Range, AL)).
-
-	    
-append_value(AL, Subject:name, Predicate:name, Object:prolog) :->
-	"Append object-part of the given triple triple"::
-	get(AL, rules, RuleSet),
-	RuleSet:object_visual(rdf(Subject, Predicate, Object),
-			      AL, 
-			      ObjGraphical),
-	send(AL, append, ObjGraphical).
-
+	rdf_label_rules::label(Resource, Label),
+	send(AL, append, Label, colspan := ColSpan).
 
 %	->prompt_value
 %	
@@ -183,7 +175,7 @@ triple(T, Subject:name, Predicate:name, Object:prolog) :->
 	"Append a row with a triple"::
 	send(T, append_resource, Subject),
 	send(T, append_resource, Predicate),
-	send(T, append_value, Subject, Predicate, Object),
+	send(T, append_resource, Object),
 	send(T, next_row).
 
 :- pce_end_class(rdf_triple_table).

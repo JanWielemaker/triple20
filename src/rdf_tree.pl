@@ -6,12 +6,11 @@
 
 :- module(rdf_tree, []).
 :- use_module(library(pce)).
+:- use_module(library(pce_unclip)).
 :- use_module(rdf_vtree).
 :- use_module(semweb(rdf_db)).
 :- use_module(semweb(rdfs)).
-
-:- pce_autoload(rdf_explorer, rdf_explorer).
-:- pce_autoload(partof_hyper, library(hyper)).
+:- use_module(particle).
 
 resource(class,       image, image('16x16/class.xpm')).
 resource(metaclass,   image, image('16x16/Metaclass.gif')).
@@ -109,7 +108,7 @@ add(OT, Resource:name, _Role:[name], Node:rdf_node) :<-
 	
 path(Resource, Resource, _, [Resource]) :- !.
 path(Resource, Root, Rules, [Resource|T]) :-
-	Rules:parent(Resource, Parent),
+	Rules::parent(Resource, Parent),
 	path(Parent, Root, Rules, T).
 
 display_path([H|_], OT, Node) :-
@@ -153,22 +152,6 @@ open_node(OT, Node:rdf_node) :->
 	;   true
 	).
 
-:- pce_group(diagram).
-
-open_diagram(OT, Id:name) :->
-	"Open triple diagram from resource Id"::
-	get(OT, rdf_diagram, Diagram),
-	send(Diagram, resource, Id),
-	send(Diagram, expose).
-
-rdf_diagram(OT, Diagram:rdf_explorer) :<-
-	"Get associated RDF explorer"::
-	(   get(OT, hypered, rdf_explorer, Diagram)
-	->  true
-	;   new(Diagram, rdf_explorer),
-	    new(_, partof_hyper(OT, Diagram, rdf_explorer, hierarchy))
-	).
-
 :- pce_end_class(rdf_tree).
 
 
@@ -207,8 +190,7 @@ update(N) :->
 	;   true
 	),
 	get(N, label, Label),
-	get(N, font, Font),
-	send(D, display, text(Label, font := Font)),
+	send(D, display, Label),
 	(   send(N, can_expand)
 	->  send_super(N, collapsed, @on)
 	;   send_super(N, collapsed, @nil)
@@ -218,11 +200,13 @@ update(N) :->
 label(N, Label:name) :<-
 	"Create a label for the node"::
 	get(N, resource, Resource),
-	get(N?tree, node_label, Resource, Label).
-
+	rdf_label_rules::label(Resource, Label).
 
 virtual(N, VN:rdf_vnode) :<-
 	get(N, hypered, virtual, VN).
+
+role(N, Role:name) :<-
+	get(N?virtual, role, Role).
 
 :- pce_group(expand).
 
@@ -270,10 +254,11 @@ add_child(N, VN:rdf_vnode, Son:rdf_node) :<-
 	get(N?tree, create_node, VN, Son),
 	send(N, son, Son),
 	send(Son, update).
-add_child(N, VN:rdf_vnode) :->
+
+add_child(N, VN:rdf_vnode, Before:[node]) :->
 	"Create child for virtual node"::
 	get(N?tree, create_node, VN, Son),
-	send(N, son, Son),
+	send(N, son, Son, Before),
 	send(Son, update).
 	
 show_more(N, MoreNode:rdf_more_node, Role:name, Count:int) :->
@@ -284,7 +269,7 @@ show_more(N, MoreNode:rdf_more_node, Role:name, Count:int) :->
 	get(MoreNode, here, Here),
 	send(Chain, current_no, Here+1),
 	(   next_member(Chain, Count, New),
-	    send(N, add_child, New),
+	    send(N, add_child, New, MoreNode),
 	    fail
 	;   true
 	),
@@ -305,7 +290,6 @@ update(N) :->
 
 :- pce_group(event).
 
-:- free(@rdf_node_recogniser).
 :- pce_global(@rdf_node_recogniser, make_rdf_node_recogniser).
 :- pce_global(@rdf_node_popop, make_rdf_node_popup).
 
@@ -313,20 +297,7 @@ make_rdf_node_popup(Popup) :-
 	Node = @arg1,
 	new(Popup, popup(options)),
 	send_list(Popup, append,
-		  [ menu_item(show_id,
-			      message(Node, report, inform, Node?resource)),
-		    menu_item(copy_id_to_clipboard,
-			      message(Node, copy)),
-		    menu_item(copy_as_xml_identifier,
-			      message(Node, copy, xml_identifier)),
-		    menu_item(copy_as_xml_attribute,
-			      message(Node, copy, xml_attribute)),
-		    menu_item(view_rdf_source,
-			      message(Node, view_rdf_source)),
-		    menu_item(diagram_,
-			      message(Node?tree, open_diagram, Node?resource)),
-		    gap,
-		    menu_item(delete,
+		  [ menu_item(delete,
 			      message(Node, delete_resource))
 		  ]).
 
@@ -357,6 +328,10 @@ on_left_click(N) :->
 	"Select the current node"::
 	send(N?tree, selected, N).
 
+clicked(N, _:graphical) :->
+	"Resource has been clicked inside me"::
+	send(N, on_left_click).
+
 on_double_left_click(N) :->
 	"Select the current node"::
 	get(N, role, Role),
@@ -366,27 +341,6 @@ on_double_left_click(N) :->
 	    )
 	->  send(N?tree, open_node, N)
 	;   send(N, report, warning, 'Cannot open %s class', Role)
-	).
-
-copy(N, As:[{resource,xml_identifier,xml_attribute}]) :->
-	"Copy resource to clipboard"::
-	get(N, resource, Resource),
-	(   As == xml_identifier
-	->  rdf_global_id(NS:Local, Resource),
-	    new(Copy, string('%s:%s', NS, Local))
-	;   As == xml_attribute
-	->  rdf_global_id(NS:Local, Resource),
-	    new(Copy, string('&%s;%s', NS, Local))
-	;   Copy = Resource
-	),
-	send(@display, copy, Copy).
-
-view_rdf_source(N) :->
-	"Open Prolog editor on RDF source"::
-	get(N, resource, Id),
-	(   rdf_source_location(Id, File:Line)
-	->  edit(file(File, line(Line)))
-	;   send(N, report, warning, 'Cannot find source for %s', Id)
 	).
 
 :- pce_end_class(rdf_node).
@@ -400,25 +354,6 @@ class_variable(icon, image*, resource(metaclass)).
 
 :- pce_begin_class(owl_restriction_node, rdf_class_node).
 class_variable(icon, image*, resource(restriction)).
-
-label(N, Label:char_array) :<-
-	get(N, resource, Resource),
-	get(N, tree, Tree),
-	rdf_has(Resource, owl:onProperty, Prop),
-	get(Tree, node_label, Prop, PropLabel),
-	(   rdf_has(Resource, owl:cardinality, literal(Card))
-	->  new(Label, string('%s: cardinality = %s',
-			      PropLabel, Card))
-	;   rdf_has(Resource, owl:hasValue, Value)
-	->  (   Value == literal(ValueLabel)
-	    ->	true
-	    ;	get(Tree, node_label, Value, ValueLabel)
-	    ),
-	    new(Label, string('%s = %s',
-			      PropLabel, ValueLabel))
-	;   get_super(N, label, Label)
-	).
-
 :- pce_end_class(owl_restriction_node).
 
 :- pce_begin_class(rdf_root_node, rdf_class_node).
