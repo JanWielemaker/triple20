@@ -125,6 +125,7 @@ resource(restriction, image, image('16x16/restriction.xpm')).
 resource(description, image, image('16x16/description.xpm')).
 resource(wnclass,     image, image('16x16/wnclass.xpm')).
 resource(nil,         image, image('16x16/DisketteBoxEmpty.xpm')).
+resource(part,        image, image('16x16/part.xpm')).
 
 :- begin_particle(rdf_icon_rules, []).
 
@@ -539,7 +540,7 @@ drop(Command, Onto, From) :-
 :- begin_particle(rdf_part_node, rdf_node).
 
 icon(_, Icon) :-
-	new(Icon, image(resource(property))).
+	new(Icon, image(resource(part))).
 
 :- end_particle.
 
