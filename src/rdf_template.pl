@@ -52,8 +52,9 @@ event(W, Ev:event) :->
 
 arm(W, For:[name], Target:graphical) :<-
 	(   get(@event, position, W, point(X, Y)),
-	    new(Ev, event(arm, W, X, Y)),
-	    debug(arm, 'Arm ~p at ~w,~w~n', [W, X, Y]),
+	    get(W, slot, scroll_offset, point(OX, OY)),
+	    AX is X + OX, AY = Y+OY,
+	    new(Ev, event(arm, W, AX, AY)),
 	    (	For == @default
 	    ->	true
 	    ;	send(Ev, attribute, arm_for, For)
@@ -193,11 +194,22 @@ preview_drop(T, Resource:name*) :->
 drop(T, Resource:name) :->
 	call_rules(T, drop(T, Resource)).
 
+:- pce_group(rdf).
+
 triple(T, Value:prolog) :<-
 	"Find part the triple I belong to"::
 	get(T, contained_in, C0),
 	container_with_get_method(C0, triple_from_part, Container),
 	get(Container, triple_from_part, T, Value).
+
+subject(T, Subject:name) :<-
+	get(T, triple, rdf(Subject, _, _)).
+
+predicate(T, Predicate:name) :<-
+	get(T, triple, rdf(_, Predicate, _)).
+
+object(T, Object:prolog) :<-
+	get(T, triple, rdf(_, _, Object)).
 
 :- pce_end_class(rdf_resource_template).
 

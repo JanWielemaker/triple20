@@ -375,3 +375,15 @@ drop(modify, Gr, Resource) :-
 				     object(Resource))).
 
 :- end_particle.
+
+
+:- begin_particle(rdf_predicate_cell, display).
+
+drop_command(_Me, _Resource, add) :-
+	true.				% must validate restrictions!
+
+drop(add, Gr, Resource) :-
+	get(Gr, triple, rdf(Subject, Predicate, _)),
+	rdfe_transaction(rdfe_assert(Subject, Predicate, Resource)).
+
+:- end_particle.

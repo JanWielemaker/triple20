@@ -647,10 +647,12 @@ triple_from_part(AL, Part:graphical, Triple:prolog) :<-
 	"Find triple in which Part participates"::
 	get(Part, layout_interface, Cell),
 	get(AL, resource, S),
+	get(Cell?image, resource, CR),
 	(   send(Cell, instance_of, rdf_object_cell)
 	->  get(Cell, predicate, P),
-	    P \== @nil,
-	    get(Cell?image, resource, O)
+	    O = CR
+	;   send(Cell, instance_of, rdf_predicate_cell)
+	->  P = CR
 	;   tbd
 	),
 	Triple = rdf(S, P, O).
@@ -796,9 +798,12 @@ triple_from_part(AL, Part:graphical, Triple:prolog) :<-
 	"Find triple in which Part participates"::
 	get(Part, layout_interface, Cell),
 	get(AL, resource, S),
+	get(Cell?image, resource, CR),
 	(   send(Cell, instance_of, rdf_object_cell)
 	->  get(Cell, predicate, P),
-	    get(Cell?image, resource, O)
+	    O = CR
+	;   send(Cell, instance_of, rdf_predicate_cell)
+	->  P = CR
 	;   tbd
 	),
 	Triple = rdf(S, P, O).

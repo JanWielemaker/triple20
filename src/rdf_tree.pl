@@ -265,6 +265,8 @@ possible effort.  There are still two pitfalls:
 update(N, Cache:[int]) :->
 	(   get(N, hypered, editor, _)
 	->  true
+	;   get(N, collapsed, @on)
+	->  send(N, update_can_expand)
 	;   get(N, caches, Caches),
 	    (   Cache == @default
 	    ->	send(Caches, for_all,
