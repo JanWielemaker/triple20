@@ -127,6 +127,14 @@ initialise(DD, Button:name) :->
 	send_super(DD, initialise, Button),
 	send(DD, cursor, @default).
 
+initiate(DD, Ev:event) :->
+	send_super(DD, initiate, Ev),
+	send(Ev?window, grab_pointer, @on).
+
+terminate(DD, Ev:event) :->
+	send_super(DD, terminate, Ev),
+	send(Ev?window, grab_pointer, @off).
+
 drag(DD, Ev:event) :->
 	(   send(DD, activate)
 	->  get(Ev, receiver, Dropping),
