@@ -59,6 +59,7 @@ arm(W, For:[name], Target:graphical) :<-
 	    ->	true
 	    ;	send(Ev, attribute, arm_for, For)
 	    ),
+	    debug(arm, 'Posting arm to ~p at ~d,~d', [W, AX, AY]),
 	    send(Ev, post, W)
 	->  get(W, hypered, arm, Target)
 	;   send(W, arm_object, @nil),

@@ -74,17 +74,15 @@ event(T, Ev:event) :->
 arm(TF, Val:bool) :->
 	"Preview activiity"::
 	(   Val == @on
-	->  send(TF, pen, 1),
-	    send(TF, report, status, TF?resource)
+	->  send(TF, report, status, TF?resource),
+	    (	send(TF, clipped_by_window),
+		send(@grabbed_windows, empty)
+	    ->  debug(arm, 'Arming ~p', [TF]),
+	        send(@unclip_window, attach, TF)
+	    ;	send(TF, pen, 1)
+	    )
 	;   send(TF, pen, 0),
 	    send(TF, report, status, '')
-	).
-
-entered(TF, Entered:bool) :->
-	(   Entered == @on,
-	    send(TF, clipped_by_window)
-	->  send(@unclip_window, attach, TF)
-	;   true
 	).
 
 popup(P, Popup:popup) :<-

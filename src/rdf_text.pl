@@ -70,9 +70,7 @@ make_resource_text_recogniser(G) :-
 	new(DG1, rdf_drop_gesture(left)),
 	new(PG, popup_gesture(@receiver?popup)),
 	new(DG2, rdf_drop_gesture(right)),
-	new(AE, handler(area_enter, message(@receiver, entered, @on))),
-	new(AX, handler(area_exit, message(@receiver, entered, @off))),
-	new(G, handler_group(@arm_recogniser, CG, DG1, PG, DG2, AE, AX)).
+	new(G, handler_group(@arm_recogniser, CG, DG1, PG, DG2)).
 
 popup(T, Popup:popup) :<-
 	call_rules(T, popup(T, Popup)).
@@ -86,15 +84,13 @@ event(T, Ev:event) :->
 arm(TF, Arm:bool) :->
 	send(TF, underline, Arm),
 	(   Arm == @on
-	->  send(TF, report, status, TF?resource)
+	->  send(TF, report, status, TF?resource),
+	    (	send(TF, clipped_by_window),
+		send(@grabbed_windows, empty)
+	    ->  send(@unclip_window, attach, TF)
+	    ;	true
+	    )
 	;   send(TF, report, status, '')
-	).
-
-entered(TF, Enter:bool) :->
-	(   Enter == @on,
-	    send(TF, clipped_by_window)
-	->  send(@unclip_window, attach, TF)
-	;   true
 	).
 
 :- pce_end_class(rdf_resource_text).
@@ -104,6 +100,21 @@ entered(TF, Enter:bool) :->
 initialise(DD, Button:name) :->
 	send_super(DD, initialise, Button, get_source := @arg1?resource),
 	send(DD, cursor, @default).
+
+initiate(DD, Ev:event) :->
+	send_super(DD, initiate, Ev),
+	send(Ev?window, grab_pointer, @on).
+
+
+cancel(DD, Ev:event) :->
+	send(Ev?window, grab_pointer, @off),
+	send_super(DD, terminate, Ev).
+
+
+terminate(DD, Ev:event) :->
+	send(Ev?window, grab_pointer, @off),
+	send_super(DD, terminate, Ev).
+
 
 drag(DD, Ev:event) :->
 	(   send(DD, activate)
