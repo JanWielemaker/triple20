@@ -425,7 +425,7 @@ tree(F, Tree:rdfs_tree) :<-
 	get(F, member, picture, P),
 	get(P, member, rdfs_hierarchy, Tree).
 
-find(F, String:name, How:[name], Fields:[chain]) :->
+find(F, String:name, How:[name], Fields:[chain|{*}]) :->
 	"Highlight nodes search"::
 	get(F, member, picture, P),
 	get(F, tree, Tree),
