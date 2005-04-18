@@ -32,6 +32,7 @@
 
 :- module(rdf_tree_file, []).
 :- use_module(library(pce)).
+:- use_module(library(pce_util)).
 :- use_module(library(pce_unclip)).
 :- use_module(semweb(rdf_db)).
 :- use_module(semweb(rdfs)).
@@ -276,7 +277,7 @@ update(T, Fast:[bool]) :->
 :- pce_group(search).
 
 find(OT, String:for=name, How:how=[name],
-         Fields:predicates=[chain], Max:max=[int]) :->
+         Fields:predicates=[chain|{*}], Max:max=[int]) :->
 	"Find from a string"::
 	ReportTo = OT,
 	statistics(cputime, CPU0),
@@ -286,6 +287,8 @@ find(OT, String:for=name, How:how=[name],
 	get(OT, domain, Domain),
 	(   Fields == @default
 	->  PlFields = [rdfs:label]
+	;   Fields = '*'
+	->  true			% unbound PlFields
 	;   chain_list(Fields, PlFields)
 	),
 	new(Hits, hash_table),

@@ -308,7 +308,7 @@ sheet(F, Name:name, Sheet:window) :<-
 
 :- pce_group(find).
 
-find(F, String:name, How:name, In:[chain]) :->
+find(F, String:name, How:name, In:[chain|{*}]) :->
 	"Highlight nodes holding substring"::
 	get(F, tree, Tree),
 	send(Tree, collapse_domain),

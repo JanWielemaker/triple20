@@ -68,7 +68,8 @@ initialise(D) :->
 				      SI?selection, ST?selection,
 				      Fields?selection))),
 	     right),
-	send(D, search_field, rdfs:label, @on),
+	send(D, search_field, '*', @on),
+	send(D, search_field, rdfs:label),
 	send(D, search_field, rdfs:comment),
 	send(Fields, append, resource),
 	send(Fields, layout, horizontal),
@@ -82,25 +83,41 @@ initialise(D) :->
 search_field(D, Field:prolog, Selected:[bool]) :->
 	"Define a field for textual search"::
 	get(D, member, search_in, Menu),
-	rdf_global_id(Field, Global),
-	rdfs_label(Global, Label),
-	(   get(Menu, member, Global, MI)
-	->  true
-	;   send(Menu, append,
-		 new(MI, menu_item(Global, @default, Label)))
+	(   Field == '*'
+	->  (   get(Menu, member, *, MI)
+	    ->  true
+	    ;   send(Menu, append,
+		     new(MI, menu_item('*', @default, 'Any')))
+	    )
+	;   rdf_global_id(Field, Global),
+	    rdfs_label(Global, Label),
+	    (   get(Menu, member, Global, MI)
+	    ->  true
+	    ;   send(Menu, append,
+		     new(MI, menu_item(Global, @default, Label)))
+	    )
 	),
 	(   Selected == @on
 	->  send(MI, selected, Selected)
 	;   true
 	).
 
-selected_predicates(D, Selected:chain) :<-
+selected_predicates(D, Selected:'chain|{*}') :<-
 	"Get chain with fields we are searching in"::
 	get(D, member, search_in, Menu),
-	get(Menu, selection, Selected).
+	get(Menu, selection, Selection),
+	(   send(Selection, member, '*')
+	->  Selected = '*'
+	;   Selected = Selection
+	).
 
 find(D, What:string, How:name, Fields:chain) :->
-	send(D?frame, find, What, How, Fields).
+	"Handle clicking the find button"::
+	(   send(Fields, member, '*')
+	->  Target = '*'
+	;   Target = Fields
+	),
+	send(D?frame, find, What, How, Target).
 
 %	->resize_dialog
 %	
@@ -144,25 +161,35 @@ typed(TI, Ev:'event|event_id') :->
 
 classify(TI, Typed:name) :->
 	"Classify the typed value"::
-	get(TI?device, selected_predicates, P),
-	chain_list(P, Fields),
 	(   concat_atom([NS,SearchFor], :, Typed)
 	->  true
 	;   SearchFor = Typed
 	),
-	(   member(Field, Fields),
-	    (   Field == resource
-	    ->  rdf_db:ns(NS, _),
-		rdf_global_id(NS:SearchFor, Subject),
-		rdf(Subject, _, _)
-	    ;   rdf_has(Subject, Field, literal(SearchFor)),
-		(   nonvar(NS)
+	get(TI?device, selected_predicates, P),
+	(   P == '*'
+	->  (   rdf_has(Subject, _, literal(SearchFor)),
+	        (   nonvar(NS)
 		->  rdf_global_id(NS:_, Subject)
 		;   true
 		)
+	    ->  send(TI, colour, blue)
+	    ;   send(TI, colour, black)
 	    )
-	->  send(TI, colour, blue)
-	;   send(TI, colour, black)
+	;   chain_list(P, Fields),
+	    (   member(Field, Fields),
+		(   Field == resource
+		->  rdf_db:ns(NS, _),
+		    rdf_global_id(NS:SearchFor, Subject),
+		    rdf(Subject, _, _)
+		;   rdf_has(Subject, Field, literal(SearchFor)),
+		    (   nonvar(NS)
+		    ->  rdf_global_id(NS:_, Subject)
+		    ;   true
+		    )
+		)
+	    ->  send(TI, colour, blue)
+	    ;   send(TI, colour, black)
+	    )
 	).
 	
 selection(TI, Selection:name) :<-

@@ -70,7 +70,7 @@ find(OT) :->
 	send(D, open_centered, ?(@event, position, @display)).
 
 find_from(OT, String:for=name, How:how=[name],
-         Fields:predicates=[chain], Max:max=[int]) :->
+         Fields:predicates=[chain|{*}], Max:max=[int]) :->
 	"Compatibility"::
 	send_super(OT, find, String, How, Fields, Max).
 
