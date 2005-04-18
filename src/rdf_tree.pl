@@ -142,7 +142,7 @@ path(Resource, Root, Tree, Path) :-
 path(Resource, Resource, _, _, [Resource-[]]) :- !.
 path(Resource, Root, Tree, Visited, [Resource-Role|T]) :-
 	call_rules(Tree, parent(Resource, Parent, Role)),
-	\+ memberchk(Parent, Visited), !,
+	\+ memberchk(Parent, Visited),
 	debug(path, 'Trying parent ~p, role ~w', [Parent, Role]),
 	path(Parent, Root, Tree, [Resource|Visited], T).
 
