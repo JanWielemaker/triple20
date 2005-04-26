@@ -381,7 +381,7 @@ child_cache(R, Cache, Class) :-
 		Class = rdf_property_node
 	    )
 	;   (   (   rdf_current_dialect(owl)
-		->  rdf_cache(lsorted(V), owl_subclass_of(V, R), Cache)
+		->  rdf_cache(lsorted(V), owl_direct_subclass_of(V, R), Cache)
 		;   rdf_cache(lsorted(V), rdf_has(V, rdfs:subClassOf, R), Cache)
 		),
 	        Class = rdf_class_node
@@ -452,7 +452,7 @@ owl_restriction_with_label(Class, Restriction, Label) :-
 
 parent(R, Parent, rdf_class_node) :-
 	(   rdf_current_dialect(owl)
-	->  owl_subclass_of(R, Parent)
+	->  owl_direct_subclass_of(R, Parent)
 	;   rdf_has(R, rdfs:subClassOf, Parent)
 	).
 parent(R, Parent, rdf_class_node) :-

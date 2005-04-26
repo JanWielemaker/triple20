@@ -38,7 +38,9 @@
 	    owl_cardinality_on_class/3,	% idem BJW
 	    owl_satisfies/2,		% +Spec, +Resource
 	    owl_individual_of/2,	% ?Resource, +Description
-	    owl_subclass_of/2,		% ?Resource, ?Class
+
+	    owl_direct_subclass_of/2,	% ?Resource, ?Class
+	    owl_subclass_of/2,		% ?Class, ?Super
 
 	    owl_has/3,			% ?Subject, ?Predicate, ?Object
 	    owl_has_direct/3,		% ?Subject, ?Predicate, ?Object
@@ -242,7 +244,7 @@ merge_values_from(all, C1, all, C2, all, C) :-
 %	Deduces the minimum and maximum cardinality for a property of a
 %	resource.  This predicate may fail if no information is available.
 %	
-%	NOTE: used to use rdf_subclass_of.  Will owl_subclass_of lead to
+%	NOTE: used to use rdf_subclass_of.  Will owl_direct_subclass_of lead to
 %	cycles?
 
 owl_cardinality_on_subject(Subject, Predicate, Cardinality) :-
@@ -251,7 +253,7 @@ owl_cardinality_on_subject(Subject, Predicate, Cardinality) :-
 
 cardinality_on_subject(Subject, Predicate, cardinality(Min, Max)) :-
 	rdf_has(Subject, rdf:type, Class),
-	owl_subclass_of(Class, RestrictionID),
+	owl_direct_subclass_of(Class, RestrictionID),
 	rdfs_individual_of(RestrictionID, owl:'Restriction'),
 	rdf_has(RestrictionID, owl:onProperty, Predicate),
 	restriction_facet(RestrictionID, cardinality(Min, Max)).
@@ -261,7 +263,7 @@ owl_cardinality_on_class(Class, Predicate, Cardinality) :-
 	join_decls(L, [Cardinality]).
 
 cardinality_on_class(Class, Predicate, cardinality(Min, Max)) :-
-	owl_subclass_of(Class, RestrictionID),
+	owl_direct_subclass_of(Class, RestrictionID),
 	rdfs_individual_of(RestrictionID, owl:'Restriction'),
 	rdf_has(RestrictionID, owl:onProperty, Predicate),
 	restriction_facet(RestrictionID, cardinality(Min, Max)).
@@ -446,7 +448,7 @@ owl_satisfies(one_of(List), Resource) :- !,
 owl_satisfies(all_values_from(Domain), Resource) :- !,
 	(   Resource = individual_of(Class),
 	    atom(Class)
-	->  rdfs_subclass_of(Class, Domain)
+	->  owl_subclass_of(Class, Domain)
 	;   owl_individual_of(Resource, Domain)
 	).
 owl_satisfies(some_values_from(_Domain), _Resource) :- !.
@@ -715,38 +717,57 @@ owl_use_has_value(S, P, O) :-
 	nonvar(P), !,
 	rdf_has(Super, owl:onProperty, P),
 	rdf_has(Super, owl:hasValue, O),
-	owl_subclass_of(Type, Super),
+	owl_direct_subclass_of(Type, Super),
 	rdf_has(S, rdf:type, Type).
 owl_use_has_value(S, P, O) :-
 	rdf_has(S, rdf:type, Type),
-	owl_subclass_of(Type, Super),
+	owl_direct_subclass_of(Type, Super),
 	rdfs_individual_of(Super, owl:'Restriction'),
 	rdf_has(Super, owl:onProperty, P),
 	rdf_has(Super, owl:hasValue, O).
 
 
-%	owl_subclass_of(-SubClass, +Class)
-%	owl_subclass_of(+SubClass, -Class)
-%	
-%	Returns both the RDFS subclasses and classes that have Class in
-%	their owl:intersectionOf attribute.  What to do with unionOf?
+		 /*******************************
+		 *     OWL CLASS HIERARCHY	*
+		 *******************************/
 
-owl_subclass_of(Class, R) :-
+/* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+TBD: It is here that we must use a DL classifier!
+- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
+
+%	owl_direct_subclass_of(-SubClass, +Class)
+%	owl_direct_subclass_of(+SubClass, -Class)
+%	
+%	Returns both the RDFS subclasses and  classes that have Class in
+%	their owl:intersectionOf attribute.
+%	
+%	The members of a union are its subclasses.
+
+owl_direct_subclass_of(Class, R) :-
 	rdf_has(Class, rdfs:subClassOf, R).
-owl_subclass_of(Class, R) :-		% added BJW (hack for symetry)
+owl_direct_subclass_of(Class, R) :-	% added BJW (hack for symetry)
 	rdf_has(R, owl:equivalentClass, Class).
-owl_subclass_of(Class, R) :-
+owl_direct_subclass_of(Class, R) :-
 	rdf_has(Class, rdfs:subClassOf, D),
 	\+ rdf_has(D, rdfs:label, _),	% anonymous class
 	rdf_has(D, owl:intersectionOf, List),
 	rdfs_member(R, List).
-owl_subclass_of(Class, R) :-
+owl_direct_subclass_of(Class, R) :-
 	(   nonvar(R)
-	->  rdf_has(List, rdf:first, R),
-	    list_head(List, Head),
-	    rdf_has(Class, owl:intersectionOf, Head)
-	;   rdf_has(Class, owl:intersectionOf, List),
-	    rdfs_member(R, List)
+	->  (   rdf_has(R, owl:unionOf, Union),
+	        rdfs_member(Class, Union)
+	    ;   rdf_has(List, rdf:first, R),
+		list_head(List, Head),
+		rdf_has(Class, owl:intersectionOf, Head)
+	    )
+	;   nonvar(Class)
+	->  (   rdf_has(Class, owl:intersectionOf, List),
+	        rdfs_member(R, List)
+	    ;   rdf_has(List, rdf:first, Class),
+	        list_head(List, Head),
+		rdf_has(R, owl:unionOf, Head)
+	    )
+	;   throw(error(instantiation_error, _))
 	).
 
 list_head(List, Head) :-
@@ -754,3 +775,37 @@ list_head(List, Head) :-
 	->  list_head(H, Head)
 	;   Head = List
 	).
+
+
+%	owl_subclass_of(?Class, ?R)
+%	
+%	Recursive version of owl_subclass_of.
+
+owl_subclass_of(Class, Super) :-
+	rdf_equal(rdfs:'Resource', Resource),
+	Super == Resource, !,
+	(   nonvar(Class)
+	->  true
+	;   rdfs_individual_of(Class, owl:'Class')
+	).
+owl_subclass_of(Class, Super) :-
+	nonvar(Class), !,
+	owl_gen_supers(Class, [], Super).
+owl_subclass_of(Class, Super) :-
+	nonvar(Super), !,
+	owl_gen_subs(Super, [], Class).
+owl_subclass_of(_, _) :-
+	throw(error(instantiation_error, _)).
+
+owl_gen_supers(Class, _, Class).
+owl_gen_supers(Class, Visited, Super) :-
+	owl_direct_subclass_of(Class, Super0),
+	\+ memberchk(Super0, Visited),
+	owl_gen_supers(Super0, [Super0|Visited], Super).
+
+owl_gen_subs(Class, _, Class).
+owl_gen_subs(Class, Visited, Sub) :-
+	owl_direct_subclass_of(Sub0, Class),
+	\+ memberchk(Sub0, Class),
+	owl_gen_subs(Sub0, [Sub0|Visited], Sub).
+	
