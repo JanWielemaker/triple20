@@ -60,7 +60,7 @@ owl_description_attribute(X) :- rdf_equal(owl:intersectionOf, X).
 :- dynamic
 	view_label_as_setting/1.
 
-view_label_as_setting(resource).	% initial default
+view_label_as_setting(namespace_and_label).	% initial default
 
 label_text(Resource, Text) :-
 	view_label_as_setting(label_only), !,
