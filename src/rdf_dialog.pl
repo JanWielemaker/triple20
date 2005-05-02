@@ -54,7 +54,7 @@ initialise(D) :->
 	send_super(D, initialise, 'Search resources'),
 	send(D, pen, 0),
 	send(D, border, size(2, 10)),
-	send(D, append, new(Fields, menu(search_in, toggle))),
+	send(D, append, new(Fields, rdf_search_prop_menu)),
 	send(D, append, new(For, label(for, 'For', bold)), right),
 	send(For, alignment, left),
 	send(D, append, new(SI, rdf_search_text_item(search))),
@@ -72,7 +72,6 @@ initialise(D) :->
 	send(D, search_field, rdfs:label),
 	send(D, search_field, rdfs:comment),
 	send(Fields, append, resource),
-	send(Fields, layout, horizontal),
 	send_list([Fields, For], alignment, left),
 	send(Find, default_button, @on),
 	send(Find, active, @off),
@@ -150,6 +149,37 @@ right_to_left([H|T], G, R) :-
 	right_to_left(T, G, R2).
 
 :- pce_end_class(rdf_search_dialog).
+
+
+:- pce_begin_class(rdf_search_prop_menu, menu,
+		   "Select properties for searching").
+
+variable(saved_selection, chain*, get, "Selection saved over `any'").
+
+initialise(M) :->
+	send_super(M, initialise, search_in, toggle,
+		   message(@receiver, user_selected, @arg1, @arg2)),
+	send(M, layout, horizontal).
+
+user_selected(M, MI:menu_item, Val:bool) :->
+	"Deal with search any/specific"::
+	(   get(MI, value, '*')
+	->  (   Val == @on
+	    ->  get(M?selection, clone, Saved),
+		send(Saved, delete_all, '*'),
+	        send(M, slot, saved_selection, Saved),
+		send(M, selection, chain(*)),
+		send(M, report, status, 'Searching all literal properties')
+	    ;   get(M, saved_selection, Saved),
+		Saved \== @nil
+	    ->  send(M, selection, Saved)
+	    ;   true
+	    )
+	;   send(M, selected, '*', @off)
+	).
+
+:- pce_end_class(rdf_search_prop_menu).
+
 
 
 :- pce_begin_class(rdf_search_text_item, text_item,

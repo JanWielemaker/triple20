@@ -653,10 +653,10 @@ image_extension(gif).
 %	domain.
 
 find(String, Domain, PlFields, TheHow, Subject) :-
-	rdf_current_dialect(rdfs), !,
-	rdfs_find(String, Domain, PlFields, TheHow, Subject).
-find(String, Domain, PlFields, TheHow, Subject) :-
-	owl_find(String, Domain, PlFields, TheHow, Subject).
+	(   rdf_current_dialect(rdfs)
+	->  rdfs_find(String, Domain, PlFields, TheHow, Subject)
+	;   owl_find(String, Domain, PlFields, TheHow, Subject)
+	).
 
 :- end_rules.
 
@@ -932,6 +932,35 @@ clicked(V) :-
 	send(V, modify).
 
 :- end_rules.
+
+
+		 /*******************************
+		 *	       SELECT		*
+		 *******************************/
+
+:- begin_rules(t20_select_browser, default).
+
+%	find(+String, +Domain, ?Properties, +Method, -Subject)
+%	
+%	Search for literal text in resources   belonging  to a specified
+%	domain. In a select box, we not only search for individuals, but
+%	also for classes we can use to create an anonymous resource.
+
+find(String, Domain0, PlFields, TheHow, Subject) :-
+	adjust_domain(Domain0, Domain),
+	(   rdf_current_dialect(rdfs)
+	->  rdfs_find(String, Domain, PlFields, TheHow, Subject)
+	;   owl_find(String, Domain, PlFields, TheHow, Subject)
+	).
+
+adjust_domain(all_values_from(C),
+	      union_of([all_values_from(C), class(C)])) :-
+	\+ rdf_equal(rdfs:'Resource', C), !.
+adjust_domain(Domain, Domain).
+
+:- end_rules.
+
+
 
 
 		 /*******************************

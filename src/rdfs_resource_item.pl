@@ -118,7 +118,7 @@ modified(OI, Modified:bool) :<-
 search(OI) :->
 	"Browse hierarchy from current value"::
 	get(OI, member, text_item, TI),
-	send(new(B, rdfs_select_browser(OI)), open),
+	send(new(B, t20_select_browser(OI)), open),
 	get(B, tree, Tree),
 	send(Tree, open_message,
 	     and(message(OI, selected_from_search, @arg1),
@@ -379,7 +379,7 @@ selected_completion(TI, Text:char_array, Apply:[bool]) :->
 :- pce_autoload(partof_hyper, library(hyper)).
 :- pce_autoload(report_dialog, library(pce_report)).
 
-:- pce_begin_class(rdfs_select_browser, frame,
+:- pce_begin_class(t20_select_browser, frame,
 		   "Browse contology tree for selecting").
 
 initialise(F, Selector:rdfs_resource_item) :->
@@ -507,4 +507,4 @@ open_from_browser(F, DI:dict_item) :->
 	).
 	
 
-:- pce_end_class(rdfs_select_browser).
+:- pce_end_class(t20_select_browser).

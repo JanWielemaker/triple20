@@ -12,7 +12,7 @@
 :- pce_begin_class(rdfs_hierarchy, rdf_tree,
 		   "Temporary stuff").
 
-variable(domain,	prolog, get, "Domain of visualised objects").
+variable(domain,      prolog,       get,  "Domain of visualised objects").
 
 initialise(H, Domain:[prolog]) :->
 	send_super(H, initialise),
