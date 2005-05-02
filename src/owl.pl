@@ -44,7 +44,9 @@
 
 	    owl_has/3,			% ?Subject, ?Predicate, ?Object
 	    owl_has_direct/3,		% ?Subject, ?Predicate, ?Object
-	    owl_same_as/2		% ?X, ?Y
+	    owl_same_as/2,		% ?X, ?Y
+
+	    owl_find/5			% +For, +Dom, ?Props, +Method, -Subj
 	  ]).
 :- use_module(library(lists)).
 :- use_module(semweb(rdf_db)).
@@ -433,7 +435,7 @@ owl_satisfies(class(Domain), Resource) :- !,
 	;   Resource = individual_of(Class),
 	    atom(Class)
 	->  fail
-	;   rdfs_subclass_of(Resource, Domain)
+	;   owl_subclass_of(Resource, Domain)
 	).
 owl_satisfies(union_of(Domains), Resource) :- !,
 	member(Domain, Domains),
@@ -809,3 +811,47 @@ owl_gen_subs(Class, Visited, Sub) :-
 	\+ memberchk(Sub0, Class),
 	owl_gen_subs(Sub0, [Sub0|Visited], Sub).
 	
+
+		 /*******************************
+		 *     SEARCH IN HIERARCHY	*
+		 *******************************/
+
+%	owl_find(+String, +Domain, ?Properties, +Method, -Subject)
+%	
+%	Search all classes below Domain for a literal property with
+%	that matches String.  Method is one of
+%	
+%		substring
+%		word
+%		prefix
+%		exact
+%		
+%	domain is defined by owl_satisfy from owl.pl
+%		
+%	Note that the rdfs:label field is handled by rdfs_label/2,
+%	making the URI-ref fragment name the last resort to determine
+%	the label.
+
+owl_find(String, Domain, Fields, Method, Subject) :-
+	var(Fields), !,
+	For =.. [Method,String],
+	rdf_has(Subject, Field, literal(For, _)),
+	owl_satisfies(Domain, Subject),
+	Fields = [Field].		% report where we found it.
+owl_find(String, Domain, Fields, Method, Subject) :-
+	globalise_list(Fields, GlobalFields),
+	For =.. [Method,String],
+	member(Field, GlobalFields),
+	(   Field == resource
+	->  rdf_subject(Subject),
+	    rdf_match_label(Method, String, Subject)
+	;   rdf_has(Subject, Field, literal(For, _))
+	),
+	owl_satisfies(Domain, Subject).
+
+globalise_list([], []) :- !.
+globalise_list([H0|T0], [H|T]) :- !,
+	globalise_list(H0, H),
+	globalise_list(T0, T).
+globalise_list(X, G) :-
+	rdf_global_id(X, G).

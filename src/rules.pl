@@ -645,6 +645,22 @@ image_extension(gif).
 :- end_rules.
 
 
+:- begin_rules(search, default).
+
+%	find(+String, +Domain, ?Properties, +Method, -Subject)
+%	
+%	Search for literal text in resources belonging to a specified
+%	domain.
+
+find(String, Domain, PlFields, TheHow, Subject) :-
+	rdf_current_dialect(rdfs), !,
+	rdfs_find(String, Domain, PlFields, TheHow, Subject).
+find(String, Domain, PlFields, TheHow, Subject) :-
+	owl_find(String, Domain, PlFields, TheHow, Subject).
+
+:- end_rules.
+
+
 		 /*******************************
 		 *	  BIND TO OBJECTS	*
 		 *******************************/
@@ -657,7 +673,8 @@ image_extension(gif).
 		    rdf_drag_and_drop,
 		    rdf_click,
 		    rdf_predicate,
-		    rdf_tab
+		    rdf_tab,
+		    search
 		  ]).
 :- end_particle.
 

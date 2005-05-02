@@ -292,7 +292,7 @@ find(OT, String:for=name, How:how=[name],
 	;   chain_list(Fields, PlFields)
 	),
 	new(Hits, hash_table),
-	(   rdfs_find(String, Domain, PlFields, TheHow, Subject),
+	(   call_rules(OT, find(String, Domain, PlFields, TheHow, Subject)),
 	    \+ get(Hits, member, Subject),
 	    send(Hits, append, Subject),
 	    send(OT, show_hit, Subject),
