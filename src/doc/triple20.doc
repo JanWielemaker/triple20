@@ -17,7 +17,7 @@
 
 \title{Triple20: an RDF triple viewer and editor}
 \author{Jan Wielemaker \\
-	SWI, \\
+	Human-Computer Studies (HCS), \\
 	University of Amsterdam \\
 	The Netherlands \\
 	E-mail: \email{wielemak@science.uva.nl}}
@@ -101,6 +101,9 @@ that fully cooperates and synchronises with the other views. Drag and
 drop between multiple views is a suggested technique to deal with larger
 ontologies. Notable the user can exploit search in a small window to
 locate relevant resources.
+
+If the text-field is coloured blue, this indicates there is at least
+one resource in the database that exactly matches the typed string.
 
 
 \subsection{Context menus}
@@ -239,9 +242,9 @@ Inspect/edit the mapping from short name space identifiers (e.g.\
 \emph{rdfs}) to the associated URI.  Changes to this mapping are
 stored in the project.
 
-    \menuitem{File/Statistics}{}
-Show statistics on the triples loaded from and associated to each file
-as well as some query statistics.
+    \menuitem{File/Files}{}
+Show loaded files, associated namespaces and access rights.  Second
+tab shows some query statistics.
 
     \menuitem{File/exit}{}
 Exit the current window.  Note that the current Triple20 runs on top
@@ -284,6 +287,25 @@ Open this document in your browser.
 Show the about box.  Among author and copyright information it provides
 a link to the project home.
 \end{description}
+
+
+\subsection{Search}				\label{sec:search}
+
+The top-right window allows searching resources with certain literal
+properties.  The \menuref{Search in} menu specifies the properties
+searched.  Two entries have special meaning.
+
+\begin{description}
+    \menuitem{Any}{}
+Search in any property with literal value.  Searching for \emph{Any}
+disables the other fields.
+    \menuitem{Resource}{}
+Search the resource itself.
+\end{description}
+
+The search-field itself allows for the syntax \emph{ns:string}, where
+\emph{ns} is a namespace abbreviation.  This causes the search to be
+executed in the given namespace only.
 
 
 \subsection{Icons and Labels}			\label{sec:label}

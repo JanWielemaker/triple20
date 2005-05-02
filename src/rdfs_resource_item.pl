@@ -265,7 +265,14 @@ classify_value(OI, Typed, Domain, Term, Class) :-
 %	Return resources that have the indicated label
 
 named_resource(Label, Class) :-
-	rdf_has(Class, rdfs:label, literal(exact(Label), _)).
+	(   concat_atom([NS, Local], :, Label),
+	    rdf_db:ns(NS, Prefix)
+	->  Search = Local
+	;   Search = Label,
+	    Prefix = ''
+	),
+	rdf_has(Class, rdfs:label, literal(exact(Search), _)),
+	sub_atom(Class, 0, _, _, Prefix).
 
 
 attributes(ok,		    [ value_font(bold),   colour(black) ]).
@@ -333,9 +340,20 @@ completions(OI, From:char_array, Labels:chain) :<-
 	send(Display, busy_cursor, @nil).
 
 complete_label_in_domain(Prefix, Domain, Label) :-
-	rdf_has(Resource, rdfs:label, literal(prefix(Prefix), Label0)),
-	label_text(Label0, Label),
-	owl_satisfies(Domain, Resource).
+	(   concat_atom([NS,Search], :, Prefix),
+	    rdf_db:ns(NS, URIPrefix)
+	->  true
+	;   Search = Prefix,
+	    URIPrefix = ''
+	),
+	rdf_has(Resource, rdfs:label, literal(prefix(Search), Label0)),
+	sub_atom(Resource, 0, _, _, URIPrefix),
+	label_text(Label0, Label1),
+	owl_satisfies(Domain, Resource),
+	(   nonvar(NS)
+	->  concat_atom([NS, Label1], :, Label)
+	;   Label = Label1
+	).
 
 label_text(lang(_, Label), Label) :- !.
 label_text(Label, Label).

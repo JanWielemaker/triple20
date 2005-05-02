@@ -17,7 +17,7 @@
 <HR>
 <CENTER>
 <I>Jan Wielemaker <BR>
-SWI, <BR>
+Human-Computer Studies (HCS), <BR>
 University of Amsterdam <BR>
 The Netherlands <BR>
 E-mail: <A HREF="mailto:wielemak@science.uva.nl">wielemak@science.uva.nl</A></I>
@@ -54,9 +54,10 @@ is why we only explain the basics in this document.
 <LI><A HREF="#sec:2.1">2.1 Drag till you Drop</A>
 <LI><A HREF="#sec:2.2">2.2 Context menus</A>
 <LI><A HREF="#sec:2.3">2.3 The Window menu</A>
-<LI><A HREF="#sec:2.4">2.4 Icons and Labels</A>
-<LI><A HREF="#sec:2.5">2.5 Undo and redo</A>
-<LI><A HREF="#sec:2.6">2.6 View consistency</A>
+<LI><A HREF="#sec:2.4">2.4 Search</A>
+<LI><A HREF="#sec:2.5">2.5 Icons and Labels</A>
+<LI><A HREF="#sec:2.6">2.6 Undo and redo</A>
+<LI><A HREF="#sec:2.7">2.7 View consistency</A>
 </UL>
 <LI><A HREF="#sec:3"><B>3 Semantic Web practice</B></A>
 <UL>
@@ -137,6 +138,9 @@ a new view on the triple set that fully cooperates and synchronises with
 the other views. Drag and drop between multiple views is a suggested 
 technique to deal with larger ontologies. Notable the user can exploit 
 search in a small window to locate relevant resources.
+
+<P>If the text-field is coloured blue, this indicates there is at least 
+one resource in the database that exactly matches the typed string.
 
 <H3><A NAME="sec:2.2">2.2 Context menus</A></H3>
 
@@ -266,7 +270,7 @@ Load triples from an XML/RDF file. Note that most XML/RDF files depend
 on RDFS and/or OWL, which must be loaded to get a meaningful view. See 
 also <A HREF="#menu:File/Loadbaseontology">File/Load base ontology</A>. 
 If Triple20 is started by opening an XML/RDF file it will apply some 
-heuristics to load the required base ontologies. Use <A HREF="#menu:File/Statistics">File/Statistics</A> 
+heuristics to load the required base ontologies. Use <B>File/Statistics</B> 
 to examine the loaded files.
 
 <P>
@@ -307,9 +311,9 @@ to the associated URI. Changes to this mapping are stored in the
 project.
 
 <P>
-<DT><A NAME="menu:File/Statistics"><STRONG>File/Statistics</STRONG></A><DD>
-Show statistics on the triples loaded from and associated to each file 
-as well as some query statistics.
+<DT><A NAME="menu:File/Files"><STRONG>File/Files</STRONG></A><DD>
+Show loaded files, associated namespaces and access rights. Second tab 
+shows some query statistics.
 
 <P>
 <DT><A NAME="menu:File/exit"><STRONG>File/exit</STRONG></A><DD>
@@ -321,7 +325,7 @@ be created from Prolog using the command <CODE>?- go.</CODE>.
 <P>
 <DT><A NAME="menu:View/Label"><STRONG>View/Label</STRONG></A><DD>
 Change the labels displayed for resources. See <A HREF="#sec:label">section 
-2.4</A> for details.
+2.5</A> for details.
 
 <P>
 <DT><A NAME="menu:View/Dialect"><STRONG>View/Dialect</STRONG></A><DD>
@@ -367,7 +371,32 @@ Show the about box. Among author and copyright information it provides a
 link to the project home.
 </DL>
 
-<H3><A NAME="sec:2.4">2.4 Icons and Labels</A></H3>
+<H3><A NAME="sec:2.4">2.4 Search</A></H3>
+
+<A NAME="sec:search"></A>
+
+<P>The top-right window allows searching resources with certain literal 
+properties. The <B>Search in</B> menu specifies the properties searched. 
+Two entries have special meaning.
+
+<DL>
+
+<P>
+<DT><A NAME="menu:Any"><STRONG>Any</STRONG></A><DD>
+Search in any property with literal value. Searching for <EM>Any</EM> 
+disables the other fields.
+
+<P>
+<DT><A NAME="menu:Resource"><STRONG>Resource</STRONG></A><DD>
+Search the resource itself.
+</DL>
+
+<P>The search-field itself allows for the syntax <EM>ns:string</EM>, 
+where
+<EM>ns</EM> is a namespace abbreviation. This causes the search to be 
+executed in the given namespace only.
+
+<H3><A NAME="sec:2.5">2.5 Icons and Labels</A></H3>
 
 <A NAME="sec:label"></A>
 
@@ -385,12 +414,12 @@ labels may have two icons. In this case the first icon represents the
 relation to the parent and the second represents the type 
 classification.
 
-<H3><A NAME="sec:2.5">2.5 Undo and redo</A></H3>
+<H3><A NAME="sec:2.6">2.6 Undo and redo</A></H3>
 
 <P>Triple20 provides unlimited undo and redo using toolbar buttons. Note 
 however that some operations, notably file merge
 
-<H3><A NAME="sec:2.6">2.6 View consistency</A></H3>
+<H3><A NAME="sec:2.7">2.7 View consistency</A></H3>
 
 <P>Triple20 uses the <EM>Model-View-Controller</EM> design. Edit 
 operations only modify the triple database. The GUI monitors the changes 
@@ -490,9 +519,9 @@ multiple files, present the joined view and still save the modified
 triples to a specific file. As Triple20 provides an integrated view and 
 editing capabilities on all triples loaded from all sources it requires 
 some machinery and defaults to define the source assigned to newly 
-created triples. The <A HREF="#menu:File/Statistics">File/Statistics</A> 
-menu gives access to an overview of the loaded files and allows to 
-inspect and edit properties thereof. Defined properties are:
+created triples. The <B>File/Statistics</B> menu gives access to an 
+overview of the loaded files and allows to inspect and edit properties 
+thereof. Defined properties are:
 
 <DL>
 
@@ -765,6 +794,8 @@ the
 <DL>
 
 <P>
+<DT><STRONG>A</STRONG><DD>
+<DT><A HREF="#menu:Any">Any</A><DD>
 <DT><STRONG>C</STRONG><DD>
 <DT><A HREF="#menu:Copy/Copyasxmlattribute">Copy/Copy as xml attribute</A><DD>
 <DT><A HREF="#menu:Copy/Copyasxmlidentifier">Copy/Copy as xml identifier</A><DD>
@@ -775,6 +806,7 @@ the
 <DT><A HREF="#menu:Details">Details</A><DD>
 <DT><STRONG>F</STRONG><DD>
 <DT><A HREF="#menu:File/exit">File/exit</A><DD>
+<DT><A HREF="#menu:File/Files">File/Files</A><DD>
 <DT><A HREF="#menu:File/Loadbaseontology">File/Load base ontology</A><DD>
 <A HREF="#sec:2.3">2.3</A>
 <DT><A HREF="#menu:File/Loadontology">File/Load ontology</A><DD>
@@ -793,7 +825,7 @@ the
 <A HREF="#sec:5.1">5.1</A>
 <DT>file_search_path/2<DD>
 <A HREF="#idx:filesearchpath2:1">7.2</A>
-<DT><A HREF="#menu:File/Statistics">File/Statistics</A><DD>
+<DT>File/Statistics<DD>
 <A HREF="#sec:2.3">2.3</A> <A HREF="#sec:5.1">5.1</A>
 <DT><STRONG>H</STRONG><DD>
 <DT><A HREF="#menu:Help/About">Help/About</A><DD>
@@ -809,6 +841,10 @@ the
 <A HREF="#sec:4">4</A>
 <DT><STRONG>R</STRONG><DD>
 <DT><A HREF="#menu:Renameresource">Rename resource</A><DD>
+<DT><A HREF="#menu:Resource">Resource</A><DD>
+<DT><STRONG>S</STRONG><DD>
+<DT>Search in<DD>
+<A HREF="#sec:2.4">2.4</A>
 <DT><STRONG>T</STRONG><DD>
 <DT><A HREF="#t20/1">t20/1</A><DD>
 <DT><A HREF="#menu:Tools/Addmissinglabels">Tools/Add missing labels</A><DD>
@@ -824,7 +860,7 @@ snapshots</A><DD>
 <DT><A HREF="#menu:View/diagram">View/diagram</A><DD>
 <DT><A HREF="#menu:View/Dialect">View/Dialect</A><DD>
 <DT><A HREF="#menu:View/Label">View/Label</A><DD>
-<A HREF="#sec:2.4">2.4</A>
+<A HREF="#sec:2.5">2.5</A>
 <DT><A HREF="#menu:View/OWL/Classextension">View/OWL/Class extension</A><DD>
 <DT><A HREF="#menu:View/rdfsource">View/rdf source</A><DD>
 <DT><A HREF="#menu:View/Showallparents">View/Show all parents</A><DD>

@@ -1,3 +1,9 @@
+May 2, 2005
+
+  * FIXED: various issues with search and selecting values.  Allow for
+    text of the form NS:String to search in a namespace.  Search for
+    selecting values has been improved a lot.
+
 Apr 18, 2005
 
   * ADDED: Search in all properties

@@ -175,7 +175,7 @@ fill_tool_dialog(OV) :->
 			      condition := message(OV, is_modified)),
 		    gap,
 		    menu_item(name_spaces),
-		    menu_item(statistics),
+		    menu_item(files),
 		    gap,
 		    menu_item(exit)
 		  ]),
@@ -502,7 +502,7 @@ load_base_ontology(_OV, Base:name) :->
 	rdfe_transaction(load_base_ontology(Base),
 			 load_base_ontology(Base)).
 
-statistics(OV) :->
+files(OV) :->
 	"Show elementary statistics"::
 	new(D, rdf_statistics_dialog),
 	send(D, transient_for, OV),

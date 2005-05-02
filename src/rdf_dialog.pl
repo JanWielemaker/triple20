@@ -31,6 +31,7 @@
 
 :- module(rdf_dialog, []).
 :- use_module(library(pce)).
+:- use_module(library(pce_util)).
 :- use_module(library(pce_identifier_item)).
 :- use_module(library(hyper)).
 :- use_module(semweb(rdf_db)).
@@ -191,19 +192,18 @@ typed(TI, Ev:'event|event_id') :->
 
 classify(TI, Typed:name) :->
 	"Classify the typed value"::
-	(   concat_atom([NS,SearchFor], :, Typed)
+	(   concat_atom([NS,SearchFor], :, Typed),
+	    rdf_db:ns(NS, Prefix)
 	->  true
-	;   SearchFor = Typed
+	;   SearchFor = Typed,
+	    Prefix = ''
 	),
 	get(TI?device, selected_predicates, P),
 	(   P == '*'
 	->  (   rdf_has(Subject, _, literal(SearchFor)),
-	        (   nonvar(NS)
-		->  rdf_global_id(NS:_, Subject)
-		;   true
-		)
-	    ->  send(TI, colour, blue)
-	    ;   send(TI, colour, black)
+	        sub_atom(Subject, 0, _, _, Prefix)
+	    ->  send(TI, match_type, exact)
+	    ;   send(TI, match_type, none)
 	    )
 	;   chain_list(P, Fields),
 	    (   member(Field, Fields),
@@ -212,24 +212,20 @@ classify(TI, Typed:name) :->
 		    rdf_global_id(NS:SearchFor, Subject),
 		    rdf(Subject, _, _)
 		;   rdf_has(Subject, Field, literal(SearchFor)),
-		    (   nonvar(NS)
-		    ->  rdf_global_id(NS:_, Subject)
-		    ;   true
-		    )
+		    sub_atom(Subject, 0, _, _, Prefix)
 		)
-	    ->  send(TI, colour, blue)
-	    ;   send(TI, colour, black)
+	    ->  send(TI, match_type, exact)
+	    ;   send(TI, match_type, none)
 	    )
 	).
 	
-selection(TI, Selection:name) :<-
-	"Expand namespaces"::
-	get(TI?value_text?string, value, Typed),
-	(   concat_atom([NS,SearchFor], :, Typed)
-	->  rdf_global_id(NS:SearchFor, Selection)
-	;   Selection = Typed
-	),
-	send(TI, selection, Selection).
+match_type(TI, Type:name) :->
+	"Indicate type of match using colour"::
+	match_colour(Type, Colour), !,
+	send(TI, colour, Colour).
+
+match_colour(exact, blue).
+match_colour(_,     black).
 
 :- pce_end_class.
 

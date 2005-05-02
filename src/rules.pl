@@ -649,14 +649,22 @@ image_extension(gif).
 
 %	find(+String, +Domain, ?Properties, +Method, -Subject)
 %	
-%	Search for literal text in resources belonging to a specified
-%	domain.
+%	Search for literal text in resources   belonging  to a specified
+%	domain.  Searching  for  ns:string  searches    for  string  for
+%	resources in the specified namespace.
 
-find(String, Domain, PlFields, TheHow, Subject) :-
+find(String0, Domain, PlFields, TheHow, Subject) :-
+	ns_string(String0, String, Prefix),
 	(   rdf_current_dialect(rdfs)
 	->  rdfs_find(String, Domain, PlFields, TheHow, Subject)
 	;   owl_find(String, Domain, PlFields, TheHow, Subject)
-	).
+	),
+	sub_atom(Subject, 0, _, _, Prefix).
+
+ns_string(String0, String, NS) :-
+	concat_atom([NSid, String], :, String0),
+	rdf_db:ns(NSid, NS), !.
+ns_string(String, String, '').
 
 :- end_rules.
 
@@ -932,35 +940,6 @@ clicked(V) :-
 	send(V, modify).
 
 :- end_rules.
-
-
-		 /*******************************
-		 *	       SELECT		*
-		 *******************************/
-
-:- begin_rules(t20_select_browser, default).
-
-%	find(+String, +Domain, ?Properties, +Method, -Subject)
-%	
-%	Search for literal text in resources   belonging  to a specified
-%	domain. In a select box, we not only search for individuals, but
-%	also for classes we can use to create an anonymous resource.
-
-find(String, Domain0, PlFields, TheHow, Subject) :-
-	adjust_domain(Domain0, Domain),
-	(   rdf_current_dialect(rdfs)
-	->  rdfs_find(String, Domain, PlFields, TheHow, Subject)
-	;   owl_find(String, Domain, PlFields, TheHow, Subject)
-	).
-
-adjust_domain(all_values_from(C),
-	      union_of([all_values_from(C), class(C)])) :-
-	\+ rdf_equal(rdfs:'Resource', C), !.
-adjust_domain(Domain, Domain).
-
-:- end_rules.
-
-
 
 
 		 /*******************************

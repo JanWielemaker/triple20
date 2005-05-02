@@ -152,7 +152,8 @@ prompt_value(AL,
 	    rdfs_subclass_of(LiteralClass, rdfs:'Literal')
 	->  new(Item, rdf_literal_item(Property, LiteralClass, TheDefault)),
 	    Type = literal
-	;   new(Item, rdfs_resource_item(Property, TheDefault, @nil, Domain)),
+	;   add_anon_instance(Domain, ResDom),
+	    new(Item, rdfs_resource_item(Property, TheDefault, @nil, ResDom)),
 	    Type = resource
 	),
 	send(D, append, Item),
@@ -173,6 +174,11 @@ prompt_value(AL,
 
 map_default('__not_filled', @default) :- !.
 map_default(X, X).
+
+add_anon_instance(all_values_from(Class),
+		  union_of([all_values_from(Class),class(Class)])) :-
+	\+ rdf_equal(Class, rdfs:'Resource'), !.
+add_anon_instance(Domain, Domain).
 
 
 :- pce_end_class(rdf_tabular).
