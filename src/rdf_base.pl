@@ -39,6 +39,9 @@
 	  ]).
 :- use_module(semweb(rdf_db)).
 :- use_module(semweb(rdf_edit)).
+:- use_module(library(broadcast)).
+:- use_module(library(lists)).
+:- use_module(library(option)).
 
 /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 This file defines commonly used namespaces,   base ontologies. etc. Note

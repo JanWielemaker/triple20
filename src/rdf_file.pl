@@ -42,6 +42,7 @@
 	  ]).
 :- use_module(semweb(rdf_edit)).
 :- use_module(library(debug)).
+:- use_module(library(lists)).
 
 %	rdf_file_extension(?Ext, ?Description)
 
