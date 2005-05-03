@@ -1,4 +1,4 @@
-<?xml version='1.0' encoding='ISO-8859-1'?>
+<?xml version='1.0' encoding='UTF-8'?>
 <!DOCTYPE rdf:RDF [
     <!ENTITY aat 'http://www.swi.psy.uva.nl/mia/aat#'>
     <!ENTITY dc 'http://purl.org/dc/elements/1.1/'>
@@ -18,12 +18,16 @@
     xmlns:ulan="&ulan;"
     xmlns:vra="&vra;"
 >
-<owl:Ontology rdf:about="http://www.swi.psy.uva.nl/mia/vra.rdf">
-  <rdfs:comment>Ontology of the VRA Core Categories version 3.0, together with range specifications for values in AAT and ULAN. For information about VRA Core Categories 3.0 see: http://www.vraweb.org/vracore3.html</rdfs:comment>
+<owl:Ontology rdf:about="http://www.swi.psy.uva.nl/mia/vra"
+    rdfs:isDefinedBy="http://www.vraweb.org/vracore3.htm">
+  <rdfs:comment>  Ontology of the VRA Core Categories version 3.0, together with 
+  range specifications for values in AAT and ULAN. 
+  For information about VRA Core Categories 3.0 
+  </rdfs:comment>
 </owl:Ontology>
 
 <rdfs:Class rdf:about="&vra;VisualResource"
-    rdfs:label="VisualResource">
+    rdfs:label="Visualresource">
   <rdfs:subClassOf>
     <owl:Restriction
         owl:cardinality="1">
@@ -35,127 +39,82 @@
 <rdf:Property rdf:about="&vra;recordType"
     rdfs:label="recordType">
   <rdfs:domain rdf:resource="&vra;VisualResource"/>
-  <rdfs:range rdf:resource="&vra;RecordType"/>
+  <rdfs:range>
+    <owl:Class>
+      <owl:oneOf rdf:parseType="Collection">
+        <rdf:Description about="&vra;Work"/>
+        <rdf:Description about="&vra;Image"/>
+      </owl:oneOf>
+    </owl:Class>
+  </rdfs:range>
   <rdfs:subPropertyOf rdf:resource="&dc;type"/>
 </rdf:Property>
 
-<rdfs:Class rdf:about="&vra;RecordType"
-    rdfs:label="RecordType">
-  <owl:oneOf rdf:parseType=Collection>
-
-    <rdf:Class
-        rdf:resource="#Work"/>
-
-    <rdf:Class
-        rdf:resource="#Image"/>
-  </owl:oneOf>
-</rdfs:Class>
-
-<vra:RecordType rdf:about="&vra;Work"
+<owl:Thing rdf:about="&vra;Work"
     rdfs:label="Work"/>
 
-<vra:RecordType rdf:about="&vra;Image"
+<owl:Thing rdf:about="&vra;Image"
     rdfs:label="Image"/>
 
 <rdf:Property rdf:about="&vra;type"
     rdfs:label="type">
   <rdfs:domain rdf:resource="&vra;VisualResource"/>
-  <rdfs:range rdf:resource="&vra;Type"/>
+  <rdfs:range rdf:resource="&aat;50191086"/>
   <rdfs:subPropertyOf rdf:resource="&dc;type"/>
 </rdf:Property>
-
-<rdfs:Class rdf:about="&vra;Type"
-    rdfs:label="Type"/>
-
-<vra:Type rdf:about="&aat;50191086"
-    rdfs:label="50191086"/>
 
 <rdf:Property rdf:about="&vra;title"
     rdfs:label="title">
   <rdfs:domain rdf:resource="&vra;VisualResource"/>
+  <rdfs:range rdf:resource="&rdfs;Literal"/>
   <rdfs:subPropertyOf rdf:resource="&dc;title"/>
 </rdf:Property>
 
 <rdf:Property rdf:about="&vra;measurements"
     rdfs:label="measurements">
   <rdfs:domain rdf:resource="&vra;VisualResource"/>
+  <rdfs:range rdf:resource="&rdfs;Literal"/>
   <rdfs:subPropertyOf rdf:resource="&dc;format"/>
 </rdf:Property>
 
 <rdf:Property rdf:about="&vra;material.medium"
     rdfs:label="material.medium">
   <rdfs:domain rdf:resource="&vra;VisualResource"/>
-  <rdfs:range rdf:resource="&vra;MaterialMedium"/>
+  <rdfs:range>
+    <owl:Class>
+      <owl:unionOf rdf:parseType="Collection">
+        <rdf:Description about="&aat;50015030"/>
+        <rdf:Description about="&aat;50015069"/>
+        <rdf:Description about="&aat;50015073"/>
+        <rdf:Description about="&aat;50187729"/>
+        <rdf:Description about="&aat;50187730"/>
+        <rdf:Description about="&aat;50187732"/>
+      </owl:unionOf>
+    </owl:Class>
+  </rdfs:range>
   <rdfs:subPropertyOf rdf:resource="&dc;format"/>
 </rdf:Property>
-
-<rdfs:Class rdf:about="&vra;MaterialMedium"
-    rdfs:label="MaterialMedium"/>
-
-<rdf:Description rdf:about="&aat;50015030"
-    rdfs:label="50015030">
-  <rdfs:subClassOf rdf:resource="&vra;MaterialMedium"/>
-</rdf:Description>
-
-<rdf:Description rdf:about="&aat;50015069"
-    rdfs:label="50015069">
-  <rdfs:subClassOf rdf:resource="&vra;MaterialMedium"/>
-</rdf:Description>
-
-<rdf:Description rdf:about="&aat;50015073"
-    rdfs:label="50015073">
-  <rdfs:subClassOf rdf:resource="&vra;MaterialMedium"/>
-</rdf:Description>
-
-<rdf:Description rdf:about="&aat;50187729"
-    rdfs:label="50187729">
-  <rdfs:subClassOf rdf:resource="&vra;MaterialMedium"/>
-</rdf:Description>
-
-<rdf:Description rdf:about="&aat;50187730"
-    rdfs:label="50187730">
-  <rdfs:subClassOf rdf:resource="&vra;MaterialMedium"/>
-</rdf:Description>
-
-<rdf:Description rdf:about="&aat;50187732"
-    rdfs:label="50187732">
-  <rdfs:subClassOf rdf:resource="&vra;MaterialMedium"/>
-</rdf:Description>
 
 <rdf:Property rdf:about="&vra;material.support"
     rdfs:label="material.support">
   <rdfs:domain rdf:resource="&vra;VisualResource"/>
-  <rdfs:range rdf:resource="&vra;MaterialSupport"/>
+  <rdfs:range>
+    <owl:Class>
+      <owl:unionOf rdf:parseType="Collection">
+        <rdf:Description about="&aat;50010358"/>
+        <rdf:Description about="&aat;50014844"/>
+      </owl:unionOf>
+    </owl:Class>
+  </rdfs:range>
   <rdfs:subPropertyOf rdf:resource="&dc;format"/>
 </rdf:Property>
-
-<rdfs:Class rdf:about="&vra;MaterialSupport"
-    rdfs:label="MaterialSupport"/>
-
-<rdf:Description rdf:about="&aat;50010358"
-    rdfs:label="50010358">
-  <rdfs:subClassOf rdf:resource="&vra;MaterialSupport"/>
-</rdf:Description>
-
-<rdf:Description rdf:about="&aat;50014844"
-    rdfs:label="50014844">
-  <rdfs:subClassOf rdf:resource="&vra;MaterialSupport"/>
-</rdf:Description>
 
 <rdf:Property rdf:about="&vra;technique"
     rdfs:label="technique">
   <rdfs:domain rdf:resource="&vra;VisualResource"/>
-  <rdfs:range rdf:resource="&vra;Technique"/>
+  <rdfs:range rdf:resource="&aat;50053159"/>
   <rdfs:subPropertyOf rdf:resource="&dc;formay"/>
 </rdf:Property>
-
-<rdfs:Class rdf:about="&vra;Technique"
-    rdfs:label="Technique"/>
-
-<rdf:Description rdf:about="&aat;50053159"
-    rdfs:label="50053159">
-  <rdfs:subClassOf rdf:resource="&vra;Technique"/>
-</rdf:Description>
 
 <rdf:Property rdf:about="&vra;creator"
     rdfs:label="creator">
@@ -170,6 +129,7 @@
   <rdfs:subPropertyOf rdf:resource="&dc;coverage"/>
   <rdfs:subPropertyOf rdf:resource="&dc;date"/>
   <rdfs:domain rdf:resource="&vra;VisualResource"/>
+  <rdfs:range rdf:resource="&rdfs;Literal"/>
 </rdf:Property>
 
 <rdf:Property rdf:about="&vra;location"
@@ -177,42 +137,37 @@
   <rdfs:subPropertyOf rdf:resource="&dc;contributor"/>
   <rdfs:subPropertyOf rdf:resource="&dc;coverage"/>
   <rdfs:domain rdf:resource="&vra;VisualResource"/>
+  <rdfs:range rdf:resource="&rdfs;Literal"/>
 </rdf:Property>
 
 <rdf:Property rdf:about="&vra;idNumber"
     rdfs:label="idNumber">
   <rdfs:domain rdf:resource="&vra;VisualResource"/>
+  <rdfs:range rdf:resource="&rdfs;Literal"/>
   <rdfs:subPropertyOf rdf:resource="&dc;identifier"/>
 </rdf:Property>
 
-<rdf:Property rdf:about="&vra;style/period"
-    rdfs:label="style/period">
+<rdf:Property rdf:about="&vra;stylePeriod"
+    rdfs:label="stylePeriod">
   <rdfs:subPropertyOf rdf:resource="&dc;coverage"/>
   <rdfs:subPropertyOf rdf:resource="&dc;subject"/>
   <rdfs:domain rdf:resource="&vra;VisualResource"/>
-  <rdfs:range rdf:resource="&vra;StyleOrPeriod"/>
+  <rdfs:range>
+    <owl:Class>
+      <owl:unionOf rdf:parseType="Collection">
+        <rdf:Description about="&aat;50111078"/>
+        <rdf:Description about="&aat;50111079"/>
+      </owl:unionOf>
+    </owl:Class>
+  </rdfs:range>
 </rdf:Property>
-
-<rdfs:Class rdf:about="&vra;StyleOrPeriod"
-    rdfs:label="StyleOrPeriod"/>
-
-<vra:StyleOrPeriod rdf:about="&aat;50111078"
-    rdfs:label="50111078"/>
-
-<vra:Culture rdf:about="&aat;50111079"
-    rdfs:label="50111079">
-  <rdf:type rdf:resource="&vra;StyleOrPeriod"/>
-</vra:Culture>
 
 <rdf:Property rdf:about="&vra;culture"
     rdfs:label="culture">
   <rdfs:domain rdf:resource="&vra;VisualResource"/>
-  <rdfs:range rdf:resource="&vra;Culture"/>
+  <rdfs:range rdf:resource="&aat;50111079"/>
   <rdfs:subPropertyOf rdf:resource="&dc;coverage"/>
 </rdf:Property>
-
-<rdfs:Class rdf:about="&vra;Culture"
-    rdfs:label="Culture"/>
 
 <rdf:Property rdf:about="&vra;subject"
     rdfs:label="subject">
@@ -246,5 +201,11 @@
   <rdfs:range rdf:resource="&rdfs;Literal"/>
   <rdfs:subPropertyOf rdf:resource="&dc;rights"/>
 </rdf:Property>
+
+<rdf:Description rdf:about="&owl;AnnotationProperty"
+    rdfs:label="Annotationproperty"/>
+
+<rdf:Description rdf:about="&owl;OntologyProperty"
+    rdfs:label="Ontologyproperty"/>
 
 </rdf:RDF>
