@@ -610,6 +610,7 @@ owl_has_direct(S, P, O) :-
 	rdf(S, P, O).
 owl_has_direct(S, P, O) :-
 	(   rdf_has(P, owl:inverseOf, P2)
+	->  true
 	;   rdf_has(P2, owl:inverseOf, P)
 	),
 	rdf_has(O, P2, S).		% TBD: must call owl_has_direct/3
