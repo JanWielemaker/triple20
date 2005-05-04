@@ -750,11 +750,6 @@ owl_direct_subclass_of(Class, R) :-
 owl_direct_subclass_of(Class, R) :-	% added BJW (hack for symetry)
 	rdf_has(R, owl:equivalentClass, Class).
 owl_direct_subclass_of(Class, R) :-
-	rdf_has(Class, rdfs:subClassOf, D),
-	\+ rdf_has(D, rdfs:label, _),	% anonymous class
-	rdf_has(D, owl:intersectionOf, List),
-	rdfs_member(R, List).
-owl_direct_subclass_of(Class, R) :-
 	(   nonvar(R)
 	->  (   rdf_has(R, owl:unionOf, Union),
 	        rdfs_member(Class, Union)

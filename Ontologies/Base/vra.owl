@@ -20,7 +20,7 @@
 >
 <owl:Ontology rdf:about="http://www.swi.psy.uva.nl/mia/vra"
     rdfs:isDefinedBy="http://www.vraweb.org/vracore3.htm">
-  <rdfs:comment>  Ontology of the VRA Core Categories version 3.0, together with 
+  <rdfs:comment>Ontology of the VRA Core Categories version 3.0, together with 
   range specifications for values in AAT and ULAN. 
   For information about VRA Core Categories 3.0 
   </rdfs:comment>
