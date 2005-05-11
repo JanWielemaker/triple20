@@ -670,6 +670,34 @@ ns_string(String, String, '').
 
 
 		 /*******************************
+		 *	      TOOL		*
+		 *******************************/
+
+:- begin_rules(rdf_tool_settings, default).
+
+show_triple_cache(Cache) :-
+	get(@particle, self, Tool),
+	get(Tool, member, rdf_sheet, Sheet),
+	send(Sheet, triples, Cache).
+
+view_owl_class_extension :-
+	get(@particle, self, Explorer),
+	send(Explorer, has_get_method, view_owl_class_extension),
+	get(Explorer, view_owl_class_extension, @on).
+
+view_inferred_super_properties :-
+	get(@particle, self, Explorer),
+	send(Explorer, has_get_method, view_inferred_super_properties),
+	get(Explorer, view_inferred_super_properties, @on).
+
+open_resource(Resource, How) :-
+	get(@particle, self, Explorer),
+	send(Explorer, has_send_method, open_resource),
+	send(Explorer, open_resource, Resource, How).
+
+:- end_rules.
+
+		 /*******************************
 		 *	  BIND TO OBJECTS	*
 		 *******************************/
 
@@ -682,7 +710,8 @@ ns_string(String, String, '').
 		    rdf_click,
 		    rdf_predicate,
 		    rdf_tab,
-		    search
+		    search,
+		    rdf_tool_settings
 		  ]).
 :- end_particle.
 
@@ -992,29 +1021,3 @@ sub_menu(type).
 
 :- end_rules.
 
-		 /*******************************
-		 *	      TOOL		*
-		 *******************************/
-
-:- begin_rules(rdfs_explorer, default).
-
-show_triple_cache(Cache) :-
-	get(@particle, self, Tool),
-	get(Tool, member, rdf_sheet, Sheet),
-	send(Sheet, triples, Cache).
-
-view_owl_class_extension :-
-	get(@particle, self, Explorer),
-	send(Explorer, has_get_method, view_owl_class_extension),
-	get(Explorer, view_owl_class_extension, @on).
-
-view_inferred_super_properties :-
-	get(@particle, self, Explorer),
-	send(Explorer, has_get_method, view_inferred_super_properties),
-	get(Explorer, view_inferred_super_properties, @on).
-
-open_resource(Resource, How) :-
-	get(@particle, self, Explorer),
-	send(Explorer, open_resource, Resource, How).
-
-:- end_rules.
