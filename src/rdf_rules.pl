@@ -295,7 +295,8 @@ container(Obj, Container) :-
 		Container)
 	->  debug(container,
 		  'Try create context of ~p: ~p~n', [Obj, Container])
-	;   Obj \== @display
+	;   Obj \== @display,
+	    Obj \== @display_manager
 	->  Container = @display
 	;   print_message(error, not_contained(Obj)),
 	    backtrace(20),
