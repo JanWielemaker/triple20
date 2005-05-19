@@ -128,6 +128,9 @@ add(OT, Resource:name, _Role:[name], Node:rdf_node) :<-
 	    once(path(Resource, Root, OT, Path))
 	->  display_path(Path, OT, Node)
 	;   send(OT, report, warning, 'Cannot find path to %s', Resource),
+	    (	debugging(parent)
+	    ->  gtrace
+	    ),
 	    fail
 	).
 	
