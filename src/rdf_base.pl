@@ -57,41 +57,41 @@ quick hack.
 		 /*******************************
 		 *    PREDEFINED NAMESPACES	*
 		 *******************************/
-:- dynamic
-	rdf_db:ns/2.
-:- multifile
-	rdf_db:ns/2.
 
-rdf_db:ns(vra,	   'http://www.swi.psy.uva.nl/mia/vra#').
-rdf_db:ns(aat,	   'http://www.swi.psy.uva.nl/mia/aat#').
-rdf_db:ns(ulan,	   'http://www.swi.psy.uva.nl/mia/ulan#').
-rdf_db:ns(wn,	   'http://www.cogsci.princeton.edu/~wn/concept#').
-rdf_db:ns(wns,	   'http://www.cogsci.princeton.edu/~wn/schema/').
-rdf_db:ns(paint,   'http://www.swi.psy.uva.nl/mia/painting#').
-rdf_db:ns(subject, 'http://www.swi.psy.uva.nl/mia/subject#').
-rdf_db:ns(ic,	   'http://www.swi.psy.uva.nl/mia/iconclass#').
-rdf_db:ns(ghs,	   'http://www.swi.psy.uva.nl/mia/ghs#').
-rdf_db:ns(ann,	   'http://www.swi.psy.uva.nl/mia/ann#').
-rdf_db:ns(vin,     'http://www.w3.org/2001/sw/WebOnt/guide-src/wine#').
-rdf_db:ns(cyc,     'http://www.cyc.com/cyc#').
-rdf_db:ns(cyc03,   'http://www.cyc.com/2003/04/01/cyc#').
-rdf_db:ns(sumo,	   'http://reliant.teknowledge.com/DAML/SUMO.daml#').
-rdf_db:ns(erc,	   'http://www.swi.psy.uva.nl/mia/cml/erc#').
-rdf_db:ns(dolce,   'http://ontology.ip.rm.cnr.it/ontologies/DOLCE-Lite#').
-rdf_db:ns(galen,   'http://example.org/factkb#').
-rdf_db:ns(fam,     'http://swi.psy.uva.nl/family#').
-rdf_db:ns(swrl,	   'http://www.w3.org/2003/11/swrl#').
-rdf_db:ns(mesh,    'http://www.nlm.nih.gov/mesh/2004#').
-rdf_db:ns(galen,   'http://example.org/factkb#').
-rdf_db:ns(gcl,     'http://www.govtalk.gov.uk/schemasstandards/gcl#').
-rdf_db:ns(skos,    'http://www.w3.org/2004/02/skos/core#').
-rdf_db:ns(skosm,   'http://www.w3.org/2004/02/skos/mapping#').
-rdf_db:ns(aeneas,  'http://www.swi.psy.uva.nl/mia/aeneas#').
-rdf_db:ns(mia2,    'http://www.swi.psy.uva.nl/mia/mia2#').
-rdf_db:ns(thales,  'http://www.swi.psy.uva.nl/metis/thales#').
-rdf_db:ns(rs,      'http://jena.hpl.hp.com/2003/03/result-set#').
-rdf_db:ns(t20,	   'http://www.swi-prolog.org/packages/Triple20/').
-rdf_db:ns(nci,	   'http://ncicb.nci.nih.gov/xml/owl/EVS/Thesaurus.owl#').
+ns(vra,	    'http://www.swi.psy.uva.nl/mia/vra#').
+ns(aat,	    'http://www.swi.psy.uva.nl/mia/aat#').
+ns(ulan,    'http://www.swi.psy.uva.nl/mia/ulan#').
+ns(wn,	    'http://www.cogsci.princeton.edu/~wn/concept#').
+ns(wns,	    'http://www.cogsci.princeton.edu/~wn/schema/').
+ns(paint,   'http://www.swi.psy.uva.nl/mia/painting#').
+ns(subject, 'http://www.swi.psy.uva.nl/mia/subject#').
+ns(ic,	    'http://www.swi.psy.uva.nl/mia/iconclass#').
+ns(ghs,	    'http://www.swi.psy.uva.nl/mia/ghs#').
+ns(ann,	    'http://www.swi.psy.uva.nl/mia/ann#').
+ns(vin,	    'http://www.w3.org/2001/sw/WebOnt/guide-src/wine#').
+ns(cyc,	    'http://www.cyc.com/cyc#').
+ns(cyc03,   'http://www.cyc.com/2003/04/01/cyc#').
+ns(sumo,    'http://reliant.teknowledge.com/DAML/SUMO.daml#').
+ns(erc,	    'http://www.swi.psy.uva.nl/mia/cml/erc#').
+ns(dolce,   'http://ontology.ip.rm.cnr.it/ontologies/DOLCE-Lite#').
+ns(galen,   'http://example.org/factkb#').
+ns(fam,	    'http://swi.psy.uva.nl/family#').
+ns(swrl,    'http://www.w3.org/2003/11/swrl#').
+ns(mesh,    'http://www.nlm.nih.gov/mesh/2004#').
+ns(galen,   'http://example.org/factkb#').
+ns(gcl,	    'http://www.govtalk.gov.uk/schemasstandards/gcl#').
+ns(skos,    'http://www.w3.org/2004/02/skos/core#').
+ns(skosm,   'http://www.w3.org/2004/02/skos/mapping#').
+ns(aeneas,  'http://www.swi.psy.uva.nl/mia/aeneas#').
+ns(mia2,    'http://www.swi.psy.uva.nl/mia/mia2#').
+ns(thales,  'http://www.swi.psy.uva.nl/metis/thales#').
+ns(rs,	    'http://jena.hpl.hp.com/2003/03/result-set#').
+ns(t20,	    'http://www.swi-prolog.org/packages/Triple20/').
+ns(nci,	    'http://ncicb.nci.nih.gov/xml/owl/EVS/Thesaurus.owl#').
+
+:- forall(ns(Alias, URI),
+	  catch(rdf_register_ns(Alias, URI, [keep(true)]), E,
+		print_message(error, E))).
 
 %	register_default_ns(File, NS=URL)
 %	
