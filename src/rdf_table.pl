@@ -77,9 +77,10 @@ clear(AL) :->
 
 active(AL, Active:bool) :->
 	"(De-)activate tab if present"::
+	send_super(AL, active, Active),
 	(   get(AL, container, tab, Tab)
 	->  send(Tab, active, Active)
-	;   send_super(AL, active, Active)
+	;   true
 	).
 
 :- pce_group(update).

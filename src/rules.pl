@@ -673,7 +673,7 @@ ns_string(String, String, '').
 		 *	      TOOL		*
 		 *******************************/
 
-:- begin_rules(rdf_tool_settings, default).
+:- begin_rules(rdfs_explorer, default).
 
 show_triple_cache(Cache) :-
 	get(@particle, self, Tool),
@@ -711,7 +711,7 @@ open_resource(Resource, How) :-
 		    rdf_predicate,
 		    rdf_tab,
 		    search,
-		    rdf_tool_settings
+		    rdfs_explorer
 		  ]).
 :- end_particle.
 

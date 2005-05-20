@@ -1,3 +1,7 @@
+May 20, 2005
+
+  * Fixed display of `view->triples' for property nodes.
+
 May 19, 2005
 
   * Provide namespace definitions as default only
