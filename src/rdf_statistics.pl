@@ -48,7 +48,7 @@
 initialise(SD) :->
 	send_super(SD, initialise, 'RDF Statistics'),
 	send(SD, append, new(rdf_file_dialog), files),
-	send(SD, append, new(rdf_call_dialog), calls),
+	send(SD, append, new(rdf_call_dialog), statistics),
 	send(new(D2, dialog), below, SD),
 	send(D2, resize_message, message(D2, layout, @arg2)),
 	send(D2, append, button(ok, message(SD, destroy))).
@@ -237,8 +237,17 @@ initialise(D) :->
 	    fail
 	;   true
 	),
-	send(T, append, 'Counts', bold, center, Khaki, colspan := 4),
+	send(T, append, 'Statistics', bold, center, Khaki, colspan := 4),
 	send(T, next_row),
+	rdf_statistics(core(Core)),
+	MB is round(Core/(1024*1024)),
+	sformat(CoreMB, '~D MB', [MB]),
+	send(D, count, memory_usage, CoreMB),
+	rdf_statistics(gc(GC, GCTime)),
+	rdf_statistics(rehash(Rehash, RehashTime)),
+	send(D, rehash, 'GC', GC, GCTime),
+	send(D, rehash, rehash, Rehash, RehashTime),
+
 	(   rdf_statistics(searched_nodes(Nodes))
 	->  send(D, count, searched_nodes, Nodes)
 	;   true
@@ -248,10 +257,17 @@ initialise(D) :->
 	send(D, count, cached_queries, Caches),
 	send(D, count, attached_cached_queries, Attached).
 
-count(D, Name:name, Count:int) :->
+count(D, Name:name, Count:any) :->
 	get(D, member, tabular, T),
 	send(T, append, Name?label_name, bold, right, colspan := 3),
 	send(T, append, Count, normal, right),
+	send(T, next_row).
+
+rehash(D, Name, Times:int, Time:prolog) :->
+	get(D, member, tabular, T),
+	send(T, append, Name?label_name, bold, right, colspan := 3),
+	sformat(Value, '~D in ~2f sec', [Times, Time]),
+	send(T, append, Value, normal, right),
 	send(T, next_row).
 
 :- pce_end_class(rdf_call_dialog).
