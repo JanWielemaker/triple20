@@ -669,7 +669,7 @@ owl_evaluate_body([DF| Rest], SL, Subst):-
 	instantiated(A1, S, SL),	% assume both arguments are instantiated
 	rdf_has(DF, swrl:argument2, A2),
 	instantiated(A2, O, SL),	% this assumption is to be discussed
-	S \= O,
+	\+ owl_same_as(S,O),
 	owl_evaluate_body(Rest, SL, Subst).
 owl_evaluate_body([SF| Rest], SL, Subst):-
 	rdf(SF, rdf:type, swrl:'SameIndividualAtom'),
