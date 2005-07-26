@@ -443,6 +443,12 @@ owl_satisfies(union_of(Domains), Resource) :- !,
 owl_satisfies(intersection_of(Domains), Resource) :- !,
 	in_all_domains(Domains, Resource).
 owl_satisfies(complement_of(Domain), Resource) :- !,
+	(   atom(Resource)
+	->  true
+	;   var(Resource)
+	->  rdf_subject(Resource)
+	;   fail			% individual_of(Class)
+	),
 	\+ owl_satisfies(Domain, Resource).
 owl_satisfies(one_of(List), Resource) :- !,
 	member(Resource, List).
