@@ -41,3 +41,11 @@ user:portray(URL) :-
 	sub_atom(URL, 0, _, _, 'http://'),
 	rdfs_ns_label(URL, Label),
 	write(Label).
+user:portray(URL) :-
+	atom(URL),
+	atom_concat('__file://', URL2, URL),
+	sub_atom(URL2, S, _, A, #),
+	sub_atom(URL2, _, A, 0, Local),
+	sub_atom(URL2, 0, S, _, Path),
+	file_base_name(Path, Base),
+	format('__~w#~w', [Base, Local]).
