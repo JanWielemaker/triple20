@@ -10,8 +10,8 @@
 ================================================================
 * rdf_db
 
-	+ Automatically re-hash with bigger tables.
-	+ Add explicit re-hash?
+	+ Make transaction API, including undo
+	+ Index by source to speedup saving individual sources
 
 ================================================================
 * rdf_diagram
@@ -29,6 +29,8 @@
 
 	+ Save modules as RDF
 	+ Sort cache update to how long they take
+	+ Slots with range rdfs:list, allow dropping a list to
+	  replace the empty list instead of creating a list-of-lists
        
 ================================================================
 * VALIDATE

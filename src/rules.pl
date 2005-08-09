@@ -485,11 +485,13 @@ parent(R, '__orphan_resources', rdf_node) :-
 %	root_property(+Class, -Property)
 %	
 %	Generate the instances of Class (a subclass of rdf:Property)
-%	that have no super property.
+%	that have no super property and are of the same type
 
 root_property(Class, P) :-
 	rdf_has(P, rdf:type, Class),
-	\+ rdf_has(P, rdfs:subPropertyOf, _).
+	\+ (  rdf_has(P, rdfs:subPropertyOf, P2),
+	      rdf_has(P2, rdf:type, Class)
+	   ).
 
 :- end_rules.
 
