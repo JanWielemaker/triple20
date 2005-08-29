@@ -1,12 +1,13 @@
 <?xml version='1.0' encoding='UTF-8'?>
 <!DOCTYPE rdf:RDF [
-    <!ENTITY aat 'http://www.swi.psy.uva.nl/mia/aat#'>
-    <!ENTITY dc 'http://purl.org/dc/elements/1.1/'>
     <!ENTITY owl 'http://www.w3.org/2002/07/owl#'>
     <!ENTITY rdf 'http://www.w3.org/1999/02/22-rdf-syntax-ns#'>
     <!ENTITY rdfs 'http://www.w3.org/2000/01/rdf-schema#'>
-    <!ENTITY ulan 'http://www.swi.psy.uva.nl/mia/ulan#'>
+    <!ENTITY dc 'http://purl.org/dc/elements/1.1/'>
     <!ENTITY vra 'http://www.swi.psy.uva.nl/mia/vra#'>
+    <!ENTITY aat 'http://www.getty.edu/vocabularies/aat#'>
+    <!ENTITY ulan 'http://www.getty.edu/vocabularies/ulan#'>
+    <!ENTITY tgn 'http://www.getty.edu/vocabularies/tgn#'>
 ]>
 
 <rdf:RDF
@@ -83,12 +84,12 @@
   <rdfs:range>
     <owl:Class>
       <owl:unionOf rdf:parseType="Collection">
-        <rdf:Description about="&aat;50015030"/>
-        <rdf:Description about="&aat;50015069"/>
-        <rdf:Description about="&aat;50015073"/>
-        <rdf:Description about="&aat;50187729"/>
-        <rdf:Description about="&aat;50187730"/>
-        <rdf:Description about="&aat;50187732"/>
+        <rdf:Description about="&aat;300015030"/>
+        <rdf:Description about="&aat;300015069"/>
+        <rdf:Description about="&aat;300015073"/>
+        <rdf:Description about="&aat;300187729"/>
+        <rdf:Description about="&aat;300187730"/>
+        <rdf:Description about="&aat;300187732"/>
       </owl:unionOf>
     </owl:Class>
   </rdfs:range>
@@ -101,8 +102,8 @@
   <rdfs:range>
     <owl:Class>
       <owl:unionOf rdf:parseType="Collection">
-        <rdf:Description about="&aat;50010358"/>
-        <rdf:Description about="&aat;50014844"/>
+        <rdf:Description about="&aat;300010358"/>
+        <rdf:Description about="&aat;300014844"/>
       </owl:unionOf>
     </owl:Class>
   </rdfs:range>
@@ -112,8 +113,8 @@
 <rdf:Property rdf:about="&vra;technique"
     rdfs:label="technique">
   <rdfs:domain rdf:resource="&vra;VisualResource"/>
-  <rdfs:range rdf:resource="&aat;50053159"/>
-  <rdfs:subPropertyOf rdf:resource="&dc;formay"/>
+  <rdfs:range rdf:resource="&aat;300053159"/>
+  <rdfs:subPropertyOf rdf:resource="&dc;format"/>
 </rdf:Property>
 
 <rdf:Property rdf:about="&vra;creator"
@@ -121,7 +122,7 @@
   <rdfs:subPropertyOf rdf:resource="&dc;contributor"/>
   <rdfs:subPropertyOf rdf:resource="&dc;creator"/>
   <rdfs:domain rdf:resource="&vra;VisualResource"/>
-  <rdfs:range rdf:resource="&ulan;Artist"/>
+  <rdfs:range rdf:resource="&ulan;Person"/>
 </rdf:Property>
 
 <rdf:Property rdf:about="&vra;date"
@@ -155,8 +156,8 @@
   <rdfs:range>
     <owl:Class>
       <owl:unionOf rdf:parseType="Collection">
-        <rdf:Description about="&aat;50111078"/>
-        <rdf:Description about="&aat;50111079"/>
+        <rdf:Description about="&aat;300111078"/>
+        <rdf:Description about="&aat;300111079"/>
       </owl:unionOf>
     </owl:Class>
   </rdfs:range>
@@ -165,7 +166,7 @@
 <rdf:Property rdf:about="&vra;culture"
     rdfs:label="culture">
   <rdfs:domain rdf:resource="&vra;VisualResource"/>
-  <rdfs:range rdf:resource="&aat;50111079"/>
+  <rdfs:range rdf:resource="&aat;300111079"/>
   <rdfs:subPropertyOf rdf:resource="&dc;coverage"/>
 </rdf:Property>
 
