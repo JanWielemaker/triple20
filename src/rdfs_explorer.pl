@@ -177,6 +177,8 @@ fill_tool_dialog(OV) :->
 		    menu_item(name_spaces),
 		    menu_item(files),
 		    gap,
+		    menu_item(print_hierarchy),
+		    gap,
 		    menu_item(exit)
 		  ]),
 
@@ -514,6 +516,11 @@ name_spaces(OV) :->
 	send(D, transient_for, OV),
 	send(D, modal, transient),
 	send(D, open_centered, OV?area?center).
+
+print_hierarchy(OV) :->
+	"Print hierarchy window"::
+	get(OV, member, hierarchy_window, P),
+	send(P, print).
 
 :- pce_group(preferences).
 

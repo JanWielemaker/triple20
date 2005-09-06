@@ -31,11 +31,14 @@
 
 :- module(pce_window, []).
 :- use_module(library(pce)).
+:- use_module(library(print_graphics)).
+:- use_module(rdf_rules).
 
 :- pce_begin_class(constrained_scroll_picture, picture,
 		   "Picture that cannot be scrolled too far").
 :- use_class_template(rdf_arm).
 :- use_class_template(drop_files).
+:- use_class_template(print_graphics).
 
 scroll_vertical(TW,
 		Direction:{forwards,backwards,goto},
@@ -62,5 +65,17 @@ scroll_vertical(TW,
 	    ;   true
 	    )
 	).
+
+
+resource(_, _) :<-
+	"Virtual method"::
+	fail.
+
+print_graphics(P) :->
+	"More unique name"::
+	send(P, print).
+
+popup(W, P:popup) :<-
+	call_rules(W, popup(W, P)).
 
 :- pce_end_class.

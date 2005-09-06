@@ -349,6 +349,19 @@ switch the table to another resource and back to force proper update.
 Please report inconsistencies you think can be avoided.
 
 
+\subsection{Printing}
+
+There is very limited support to print graphical representations.  The
+main tool has a \emph{Print hierarchy} menu, which prints the
+current expansion of the left hierarchy window on a single sheet of
+paper.  The \emph{RDF graph viewer}, started with \emph{View diagram}
+also provides a print option.
+
+Note that not only the visible part of the window, but also the
+invisible parts are printed. The result is scaled down to fit a single
+page.
+
+
 \section{Semantic Web practice}			\label{sec:practice}
 
 \subsection{Classes as property values}

@@ -1,3 +1,7 @@
+Sep 6, 2005
+
+  * ADDED: Simple print option for hierarchy and diagram.
+
 Aug 9, 2005
 
   * Modify root_property/2 to check for super-properties of the same

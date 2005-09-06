@@ -35,6 +35,7 @@
 :- use_module(library(toolbar)).
 :- use_module(library(pce_tagged_connection)).
 :- use_module(library(debug)).
+:- use_module(library(print_graphics)).
 :- use_module(semweb(rdf_db)).
 :- use_module(triple20(rdf_rules)).
 
@@ -70,7 +71,9 @@ fill_dialog(DF, TD) :->
 	send(TD, append, new(View, popup(view))),
 
 	send_list(File, append,
-		  [ menu_item(exit, message(DF, destroy))
+		  [ menu_item(print, message(D, print)),
+		    gap,
+		    menu_item(exit, message(DF, destroy))
 		  ]),
 
 	send_list(View, append,
@@ -103,6 +106,7 @@ open_resource(DF, R:name, How:name) :->
 :- pce_begin_class(rdf_graph, picture,
 		   "Display an RDF diagram").
 :- use_class_template(rdf_arm).
+:- use_class_template(print_graphics).
 
 variable(mode, {sheet,label}, get, "Current mode for members").
 
@@ -221,6 +225,18 @@ drop(D, What:any, Where:point) :->
 arm(_G, _Val:bool) :->
 	"Preview activity"::
 	true.
+
+:- pce_group(popup).
+
+resource(_, _) :<-
+	fail.
+
+print_graphics(P) :->
+	"More unique name"::
+	send(P, print).
+
+popup(P, Popup:popup) :<-
+	call_rules(P, popup(P, Popup)).
 
 :- pce_end_class(rdf_graph).
 

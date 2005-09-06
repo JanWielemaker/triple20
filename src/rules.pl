@@ -247,7 +247,7 @@ item_member(Method, Label, Items) :-
 	item_method(Item, Label, Method).
 
 menu_item(Gr, Group, Item, Receiver) :-
-	inner::menu_item(Group, Item),
+	inner::menu_item(Gr, Group, Item),
 	item_method(Item, _Label, Method),
 	(   container_with_method(Gr, Method, Receiver)
 	->  debug(menu, '~p: mapping ~w to ~p->~w',
@@ -256,6 +256,11 @@ menu_item(Gr, Group, Item, Receiver) :-
 		  [Gr, Method]),
 	    fail
 	).
+
+menu_item(_, Group, Item) :-
+	inner::menu_item(Group, Item).
+menu_item(Gr, print, print) :-
+	send(Gr, instance_of, window).
 
 %	menu_item(Group, Item)
 %	
