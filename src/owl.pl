@@ -311,13 +311,13 @@ owl_satisfies_cardinality(Resource, Restriction) :-
 
 owl_satisfies_cardinality(Resource, Property, Restriction) :-
 	rdf_has(Restriction, owl:cardinality, literal(Atom)), !,
-	atom_number(Atom, Card),
+	non_negative_int(Atom, Card),
 	findall(V, rdf_has(Resource, Property, V), Vs0),
 	sort(Vs0, Vs),			% remove duplicates
 	length(Vs, Card).
 owl_satisfies_cardinality(Resource, Property, Restriction) :-
 	rdf_has(Restriction, owl:minCardinality, literal(MinAtom)),
-	atom_number(MinAtom, Min), !,
+	non_negative_int(MinAtom, Min), !,
 	findall(V, owl_has(Resource, Property, V), Vs0),
 	sort(Vs0, Vs),			% remove duplicates
 	length(Vs, Count),
@@ -329,7 +329,7 @@ owl_satisfies_cardinality(Resource, Property, Restriction) :-
 	).
 owl_satisfies_cardinality(Resource, Property, Restriction) :-
 	rdf_has(Restriction, owl:maxCardinality, literal(MaxAtom)),
-	atom_number(MaxAtom, Max), !,
+	non_negative_int(MaxAtom, Max), !,
 	findall(V, owl_has(Resource, Property, V), Vs0),
 	sort(Vs0, Vs),			% remove duplicates
 	length(Vs, Count),
@@ -337,6 +337,13 @@ owl_satisfies_cardinality(Resource, Property, Restriction) :-
 owl_satisfies_cardinality(Resource, _, _) :-
 	rdf_subject(Resource).
 	
+non_negative_int(type(Type, Atom), Number) :-
+	rdf_equal(xsd:nonNegativeInteger, Type),
+	catch(atom_number(Atom, Number), _, fail).
+non_negative_int(Atom, Number) :-
+	atom(Atom),
+	catch(atom_number(Atom, Number), _, fail).
+
 
 		 /*******************************
 		 *	    DESCRIPTION		*
