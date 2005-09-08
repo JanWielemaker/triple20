@@ -261,6 +261,8 @@ menu_item(_, Group, Item) :-
 	inner::menu_item(Group, Item).
 menu_item(Gr, print, print) :-
 	send(Gr, instance_of, window).
+menu_item(Gr, print, save_postscript) :-
+	send(Gr, instance_of, window).
 
 %	menu_item(Group, Item)
 %	
