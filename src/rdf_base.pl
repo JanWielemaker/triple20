@@ -60,7 +60,9 @@ quick hack.
 
 ns(vra,	    'http://www.swi.psy.uva.nl/mia/vra#').
 ns(aat,	    'http://www.swi.psy.uva.nl/mia/aat#').
+ns(aat2004, 'http://www.getty.edu/vocabularies/aat#'). % BJW
 ns(ulan,    'http://www.swi.psy.uva.nl/mia/ulan#').
+ns(ulan2004,'http://www.getty.edu/vocabularies/ulan#'). % BJW
 ns(wn,	    'http://www.cogsci.princeton.edu/~wn/concept#').
 ns(wns,	    'http://www.cogsci.princeton.edu/~wn/schema/').
 ns(paint,   'http://www.swi.psy.uva.nl/mia/painting#').
@@ -85,6 +87,7 @@ ns(skosm,   'http://www.w3.org/2004/02/skos/mapping#').
 ns(aeneas,  'http://www.swi.psy.uva.nl/mia/aeneas#').
 ns(mia2,    'http://www.swi.psy.uva.nl/mia/mia2#').
 ns(thales,  'http://www.swi.psy.uva.nl/metis/thales#').
+ns(poly,    'http://metis.org/ontologies/basell/poly#'). % BJW
 ns(rs,	    'http://jena.hpl.hp.com/2003/03/result-set#').
 ns(t20,	    'http://www.swi-prolog.org/packages/Triple20/').
 ns(nci,	    'http://ncicb.nci.nih.gov/xml/owl/EVS/Thesaurus.owl#').
