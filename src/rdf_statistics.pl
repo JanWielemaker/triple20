@@ -119,7 +119,10 @@ show_source(ST, Source:name) :->
 	     rdf_ns_menu(NS, message(ST, default_ns, Source, @arg1))),
 	rdf_statistics(triples_by_file(Source, Triples)),
 	send(ST, append, Triples, halign := right),
-	rdf_db:rdf_source(Source, _, Loaded, _MD5),
+	(   rdf_db:rdf_source(Source, _, Loaded, _MD5)
+	->  true
+	;   Loaded = 0
+	),
 	send(ST, append, Loaded, halign := right),
 	send(ST, append, new(AM, rdf_file_access_menu(Source)),
 	     halign := center),
