@@ -3,9 +3,9 @@
     Part of SWI-Prolog
 
     Author:        Jan Wielemaker
-    E-mail:        jan@swi.psy.uva.nl
+    E-mail:        wielemak@science.uva.nl
     WWW:           http://www.swi-prolog.org
-    Copyright (C): 1985-2002, University of Amsterdam
+    Copyright (C): 1985-2005, University of Amsterdam
 
     This program is free software; you can redistribute it and/or
     modify it under the terms of the GNU General Public License
@@ -76,10 +76,12 @@ user:file_search_path(semweb,   library(semweb)).
 	      ],
 	      [ silent(true)
 	      ]).
-:- ( exists_directory(plugins) ->           %added plugins directory BJW
-      expand_file_name('plugins/*.pl', Files),
-      load_files(Files, [])
-   ; true).
+% added plugins directory BJW
+:- (   exists_directory(plugins)
+   ->  expand_file_name('plugins/*.pl', Files),
+       load_files(Files, [])
+   ;   true
+   ).
 
 :- pce_image_directory(triple20(icons)).
 
@@ -123,8 +125,12 @@ user_version(N, Version) :-
 		 *	     TOPLEVEL		*
 		 *******************************/
 
+:- multifile
+	option/1.
+
 triple20 :-
-	triple20([]).
+	findall(O, option(O), Options),
+	triple20(Options).
 
 %	triple20(+Argv)
 %	
@@ -236,7 +242,7 @@ load_plugins([H|T0], [H|T]) :-
 
 
 usage :-
-	print_message(informational, rdf(usage)).
+	print_message(informational, t20(usage)).
 
 
 		 /*******************************
@@ -290,7 +296,7 @@ t20_winmain :-
 :- multifile
 	prolog:message/3.
 
-prolog:message(rdf(usage)) -->
+prolog:message(t20(usage)) -->
 	[ 'Usage: ~w [option ...] file ...'-[Me], nl, nl,
 	  '  Options:', nl,
 	  '    --help              Print usage', nl,
