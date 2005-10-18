@@ -43,13 +43,6 @@ resource(expand,   image, image('expand.xpm')).
 resource(collapse, image, image('collapse.xpm')).
 
 
-user:t :-
-	D = @g,
-	free(D),
-	send(new(D, rdf_graph_frame), open),
-	send(D, resource, 'file:tigertail/fischer_maid_buying_fish.jpg').
-
-
 :- pce_begin_class(rdf_graph_frame, persistent_frame).
 
 variable(history, history, get, "Modification history").
@@ -84,8 +77,14 @@ fill_dialog(DF, TD) :->
 		  ]).
 
 resource(DF, Resource:name, Mode:[{sheet, label}]) :->
+	"Add resource to the diagram"::
 	get(DF, member, rdf_graph, D),
 	send(D, append, Resource, Mode).
+
+layout(DF) :->
+	"Re-run graph layout"::
+	get(DF, member, rdf_graph, D),
+	send(D, layout).
 
 :- pce_group(triple20).
 
