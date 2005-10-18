@@ -238,6 +238,21 @@ print_graphics(P) :->
 popup(P, Popup:popup) :<-
 	call_rules(P, popup(P, Popup)).
 
+:- pce_global(@rdf_graph_recogniser,
+	      make_rdf_graph_recogniser).
+
+make_rdf_graph_recogniser(G) :-
+	new(G, key_binding),
+	send_list(G,
+		  [ function('\\C-l', layout)
+		  ]).
+
+event(P, Ev:event) :->
+	(   send_super(P, event, Ev)
+	->  true
+	;   send(@rdf_graph_recogniser, event, Ev)
+	).
+
 :- pce_end_class(rdf_graph).
 
 
