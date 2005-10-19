@@ -63,6 +63,8 @@ user:file_search_path(semweb,   library(semweb)).
 :- load_files([ rdf_base,		% Info on base ontologies
 		rdf_file,		% Info on files we manage
 		library(rdf),		% parser
+		library(lists),		% basic list predicates
+		library(debug),		% debugging facilities
 		semweb(rdf_db),		% triple store
 		semweb(rdfs),		% RDFS rules
 		semweb(rdf_edit),	% transactions and changes
@@ -180,30 +182,33 @@ triple20(Argv) :-
 	),
 	(   JournalLoaded == true
 	->  true
-	;   rdfe_transaction(parse_argv(Argv3), load_argv),
+	;   rdfe_transaction(parse_argv(Argv3, RDF), load_argv),
 	    (	NoBase == true
 	    ->	true
-	    ;   rdfe_transaction(forall(required_base_ontology(O),
-					load_base_ontology(O)),
+	    ;   rdfe_transaction(load_required_base_ontologies,
 				 required_base_ontologies)
 	    )
 	),
 	new(X, rdfs_explorer),
-	send(X, open).
+	send(X, open),
+	(   RDF = [First|_]
+	->  send(X, show_roots_for_file, First)
+	;   true
+	).
 
-parse_argv([]).
-parse_argv(['--base'|_]) :- !,
+parse_argv([], []).
+parse_argv(['--base'|_], []) :- !,
 	(   current_base_ontology(Base),
 	    writeln(Base),
 	    fail
 	;   true
 	),
 	halt(0).
-parse_argv([Cmd|T]) :-
+parse_argv([Cmd|T], RDF) :-
 	atom_concat('--base=', Base, Cmd), !,
 	load_base_ontology(Base),
-	parse_argv(T).
-parse_argv([File|T]) :-
+	parse_argv(T, RDF).
+parse_argv([File|T], [AbsName|RDF]) :-
 	file_name_extension(_, Ext, File),
 	rdf_file_extension(Ext, _Name),
 	Ext \== rdfj, !,
@@ -218,8 +223,8 @@ parse_argv([File|T]) :-
 	->  rdfe_set_file_property(File, default(all))
 	;   true
 	),
-	parse_argv(T).
-parse_argv(_) :-
+	parse_argv(T, RDF).
+parse_argv(_, []) :-
 	usage,
 	halt(1).
 

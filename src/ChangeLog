@@ -1,5 +1,10 @@
 Oct 19, 2005
 
+  * MODIFIED: Show root concepts of loaded files.
+
+  * ADDED: File/Load required base ontologies.  Simplified and generalised
+    its computation.
+
   * ADDED: SHIFT-click on Find *adds* search hits to the view.
 
   * ADDED: View/Show roots/... menu to highlight the roots of classes and

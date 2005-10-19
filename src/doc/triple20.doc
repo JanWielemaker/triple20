@@ -216,6 +216,12 @@ ontologies.  Use \menuref{File/Statistics} to examine the loaded files.
 Load one of the ontologies distributed with triple20. Almost any project
 requires \const{rdfs}.
 
+    \menuitem{File/Load required base ontologies}{}
+Load the registered base ontologies needed to show the current document
+correctly. A base ontology is considered required if the current
+dataset contains predicates that belong to the namespace of a base
+ontology.
+
     \menuitem{File/New file}{}
 Create a new file and add it to the pool.  After creating this file
 resources can be associated to it.  See also \menuref{New subclass}
@@ -266,7 +272,7 @@ class extension are visible in the hierarchy with the
 \includegraphics[width=2ex]{think} icon. Note that computing the OWL
 class extension is very incomplete.
 
-    \menuitem{View/Show roots/...}{}
+    \menuitem{View/Show roots of/...}{}
 The submenu shows all source files.  Selecting a source file collapses
 the hierarchy and then adds all concepts and properties that are defined
 in this file, but whose parent is not defined in this file.  The file to
@@ -481,7 +487,7 @@ All new	triples are added to this source.
 The menu \menuref{File/Merge files} allow the user to move all triples
 associated to some file to another file. This can be used to merge
 ontologies. The \menuref{File/Save file} submenu allow for saving
-modified files.  The \menuref{View/Show roots/...} submenu can be
+modified files.  The \menuref{View/Show roots of/...} submenu can be
 used to show the roots of classes and properties defined on a file.
 
 

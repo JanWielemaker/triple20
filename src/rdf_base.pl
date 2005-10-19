@@ -3,9 +3,9 @@
     Part of SWI-Prolog
 
     Author:        Jan Wielemaker
-    E-mail:        jan@swi.psy.uva.nl
+    E-mail:        wielemak@science.uva.nl
     WWW:           http://www.swi-prolog.org
-    Copyright (C): 1985-2002, University of Amsterdam
+    Copyright (C): 1985-2005, University of Amsterdam
 
     This program is free software; you can redistribute it and/or
     modify it under the terms of the GNU General Public License
@@ -33,14 +33,17 @@
 :- module(rdf_base,
 	  [ load_base_ontology/1,	% +Id
 	    load_base_ontology/2,	% +Id, +Options
+	    load_required_base_ontologies/0,
 	    current_base_ontology/1,	% -Id
 	    required_base_ontology/1,	% -Id
 	    register_default_ns/2	% +File, +List
 	  ]).
 :- use_module(semweb(rdf_db)).
+:- use_module(semweb(rdfs)).
 :- use_module(semweb(rdf_edit)).
 :- use_module(library(broadcast)).
 :- use_module(library(lists)).
+:- use_module(library(ordsets)).
 :- use_module(library(option)).
 
 /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -258,30 +261,13 @@ requires(world,	   ic).
 %	Note we first check for  the  high   level  bases  as  this will
 %	automatically include the more primitive ones.
 
-required_base_ontology(dc) :-
-	(   rdf(_, _, dc:title)
-	) -> true.
-required_base_ontology(owl) :-
-	(   rdf(_, owl:oneOf, _)
-	;   rdf(_, owl:unionOf, _)
-	;   rdf(_, owl:intersectionOf, _)
-	;   rdf(_, owl:complementOf, _)
-	;   rdf(_, owl:maxCardinality, _)
-	;   rdf(_, owl:minCardinality, _)
-	;   rdf(_, owl:sameAs, _)
-	;   rdf(_, _, owl:'Restriction')
-	;   rdf(_, _, owl:'Class')
-	;   rdf(_, _, owl:'Thing')
-	) -> true.
-required_base_ontology(rdfs) :-
-	(   rdf(_, rdfs:subClassOf, _)
-	;   rdf(_, rdf:first, _)
-	;   rdf(_, rdf:rest, _)
-	) -> true.
-required_base_ontology(skos) :-
-	(   rdf(_, skos:'preferred-label', _)
-	;   rdf(_, _, skos:'Concept')
-	) -> true.
+required_base_ontology(Base) :-
+	rdf_file(Base, NS, _),
+	rdf_db:ns(NS, Full),
+	(   rdf_current_predicate(P),
+	    rdf_url_namespace(P, Full)
+	->  true
+	).
 required_base_ontology(Base) :-
 	rdf_source(X),
 	file_name_extension(_, Ext, X),
@@ -289,6 +275,24 @@ required_base_ontology(Base) :-
 
 required_by_ext(rdfs, rdfs).
 required_by_ext(owl, owl).
+
+%	load_required_base_ontologies/0
+%	
+%	Load all registered base ontologies that are referred by the
+%	current set of documents.
+
+load_required_base_ontologies :-
+	load_required_base_ontologies([]).
+
+load_required_base_ontologies(Done) :-
+	setof(Base, required_base_ontology(Base), Bases),
+	ord_subtract(Bases, Done, Todo),
+	Todo \== [], !,
+	forall(member(Base, Todo),
+	       load_base_ontology(Base)),
+	ord_union(Done, Todo, Done1),
+	load_required_base_ontologies(Done1).
+load_required_base_ontologies(_).
 
 
 		 /*******************************

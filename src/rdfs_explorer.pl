@@ -166,7 +166,8 @@ fill_tool_dialog(OV) :->
 		    menu_item(load_rdf),
 		    new(Base, popup(load_base_ontology,
 				    message(OV, load_base_ontology, @arg1))),
-			
+		    menu_item(load_required_base_ontologies),
+		    gap,
 		    menu_item(new_file),
 		    menu_item(merge_files),
 		    gap,
@@ -190,7 +191,7 @@ fill_tool_dialog(OV) :->
 				       message(OV, dialect, @arg1))),
 		    new(OWL, popup(owl)),
 		    gap,
-		    new(Roots, popup(show_roots,
+		    new(Roots, popup(show_roots_of,
 				     message(OV, show_roots_for_file, @arg1)))
 		  ]),
 	send(?(View, member, owl), label, 'OWL'),
@@ -340,9 +341,15 @@ show_roots_for_file(F, File:name) :->
 	send(P, scroll_to, point(0,0)),
 	send(F, report, status, 
 	     'Showing root concepts and properties from %s', File),
+	new(Hits, hash_table),
 	(   call_rules(F, file_root(File, Root)),
+	    \+ get(Hits, member, Root, _),
+	    send(Hits, append, Root, true),
 	    send(Tree, show_hit, Root),
-	    fail
+	    get(Hits, size, Count),
+	    Count > 100, !,
+	    send(F, report, status, 
+		 'Displayed first 100 root objects from %s', File)
 	;   true
 	).
 
@@ -535,6 +542,11 @@ load_base_ontology(_OV, Base:name) :->
 	"Load a registered base"::
 	rdfe_transaction(load_base_ontology(Base),
 			 load_base_ontology(Base)).
+
+load_required_base_ontologies(_OV) :->
+	"Load the base ontologies we need"::
+	rdfe_transaction(load_required_base_ontologies,
+			 load_required_base_ontologies).
 
 files(OV) :->
 	"Show elementary statistics"::

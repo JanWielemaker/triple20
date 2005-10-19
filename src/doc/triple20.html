@@ -280,6 +280,13 @@ Load one of the ontologies distributed with triple20. Almost any project
 requires <CODE>rdfs</CODE>.
 
 <P>
+<DT><A NAME="menu:File/Loadrequiredbaseontologies"><STRONG>File/Load 
+required base ontologies</STRONG></A><DD>
+Load the registered base ontologies needed to show the current document 
+correctly. A base ontology is considered required if the current dataset 
+contains predicates that belong to the namespace of a base ontology.
+
+<P>
 <DT><A NAME="menu:File/Newfile"><STRONG>File/New file</STRONG></A><DD>
 Create a new file and add it to the pool. After creating this file 
 resources can be associated to it. See also <A HREF="#menu:Newsubclass">New subclass</A> 
@@ -342,7 +349,7 @@ class extension are visible in the hierarchy with the
 is very incomplete.
 
 <P>
-<DT><A NAME="menu:View/Showroots/..."><STRONG>View/Show roots/...</STRONG></A><DD>
+<DT><A NAME="menu:View/Showrootsof/..."><STRONG>View/Show roots of/...</STRONG></A><DD>
 The submenu shows all source files. Selecting a source file collapses 
 the hierarchy and then adds all concepts and properties that are defined 
 in this file, but whose parent is not defined in this file. The file to 
@@ -582,7 +589,7 @@ All new triples are added to this source.
 <P>The menu <A HREF="#menu:File/Mergefiles">File/Merge files</A> allow 
 the user to move all triples associated to some file to another file. 
 This can be used to merge ontologies. The <A HREF="#menu:File/Savefile">File/Save file</A> 
-submenu allow for saving modified files. The <A HREF="#menu:View/Showroots/...">View/Show roots/...</A> 
+submenu allow for saving modified files. The <A HREF="#menu:View/Showrootsof/...">View/Show roots of/...</A> 
 submenu can be used to show the roots of classes and properties defined 
 on a file.
 
@@ -838,6 +845,8 @@ the
 <DT><A HREF="#menu:File/Loadbaseontology">File/Load base ontology</A><DD>
 <A HREF="#sec:2.3">2.3</A>
 <DT><A HREF="#menu:File/Loadontology">File/Load ontology</A><DD>
+<DT><A HREF="#menu:File/Loadrequiredbaseontologies">File/Load required 
+base ontologies</A><DD>
 <DT><A HREF="#menu:File/Mergefiles">File/Merge files</A><DD>
 <A HREF="#sec:5.1">5.1</A>
 <DT><A HREF="#menu:File/Namespaces">File/Name spaces</A><DD>
@@ -893,7 +902,7 @@ snapshots</A><DD>
 <DT><A HREF="#menu:View/rdfsource">View/rdf source</A><DD>
 <DT><A HREF="#menu:View/Showallparents">View/Show all parents</A><DD>
 <A HREF="#sec:2.2">2.2</A> <A HREF="#sec:2.2">2.2</A>
-<DT><A HREF="#menu:View/Showroots/...">View/Show roots/...</A><DD>
+<DT><A HREF="#menu:View/Showrootsof/...">View/Show roots of/...</A><DD>
 <A HREF="#sec:5.1">5.1</A>
 <DT><A HREF="#menu:View/triples">View/triples</A><DD>
 </DL>
