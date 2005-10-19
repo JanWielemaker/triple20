@@ -316,12 +316,15 @@ sheet(F, Name:name, Sheet:window) :<-
 
 :- pce_group(find).
 
-find(F, String:name, How:name, In:[chain|{*}]) :->
+find(F, String:name, How:name, In:[chain|{*}], Join:[name]) :->
 	"Highlight nodes holding substring"::
 	get(F, tree, Tree),
-	send(Tree, collapse_domain),
-	get(Tree, device, P),
-	send(P, scroll_to, point(0,0)),
+	(   Join \== add
+	->  send(Tree, collapse_domain),
+	    get(Tree, device, P),
+	    send(P, scroll_to, point(0,0))
+	;   true
+	),
 	(   In == @default
 	->  rdf_equal(rdfs:label, Label),
 	    Fields = chain(Label)

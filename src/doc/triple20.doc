@@ -314,6 +314,13 @@ The search-field itself allows for the syntax \emph{ns:string}, where
 \emph{ns} is a namespace abbreviation.  This causes the search to be
 executed in the given namespace only.
 
+The hierarchy is collapsed and the first 100 matches of the search are
+added to the hierarchy. Using \textsc{shift-}click, collapsing of the
+hierarchy is skipped and the hits are added to the current view. This
+makes it easy to add resources to the hierarchy, preparing drop
+operations.  Similar results can be realised by creating a new window
+using \menuref{File/New window}.
+
 
 \subsection{Icons and Labels}			\label{sec:label}
 

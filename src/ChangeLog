@@ -1,5 +1,7 @@
 Oct 19, 2005
 
+  * ADDED: SHIFT-click on Find *adds* search hits to the view.
+
   * ADDED: View/Show roots/... menu to highlight the roots of classes and
     properties from a specified file.
 

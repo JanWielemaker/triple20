@@ -69,6 +69,12 @@ initialise(D) :->
 				      SI?selection, ST?selection,
 				      Fields?selection))),
 	     right),
+	send(Find, recogniser,
+	     click_gesture(left, s, single,
+			   message(D, find,
+				   SI?selection, ST?selection,
+				   Fields?selection,
+				   add))),
 	send(D, search_field, '*', @on),
 	send(D, search_field, rdfs:label),
 	send(D, search_field, rdfs:comment),
@@ -111,13 +117,13 @@ selected_predicates(D, Selected:'chain|{*}') :<-
 	;   Selected = Selection
 	).
 
-find(D, What:string, How:name, Fields:chain) :->
+find(D, What:string, How:name, Fields:chain, Join:[name]) :->
 	"Handle clicking the find button"::
 	(   send(Fields, member, '*')
 	->  Target = '*'
 	;   Target = Fields
 	),
-	send(D?frame, find, What, How, Target).
+	send(D?frame, find, What, How, Target, Join).
 
 %	->resize_dialog
 %	
