@@ -500,6 +500,30 @@ root_property(Class, P) :-
 	      rdf_has(P2, rdf:type, Class)
 	   ).
 
+%	file_root(+DB, -Root)
+%	
+%	Enumerate both the roots of  classes   and  properties  that are
+%	defined on a iven file.
+
+file_root(DB, Root) :-
+	(   file_class_root(DB, Root)
+	;   file_property_root(DB, Root)
+	).
+
+file_class_root(DB, Root) :-
+	rdfs_individual_of(Root, rdfs:'Class'),
+	once(rdf(Root, rdf:type, _, DB:_)),
+	\+ ( inner::parent(Root, Parent, _),
+	     rdf(Parent,  rdf:type, _, DB:_)
+	   ).
+
+file_property_root(DB, Root) :-
+	rdfs_individual_of(Root, rdf:'Property'),
+	once(rdf(Root, rdf:type, _, DB:_)),
+	\+ ( inner::parent(Root, Parent, _),
+	     rdf(Parent,  rdf:type, _, DB:_)
+	   ).
+
 :- end_rules.
 
 

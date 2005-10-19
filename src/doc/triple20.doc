@@ -266,6 +266,13 @@ class extension are visible in the hierarchy with the
 \includegraphics[width=2ex]{think} icon. Note that computing the OWL
 class extension is very incomplete.
 
+    \menuitem{View/Show roots/...}{}
+The submenu shows all source files.  Selecting a source file collapses
+the hierarchy and then adds all concepts and properties that are defined
+in this file, but whose parent is not defined in this file.  The file to
+which a resource belongs is defined as the file to which the \const{rdf:type}
+triple belongs.
+
     \menuitem{Tools/Add missing labels}{}
 Add an \const{rdfs:label} triple to each non-anonymous resource that has
 no defined label.  The default label is the local name of the resource.
@@ -465,10 +472,10 @@ All new	triples are added to this source.
 \end{description}
 
 The menu \menuref{File/Merge files} allow the user to move all triples
-associated to some file to another file.  This can be used to merge
-ontologies.
-
-The \menuref{File/Save file} submenus allow for saving modified files.
+associated to some file to another file. This can be used to merge
+ontologies. The \menuref{File/Save file} submenu allow for saving
+modified files.  The \menuref{View/Show roots/...} submenu can be
+used to show the roots of classes and properties defined on a file.
 
 
 \subsection{Namespaces}				\label{sec:namespaces}

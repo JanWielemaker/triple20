@@ -147,7 +147,10 @@ initialise(T, Name:name) :->
 make_rdf_file_text_recogniser(G) :-
 	new(G, popup_gesture(new(P, popup(actions, message(@arg2, @arg1))))),
 	send_list(P, append,
-		  [ save,
+		  [ show_roots,
+		    edit,
+		    gap,
+		    save,
 		    remove
 		  ]).
 
@@ -156,6 +159,17 @@ event(T, Ev:event) :->
 	->  true
 	;   send(@rdf_file_text_recogniser, event, Ev)
 	).
+
+show_roots(T) :->
+	"Show roots belonging to this file"::
+	get(T?frame, transient_for, Triple20),
+	get(T?string, value, Name),
+	send(Triple20, show_roots_for_file, Name).
+
+edit(T) :->
+	"Edit file using PceEmacs"::
+	get(T?string, value, Name),
+	edit(file(Name)).
 
 save(T) :->
 	"Save data back to a file"::

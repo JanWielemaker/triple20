@@ -36,6 +36,7 @@
 :- use_module(library(pce)).
 :- use_module(library(toolbar)).
 :- use_module(library(hyper)).
+:- use_module(library(lists)).
 :- use_module(rdfs_hierarchy).
 :- use_module(library(persistent_frame)).
 :- use_module(semweb(rdfs)).
@@ -187,7 +188,10 @@ fill_tool_dialog(OV) :->
 				     message(OV, view_label_as, @arg1))),
 		    new(Dialect, popup(dialect,
 				       message(OV, dialect, @arg1))),
-		    new(OWL, popup(owl))
+		    new(OWL, popup(owl)),
+		    gap,
+		    new(Roots, popup(show_roots,
+				     message(OV, show_roots_for_file, @arg1)))
 		  ]),
 	send(?(View, member, owl), label, 'OWL'),
 
@@ -245,6 +249,8 @@ fill_tool_dialog(OV) :->
 
 	send(SaveFile, update_message,
 	     message(OV, update_save_popup, SaveFile)),
+	send(Roots, update_message,
+	     message(OV, update_roots_popup, Roots)),
 	send(Base, update_message,
 	     message(OV, update_base_popup, Base)),
 	send(OV, append_tool_buttons).
@@ -323,6 +329,29 @@ find(F, String:name, How:name, In:[chain|{*}]) :->
 	),
 	send(Tree, find_from, String, How, Fields).
 
+show_roots_for_file(F, File:name) :->
+	"Highlight only the roots comming from a specified file"::
+	get(F, tree, Tree),
+	send(Tree, collapse_domain),
+	get(Tree, device, P),
+	send(P, scroll_to, point(0,0)),
+	send(F, report, status, 
+	     'Showing root concepts and properties from %s', File),
+	(   call_rules(F, file_root(File, Root)),
+	    send(Tree, show_hit, Root),
+	    fail
+	;   true
+	).
+
+update_roots_popup(_OV, Popup:popup) :->
+	"Update menu with all sources"::
+	send(Popup, clear),
+	setof(F, rdf_source(F), Files),
+	(   member(F, Files),
+	    send(Popup, append, menu_item(F, @default, F)),
+	    fail
+	;   true
+	).
 
 		 /*******************************
 		 *	      DETAILS		*

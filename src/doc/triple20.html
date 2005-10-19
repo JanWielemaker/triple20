@@ -342,6 +342,14 @@ class extension are visible in the hierarchy with the
 is very incomplete.
 
 <P>
+<DT><A NAME="menu:View/Showroots/..."><STRONG>View/Show roots/...</STRONG></A><DD>
+The submenu shows all source files. Selecting a source file collapses 
+the hierarchy and then adds all concepts and properties that are defined 
+in this file, but whose parent is not defined in this file. The file to 
+which a resource belongs is defined as the file to which the <CODE>rdf:type</CODE> 
+triple belongs.
+
+<P>
 <DT><A NAME="menu:Tools/Addmissinglabels"><STRONG>Tools/Add missing 
 labels</STRONG></A><DD>
 Add an <CODE>rdfs:label</CODE> triple to each non-anonymous resource 
@@ -566,10 +574,10 @@ All new triples are added to this source.
 
 <P>The menu <A HREF="#menu:File/Mergefiles">File/Merge files</A> allow 
 the user to move all triples associated to some file to another file. 
-This can be used to merge ontologies.
-
-<P>The <A HREF="#menu:File/Savefile">File/Save file</A> submenus allow 
-for saving modified files.
+This can be used to merge ontologies. The <A HREF="#menu:File/Savefile">File/Save file</A> 
+submenu allow for saving modified files. The <A HREF="#menu:View/Showroots/...">View/Show roots/...</A> 
+submenu can be used to show the roots of classes and properties defined 
+on a file.
 
 <H3><A NAME="sec:5.2">5.2 Namespaces</A></H3>
 
@@ -878,6 +886,8 @@ snapshots</A><DD>
 <DT><A HREF="#menu:View/rdfsource">View/rdf source</A><DD>
 <DT><A HREF="#menu:View/Showallparents">View/Show all parents</A><DD>
 <A HREF="#sec:2.2">2.2</A> <A HREF="#sec:2.2">2.2</A>
+<DT><A HREF="#menu:View/Showroots/...">View/Show roots/...</A><DD>
+<A HREF="#sec:5.1">5.1</A>
 <DT><A HREF="#menu:View/triples">View/triples</A><DD>
 </DL>
 
