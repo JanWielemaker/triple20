@@ -58,7 +58,9 @@ quick hack.
 		 *    PREDEFINED NAMESPACES	*
 		 *******************************/
 
+ns(dc,	    'http://purl.org/dc/elements/1.1/').
 ns(vra,	    'http://www.swi.psy.uva.nl/mia/vra#').
+ns(foaf,    'http://xmlns.com/foaf/0.1/').
 ns(aat,	    'http://www.swi.psy.uva.nl/mia/aat#').
 ns(aat2004, 'http://www.getty.edu/vocabularies/aat#'). % BJW
 ns(ulan,    'http://www.swi.psy.uva.nl/mia/ulan#').
@@ -200,6 +202,7 @@ rdf_file(dc,	 	 dc,   ontology('dctypes.rdfs')).
 rdf_file(dc,	 	 eor,  ontology('eor.rdfs')).
 rdf_file(vra,	 	 vra,  ontology('vra.owl')).
 rdf_file(skos,		 skos, ontology('skos-core.rdfs')).
+rdf_file(foaf,		 foaf, ontology('foaf.owl')).
 
 rdf_file(aat,		 aat,  ontology('aatmeta.rdfs')).
 rdf_file(aat,		 aat,  ontology('aat.rdfs')).
