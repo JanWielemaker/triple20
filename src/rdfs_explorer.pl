@@ -667,6 +667,14 @@ wiki(_) :->
 	"Open Triple20 wiki page"::
 	www_open_url('http://gollem.swi.psy.uva.nl/twiki/pl/bin/view/Development/TripleTwenty').
 
+%	<-version
+%	
+%	Return Triple20 version
+
+version(_M, Version:name) :<-
+	"Get version identifier"::
+	triple20:t20_version(Version).
+
 %	->about
 %	
 %	Should move to a library or (even better) be changed to use the
@@ -674,14 +682,15 @@ wiki(_) :->
 
 about(M) :->
 	"Print about and licence info"::
-	new(D, dialog('About XPCE')),
+	new(D, dialog('About Triple20')),
 	send(D, transient_for, M),
-	about(List),
-	checklist(add_about(D), List),
+	about(M, List),
+	maplist(add_about(D), List),
 	send(D, append, button(ok, message(D, destroy))),
 	send(D, open_centered).
 
-about([ 'Triple20 version %s'+[@prolog?t20_version]-boldhuge,
+about(M,
+      [ 'Triple20 version %s'+[M?version]-boldhuge,
 	'Copyright 2003-2005, University of Amsterdam',
 	'Triple20 comes with ABSOLUTELY NO WARRANTY.',
 	'This is free software (GPL), and you are welcome to',
