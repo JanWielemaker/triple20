@@ -264,7 +264,7 @@ requires(world,	   ic).
 required_base_ontology(Base) :-
 	rdf_file(Base, NS, _),
 	rdf_db:ns(NS, Full),
-	(   rdf_current_predicate(P),
+	(   referenced_predicate(P),
 	    rdf_url_namespace(P, Full)
 	->  true
 	).
@@ -272,6 +272,15 @@ required_base_ontology(Base) :-
 	rdf_source(X),
 	file_name_extension(_, Ext, X),
 	required_by_ext(Ext, Base).
+
+%	referenced_predicate(?P)
+%	
+%	Find the predicates that are referenced by the current data-set
+
+referenced_predicate(P) :-
+	rdf_current_predicate(P).
+referenced_predicate(P) :-
+	rdf(_, owl:onProperty, P).
 
 required_by_ext(rdfs, rdfs).
 required_by_ext(owl, owl).
