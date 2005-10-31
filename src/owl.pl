@@ -128,7 +128,7 @@ user:goal_expansion(owl_same_as(X0, Y0),
 %		cardinality(Min, Max)
 
 owl_restriction_on(Class, Restriction) :-
-	rdfs_subclass_of(Class, RestrictionID),
+	owl_subclass_of(Class, RestrictionID),
 	rdfs_individual_of(RestrictionID, owl:'Restriction'),
 	owl_restriction(RestrictionID, Restriction).
 
@@ -164,7 +164,13 @@ restriction_facet(R, cardinality(Min, Max)) :-
 %	Deduce integer value from rdf(Subject, Predicate, literal(Atom))
 %	and if a conversion error occurs warn compatible to the rdfs_validate
 %	library.
+%	
+%	TBD: If argument is typed we should check the type is compatible
+%	to xsd:nonNegativeInteger.
 
+non_negative_integer(type(_Type, Atom), Int, S, P) :-
+	nonvar(Atom), !,
+	non_negative_integer(Atom, Int, S, P).
 non_negative_integer(Atom, Int, _, _) :-
 	catch(atom_number(Atom, Int), _, fail), !,
 	integer(Int),
@@ -276,7 +282,7 @@ cardinality_on_class(Class, Predicate, cardinality(Min, Max)) :-
 %	owl_satisfies_restriction(?Resource, +Restriction)
 %	
 %	True if Restriction satisfies the restriction imposed by Restriction.
-%	The current implementation makes the following assuptions:
+%	The current implementation makes the following assumptions:
 %	
 %		# Only one of hasValue, allValuesFrom or someValuesFrom
 %		  is present.
