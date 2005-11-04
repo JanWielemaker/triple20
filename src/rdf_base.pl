@@ -281,6 +281,8 @@ referenced_predicate(P) :-
 	rdf_current_predicate(P).
 referenced_predicate(P) :-
 	rdf(_, owl:onProperty, P).
+referenced_predicate(P) :-
+	rdf(_, rdfs:subPropertyOf, P).
 
 required_by_ext(rdfs, rdfs).
 required_by_ext(owl, owl).
