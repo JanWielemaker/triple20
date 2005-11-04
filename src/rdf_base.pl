@@ -62,6 +62,8 @@ quick hack.
 		 *******************************/
 
 ns(dc,	    'http://purl.org/dc/elements/1.1/').
+ns(dcterms, 'http://purl.org/dc/terms/').
+ns(dctypes, 'http://purl.org/dc/dcmitype/').
 ns(vra,	    'http://www.swi.psy.uva.nl/mia/vra#').
 ns(foaf,    'http://xmlns.com/foaf/0.1/').
 ns(aat,	    'http://www.swi.psy.uva.nl/mia/aat#').
@@ -203,7 +205,6 @@ rdf_file(dc,	 	 dc,   ontology('dc.rdfs')).
 rdf_file(dc,	 	 dc,   ontology('dcterms.rdfs')).
 rdf_file(dc,	 	 dc,   ontology('dctypes.rdfs')).
 rdf_file(dc,	 	 eor,  ontology('eor.rdfs')).
-rdf_file(vra,	 	 vra,  ontology('vra.owl')).
 rdf_file(skos,		 skos, ontology('skos-core.rdfs')).
 rdf_file(foaf,		 foaf, ontology('foaf.owl')).
 
@@ -231,7 +232,6 @@ rdf_file(sumo,		 sumo, ontology('sumo.rdfs')).
 
 requires(owl,	   rdfs).
 requires(dc,	   rdfs).
-requires(vra,	   owl).
 requires(painting, owl).
 requires(aat,	   rdfs).
 requires(ulan,	   rdfs).
