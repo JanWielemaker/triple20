@@ -330,13 +330,10 @@ update_content(O) :->
 	send(Attrs, for_all,
 	     message(O, show_attribute, @arg1, RelOnly)).
 
-
 sheet_attributes(O, Atts:chain) :<-
 	"Return a chain holding the attributes for the sheet"::
-	get(O, resource, S),
-	findall(P, rdf(S, P, _), Ps),
-	sort(Ps, Unique),
-	chain_list(Atts, Unique).
+	call_rules(O, diagram_object_slots(O, Slots)),
+	chain_list(Atts, Slots).
 
 show_attribute(V, P:name, RelOnly:[bool]) :->
 	"Add given attribute to visualization"::
@@ -671,3 +668,16 @@ menu_item(Group, Item) :-
 	).
 
 :- end_rules.
+
+:- begin_rules(rdf_graph_frame, rdf_graph_frame).
+
+diagram_object_slots(Object, Slots) :-
+	get(Object, resource, Resource),
+	inner::diagram_resource_slots(Resource, Slots).
+
+diagram_resource_slots(Resource, Slots) :-
+	findall(P, rdf(Resource, P, _), Ps),
+	sort(Ps, Slots).
+
+:- end_rules.
+
