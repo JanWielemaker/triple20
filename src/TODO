@@ -2,6 +2,36 @@
 * Editing:
 
 	+ Obligatory slots: add to create-node
+	+ Rules defined specification of the `new' dialog.  See
+	  rdf_tree.
+		- Which triples to add?
+			- Similar to drag-and-drop
+		- Hierarchy: which node/role to create?
+			- Can we do that using the hierarchy roles
+
+===============================================================
+
+* Plugin infrastructure:
+
+	* Finish SKOS plugin.  Document it.
+	* Specifying plugins:
+		- Global	Plugins
+		- User		.t20/Plugins
+		- Local		.t20/Plugins
+		- Directory with plugin files
+		- File with config (activated plugins)
+			- RDF!
+
+<t20:Plugin
+  t20:source="..."
+  t20:active="true">
+</t20:Plugin>
+
+Settings
+	- Namespace vizualization
+	- 
+
+
 
 ================================================================
 * Bugs:
@@ -10,25 +40,30 @@
 ================================================================
 * rdf_db
 
-	+ Make transaction API, including undo
+	+ Add undo at low level?  Possibly can also be a plugin running
+	  on top of rdf_monitor.  Replace rdf_edit
 	+ Index by source to speedup saving individual sources
+	+ C-based fuzzy individual match.  Fuzzy hash-function?
+	+ Interval indexing.
 
 ================================================================
 * rdf_diagram
 
 	+ Undo visual changes
-	+ Use labels from toolkit
 	+ Summarise long literals
 	+ Selectively expand relations
+	+ Allow `abstract' paths based on class/property abstraction.
 
 ================================================================
 * rdfs_class_sheet
+
+	+ Rule based viewing of displayed slots (can use same ruleset)
+	  as diagram!
 	
 ================================================================
 * MISC
 
-	+ Save modules as RDF
-	+ Sort cache update to how long they take
+	+ Sort cache update to how long they take.  Update scheduling.
 	+ Slots with range rdfs:list, allow dropping a list to
 	  replace the empty list instead of creating a list-of-lists
        
@@ -41,9 +76,13 @@
 ================================================================
 * OWL
 
-	+ Handle owl:intersectionOf and other description facets
+	+ Finish DL reasoner
 
 ================================================================
 * QUERY
 
 	+ Result-set is (as in SeRQL) an RDF graph.
+	+ Specificationd of search slots, extented search syntax
+	  (boolean expressions, namespaces, things similar to Anjo's
+	  tOKo).
+	+ SPARQL interface on top of SeRQL infrastructure.

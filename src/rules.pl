@@ -418,16 +418,6 @@ child_cache(R, Cache, rdf_part_node) :-	% TBD: move outside
 	rdf_has(R, rdf:type, Class),
 	rdfs_subclass_of(Class, Domain),
 	rdf_cache(lsorted(V), rdf_has(R, thales:hasPart, V), Cache).
-child_cache(R, Cache, rdf_class_node) :-
-	rdfs_individual_of(R, skos:'Concept'),
-	rdf_cache(lsorted(V), skos_narrower(R, V), Cache).
-
-skos_narrower(Class, Narrow) :-
-	rdf_has(Narrow, skos:broader, Class).
-skos_narrower(Class, Narrow) :-
-	rdf_has(Narrow, rdfs:subClassOf, Class).
-skos_narrower(Class, Narrow) :-
-	rdf_has(Class, skos:narrower, Narrow).
 
 %	setting predicate that can be overruled
 
@@ -462,9 +452,6 @@ parent(R, Parent, rdf_class_node) :-
 	->  owl_direct_subclass_of(R, Parent)
 	;   rdf_has(R, rdfs:subClassOf, Parent)
 	).
-parent(R, Parent, rdf_class_node) :-
-	rdfs_individual_of(R, skos:'Concept'),
-	skos_narrower(Parent, R).
 parent(R, Parent, Role) :-
 	rdf_has(R, rdf:type, Type),
 	\+ rdfs_individual_of(R, rdfs:'Class'),
@@ -571,8 +558,6 @@ drop_resource(change_type, C, R) :- !,
 	rdf_set_object(R, rdf:type, C).
 drop_resource(add_type, C, R) :- !,
 	rdf_add_object(R, rdf:type, C).
-drop_resource(make_skos_narrower, C, R) :- !,
-	rdf_set_rev_object(R, skos:broader, skos:narrower, C).
 drop_resource(Command, Graphical, Resource) :-
 	format('TBD: Drop ~w onto ~p: ~w~n',
 	       [Resource, Graphical, Command]).
@@ -597,9 +582,6 @@ drop_resource_command(C, R, add_class) :-
 drop_resource_command(C, R, change_type) :-
 	rdfs_individual_of(C, rdfs:'Class'),
 	\+ rdfs_individual_of(R, rdfs:'Class').
-drop_resource_command(C, R, make_skos_narrower) :-
-	rdfs_individual_of(C, skos:'Concept'),
-	rdfs_individual_of(R, skos:'Concept').
 
 %	drop_files(+V, +ListOfFiles)
 %	
