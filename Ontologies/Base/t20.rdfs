@@ -1,0 +1,73 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<!DOCTYPE rdf:RDF [
+    <!ENTITY t20 'http://www.swi-prolog.org/packages/Triple20/'>
+    <!ENTITY rdf 'http://www.w3.org/1999/02/22-rdf-syntax-ns#'>
+    <!ENTITY rdfs 'http://www.w3.org/2000/01/rdf-schema#'>
+]>
+
+<rdf:RDF
+    xmlns:t20="&t20;"
+    xmlns:rdf="&rdf;"
+    xmlns:rdfs="&rdfs;"
+>
+<rdfs:Class rdf:about="&t20;Any"
+    rdfs:label="Any">
+  <rdfs:comment>The class t20:Any is the root of a schema used to refine the
+behaviour of the Triple toolkit.</rdfs:comment>
+  <rdfs:subClassOf rdf:resource="&rdfs;Resource"/>
+</rdfs:Class>
+
+<rdfs:Class rdf:about="&t20;Plugin"
+    rdfs:label="Plugin">
+  <rdfs:comment>Triple20 plugins are typically a set of rules and XPCE graphical classes
+to refine the behaviour of Triple20 in the context of a particular application.
+The plugin specification is loaded from the file plugins.rdf, which is searched
+first in the local directory, then in ~/.triple20 (Unix) or %USERPROFILE%\Triple20
+(Windows) and finally in the Plugins directory of the Triple20 distribution.</rdfs:comment>
+  <rdfs:subClassOf rdf:resource="&t20;Any"/>
+</rdfs:Class>
+
+<rdf:Property rdf:about="&t20;source"
+    rdfs:comment="Location from which to load the plugin source"
+    rdfs:label="source">
+  <rdfs:domain rdf:resource="&t20;Plugin"/>
+  <rdfs:range rdf:resource="&rdfs;Literal"/>
+</rdf:Property>
+
+<t20:Boolean rdf:about="&t20;true"
+    rdfs:label="true"/>
+
+<t20:Boolean rdf:about="&t20;false"
+    rdfs:label="false"/>
+
+<rdf:Property rdf:about="&t20;active"
+    rdfs:label="active">
+  <rdfs:domain rdf:resource="&t20;Plugin"/>
+  <rdfs:range rdf:resource="&t20;Boolean"/>
+</rdf:Property>
+
+<rdfs:Class rdf:about="&t20;Boolean"
+    rdfs:label="Boolean">
+  <rdfs:subClassOf rdf:resource="&t20;Any"/>
+</rdfs:Class>
+
+<rdfs:Class rdf:about="&t20;SystemPlugin"
+    rdfs:comment="Plugin distributed with Triple20"
+    rdfs:label="SystemPlugin">
+  <rdfs:subClassOf rdf:resource="&t20;Plugin"/>
+</rdfs:Class>
+
+<rdfs:Class rdf:about="&t20;LocalPlugin"
+    rdfs:comment="Plugin loaded from local (application) specific directory"
+    rdfs:label="LocalPlugin">
+  <rdfs:subClassOf rdf:resource="&t20;Plugin"/>
+</rdfs:Class>
+
+<rdfs:Class rdf:about="&t20;UserPlugin"
+    rdfs:label="UserPlugin">
+  <rdfs:comment>Plugin provided by the user.  Installed in ~/.triple20 on Unix systems and
+%USERPROFILE%\Triple20 on Windows systems</rdfs:comment>
+  <rdfs:subClassOf rdf:resource="&t20;Plugin"/>
+</rdfs:Class>
+
+</rdf:RDF>
