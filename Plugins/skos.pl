@@ -3,9 +3,9 @@
     Part of SWI-Prolog
 
     Author:        Jan Wielemaker
-    E-mail:        jan@swi.psy.uva.nl
+    E-mail:        wielemak@science.uva.nl
     WWW:           http://www.swi-prolog.org
-    Copyright (C): 1985-2002, University of Amsterdam
+    Copyright (C): 1985-2005, University of Amsterdam
 
     This program is free software; you can redistribute it and/or
     modify it under the terms of the GNU General Public License
@@ -37,9 +37,9 @@
 :- use_module(library('semweb/rdf_db')).
 
 /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-Triple20 plugin for the SKOS  framework   for  thesauri. It defines skos
-specific expansion of  the  hierarchy  as   well  as  editing  the  SKOS
-hierarchy.
+Triple20 plugin for the SKOS   (Simple  Knowledge Organisation Systems).
+framework for thesauri. It  defines  skos   specific  expansion  of  the
+hierarchy as well as editing the SKOS hierarchy.
 
 Issues:
 	- Menus for creating new individuals, etc.
@@ -56,6 +56,17 @@ Issues:
 		 *	     HIERARCHY		*
 		 *******************************/
 
+%	child_cache(+Resource, -Cache, -Class)
+%	
+%	Used to expand the hierarchy. Resource is the resource expanded.
+%	Cache is a mediator (see rdf_cache.pl)   that produces a list of
+%	objects in the poper order to be   displayed below this node. It
+%	is allowed to produce multiple  caches   for  a single node, for
+%	example to show both sub-classes and individuals of a class. The
+%	Class argument is the XPCE class used   to  create the childs of
+%	this. We can use this to   define icons, drag-and-drop, etc. for
+%	the child in this specific context.
+
 child_cache(R, Cache, rdf_class_node) :-
 	rdfs_individual_of(R, skos:'Concept'),
 	rdf_cache(lsorted(V), skos_narrower(R, V), Cache).
@@ -69,11 +80,17 @@ skos_narrower(Class, Narrow) :-
 skos_narrower(Class, Narrow) :-
 	rdf_has(Class, skos:narrower, Narrow).
 
+%	parent(+Resource, -Parent, -Class)
+%	
+%	Used to show the minimal tree that displays a given resource. We
+%	could use child_cache/3 for this purpose,   but as this requires
+%	generating the entire tree this is in general too slow.
+
 parent(R, Parent, rdf_class_node) :-
 	rdfs_individual_of(R, skos:'Concept'),
 	skos_narrower(Parent, R).
-parent(R, Parent, rdf_class_node) :-
-	super::parent(R, Parent, rdf_class_node).
+parent(R, Parent, Role) :-
+	super::parent(R, Parent, Role).
 
 
 		 /*******************************
@@ -96,11 +113,11 @@ term_expansion(skos_concept_relation(X, Y0),
 	       skos_concept_relation(X, Y)) :-
 	rdf_global_term(Y0, Y).
 
-skos_concept_relation(skos_narrower,    skos:narrower).
+skos_concept_relation(skos_narrower,    skos:broader).
 skos_concept_relation(skos_instance_of, skos:broaderInstantive).
 skos_concept_relation(skos_part_of,     skos:broaderPartitive).
 
-%	drop_resource(+Command, +Ondo, +Drop)
+%	drop_resource(+Command, +Onto, +Drop)
 %	
 %	Perform the rdf modifications for the   given Command if Drop is
 %	dropped Onto.
