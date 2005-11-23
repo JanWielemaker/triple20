@@ -1,11 +1,11 @@
 /*  $Id$
 
-    Part of SWI-Prolog
+    Part of Triple20
 
     Author:        Jan Wielemaker
-    E-mail:        jan@swi.psy.uva.nl
-    WWW:           http://www.swi-prolog.org
-    Copyright (C): 1985-2002, University of Amsterdam
+    E-mail:        wielemak@science.uva.nl
+    WWW:           http://www.swi-prolog.org/packages/Triple20
+    Copyright (C): %Y, University of Amsterdam
 
     This program is free software; you can redistribute it and/or
     modify it under the terms of the GNU General Public License
@@ -29,33 +29,3 @@
     the GNU General Public License.
 */
 
-
-:- module(ulan, []).
-:- use_module(library(pce)).
-:- use_module(semweb(rdf_db)).
-:- use_module(semweb(rdfs)).
-:- use_module(library(rdf_template)).
-
-:- pce_begin_class(ulan_timestamp_label, rdf_individual_label,
-		   "Represent an ulan data").
-
-variable(resource, name, get, "Represented resource").
-
-update(D) :->
-	get(D, resource, Resource),
-	(   rdf_has(Resource, ulan:year, Year)
-	->  (   rdfs_individual_of(Resource, ulan:'ExactYear')
-	    ->  send(D, append_resource, Year)
-	    ;   rdfs_individual_of(Resource, ulan:'ApproximateYear')
-	    ->  send(D, print, 'ca. '),
-		send(D, append_resource, Year)
-	    ;   rdfs_individual_of(Resource, ulan:'Century')
-	    ->  Year = literal(YearAtom),
-		atom_number(YearAtom, YearInt),
-		C is YearInt//100,
-		send(D, print, string('%d-th century', C))
-	    )
-	;   send_super(D, update)
-	).
-
-:- pce_end_class(ulan_timestamp_label).

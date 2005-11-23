@@ -53,12 +53,21 @@
 	user:file_search_path/2.
 
 user:file_search_path(semweb,   library(semweb)).
+user:file_search_path(t20plugin, '.').
+user:file_search_path(t20plugin, user_profile(Base)) :-
+	(   current_prolog_flag(windows, true)
+	->  Base = 'Triple20'
+	;   Base = '.triple20'
+	).
+user:file_search_path(t20plugin, triple20('../Plugins')).
+
 
 :- user:(retractall(file_search_path(triple20, _)),
 	 prolog_load_context(directory, Dir),
 	 asserta(file_search_path(triple20, Dir)),
 	 asserta(file_search_path(library,  triple20('.'))),
 	 asserta(file_search_path(ontology_root, triple20('../Ontologies')))).
+
 
 :- load_files([ rdf_base,		% Info on base ontologies
 		rdf_file,		% Info on files we manage
@@ -72,23 +81,13 @@ user:file_search_path(semweb,   library(semweb)).
 		owl,			% OWL inferencing
 		rdf_text,		% basic text representation
 		rules,			% rendering rules
-		anon,			% Nicely show anonymous objects
+		t20_plugin,		% plugin handling
 		rdfs_explorer		% visualization
 %		rdf_portray
 	      ],
 	      [ silent(true)
 	      ]).
-% added plugins directory BJW
-:- (   exists_directory(plugins)
-   ->  expand_file_name('plugins/*.pl', Files),
-       load_files(Files, [])
-   ;   true
-   ).
-
 :- pce_image_directory(triple20(icons)).
-
-:- pce_autoload(ulan_timestamp_object_item,
-		library(ulan)).
 
 user:file_search_path(snapshot, user_profile(Dir)) :-
 	rdf_snapshot_directory(Dir).
@@ -237,13 +236,19 @@ debug_options([H|T0], [H|T]) :-
 	debug_options(T0, T).
 
 
-load_plugins([], []).
-load_plugins([File|T0], T) :-
+load_plugins(Av0, Av) :-
+	select('--noplugins', Av0, Av), !.
+load_plugins(Av0, Av) :-
+	load_plugins,
+	load_pl_files(Av0, Av).
+
+load_pl_files([], []).
+load_pl_files([File|T0], T) :-
 	file_name_extension(_, pl, File), !,
 	load_files([File]),
-	load_plugins(T0, T).
-load_plugins([H|T0], [H|T]) :-
-	load_plugins(T0, T).
+	load_pl_files(T0, T).
+load_pl_files([H|T0], [H|T]) :-
+	load_pl_files(T0, T).
 
 
 usage :-
@@ -306,9 +311,9 @@ prolog:message(t20(usage)) -->
 	  '  Options:', nl,
 	  '    --help              Print usage', nl,
 	  '    --reset             Overwrite journal instead of append', nl,
-	  '    --nobase            Do NOT load rdfs.rdfs and owl.owl', nl,
-	  '    --base              List known base ontologies', nl,
+	  '    --nobase            Do NOT load rdfs.rdfs and owl.owl', nl,	  '    --base              List known base ontologies', nl,
 	  '    --base=Base         Load base ontology', nl,
+	  '    --noplugins         Do not load any plugins', nl,
 	  '  Files:', nl,
 	  '    file.pl             Load Triple20 (Prolog) plugin', nl,
 	  '    file.rdf            Load RDF file', nl,

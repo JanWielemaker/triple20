@@ -1,0 +1,27 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<!DOCTYPE rdf:RDF [
+    <!ENTITY t20 'http://www.swi-prolog.org/packages/Triple20/'>
+    <!ENTITY rdf 'http://www.w3.org/1999/02/22-rdf-syntax-ns#'>
+    <!ENTITY rdfs 'http://www.w3.org/2000/01/rdf-schema#'>
+]>
+
+<rdf:RDF
+    xmlns:t20="&t20;"
+    xmlns:rdf="&rdf;"
+    xmlns:rdfs="&rdfs;"
+>
+<t20:SystemPlugin rdf:about="&t20;WordNet"
+    t20:source="wordnet.pl"
+    rdfs:comment="Vizualise WordNet 2.0 hierarchies"
+    rdfs:label="WordNet">
+  <t20:active rdf:resource="&t20;true"/>
+</t20:SystemPlugin>
+
+<t20:SystemPlugin rdf:about="&t20;SKOS"
+    t20:source="skos.pl"
+    rdfs:comment="Vizualise and edit SKOS hierarchies."
+    rdfs:label="SKOS">
+  <t20:active rdf:resource="&t20;true"/>
+</t20:SystemPlugin>
+
+</rdf:RDF>

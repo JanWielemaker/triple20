@@ -99,8 +99,6 @@ label(Resource, Label) :-
 %	Class is the XPCE class to use.
 
 label_class(literal(_), rdf_literal_text) :- !.
-label_class(Obj, ulan_timestamp_label) :-
-	rdfs_individual_of(Obj, ulan:'TimeStamp').
 label_class(Obj, rdf_property_label) :-
 	rdfs_individual_of(Obj, rdf:'Property').
 label_class(Obj, owl_restriction_label) :-

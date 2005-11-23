@@ -208,6 +208,8 @@ rdf_file(dc,	 	 eor,  ontology('eor.rdfs')).
 rdf_file(skos,		 skos, ontology('skos-core.rdfs')).
 rdf_file(foaf,		 foaf, ontology('foaf.owl')).
 
+rdf_file(t20,		 t20,  ontology('t20.rdfs')).
+
 rdf_file(aat,		 aat,  ontology('aatmeta.rdfs')).
 rdf_file(aat,		 aat,  ontology('aat.rdfs')).
 

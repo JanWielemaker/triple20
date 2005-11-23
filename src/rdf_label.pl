@@ -43,7 +43,6 @@
 :- use_module(rdf_util).
 :- use_module(library(debug)).
 
-:- pce_autoload(ulan_timestamp_label,    ulan).
 
 		 /*******************************
 		 *	  COMPOSITE LABEL	*

@@ -1098,7 +1098,7 @@ bfind_prefix(Low, Here, High, Set, Prefix, Offset) :-
 		),
 		Here3 < Here,
 	        bfind_prefix(Low, Here3, Here, Set, Prefix, Offset)
-	    ;	assume(fail)
+	    ;	assertion(fail)
 	    )
 	).
 
