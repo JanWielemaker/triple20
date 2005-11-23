@@ -30,10 +30,28 @@
 */
 
 :- module(t20_plugin,
-	  [ load_plugins/0		% Load registered plugins
+	  [ load_plugins/0,		% Load registered plugins
+	    plugin_dir/2		% ?Id, -Path
 	  ]).
 :- use_module(library('semweb/rdf_db')).
 :- use_module(library('semweb/rdfs')).
+
+:- dynamic
+	plugin_rdf_file/1.
+:- volatile
+	plugin_rdf_file/1.
+
+%	plugin_dir(?Id, -Path).
+%	
+%	Enumerate the locations of the plugin directories.
+
+plugin_dir(local, '.').
+plugin_dir(user,  user_profile(Base)) :-
+	(   current_prolog_flag(windows, true)
+	->  Base = 'Triple20'
+	;   Base = '.triple20'
+	).
+plugin_dir(system, triple20('../Plugins')).
 
 %	load_plugin_config/0
 %	
@@ -46,7 +64,10 @@ load_plugin_config :-
 			     access(read),
 			     file_errors(fail)
 			   ]), !,
-	rdf_load(Path),
+	open(Path, read, In, [type(binary)]),
+	call_cleanup(rdf_load(stream(In), [db(triple20)]),
+		     close(In)),
+	assert(plugin_rdf_file(Path)),
 	rdf_load(ontology('t20.rdfs')).
 load_plugin_config.
 
@@ -68,23 +89,66 @@ load_plugins :-
 load_plugin(Source) :-
 	use_module(user:t20plugin(Source), []).
 	
+%	save_plugins/0
+%
+%	Save plugin information. If writeable, the  info is saved to the
+%	file it is loaded  from.  If   not  writeable,  another  file is
+%	searched that is writeable.
+
+save_plugins :-
+	plugin_rdf_file(Path),
+	(   rdf_modified(triple20)
+	->  true
+	;   access_file(Path, write)
+	->  rdf_save(Path, [db(triple20)])
+	;   absolute_file_name(t20plugin(plugins),
+			       Save,
+			       [ extensions([rdf]),
+				 access(write),
+				 file_errors(fail)
+			       ])
+	->  rdf_save(Save, [db(triple20)])
+	).
+
+rdf_modified(DB) :-
+	rdf_md5(DB, MD5),
+	rdf_db:rdf_source(DB, _Time, _Triples, UnmodifiedMD5),
+	MD5 \== UnmodifiedMD5.
 
 		 /*******************************
 		 *	     SCANNING		*
 		 *******************************/
+
+%	scan_plugins
+%	
+%	Scan plugin directories for defined plugins  and add them to the
+%	RDF descriptions.
+
+scan_plugins :-
+	(   plugin_dir(Id, Spec),
+	    absolute_file_name(Spec, Dir,
+			       [ file_type(directory),
+				 access(read),
+				 file_errors(fail)
+			       ]),
+	    scan_plugin_dir(Id, Dir),
+	    fail
+	;   true
+	).
+
 
 %	scan_plugin_dir(+Dir)
 %	
 %	Scan a directory for  Prolog  files   that  look  like  Triple20
 %	plugins. Create a description for them in the RDF database.
 
-scan_plugin_dir(Dir) :-
+scan_plugin_dir(Id, Dir) :-
 	atom_concat(Dir, '*.pl', Pattern),
 	expand_file_name(Pattern, Files),
 	(   member(File, Files),
 	    catch(open(File, read, In), _, fail),
 	    call_cleanup(read_plugin_info(In, Attributes), close(In)),
-	    register_plugin(File, Attributes),
+	    register_plugin(File, Id, Attributes),
 	    fail
 	;   true
 	).
@@ -94,6 +158,46 @@ read_plugin_info(In, Attributes) :-
 	catch(read(In, Term), _, fail),
 	Term = (:- plugin(Attributes)), !.
 
-register_plugin(File, Attributes) :-
+register_plugin(File, Id, Attributes) :-
+	DB = triple20,
+	plugin_class(Id, Class),
 	file_base_name(File, Source),
-	rdf_global_term(Attributes, Global).
+	rdf_global_term(Attributes, Global),
+	(   rdfs_individual_of(R, Class),
+	    rdf_has(R, t20:source, literal(Source))
+	->  update_plugin(Global, R)
+	;   rdf_bnode(Plugin),
+	    rdf_assert(Plugin, rdf:type, Class, DB),
+	    rdf_assert(Plugin, t20:source, literal(Source)),
+	    update_plugin(Attributes, Plugin)
+	).
+
+update_plugin([], _).
+update_plugin([P=V|T], R) :-
+	mkliteral(V, O),
+	(   rdf_has(R, P, O)
+	->  true
+	;   rdf_retractall(R, P, _),
+	    rdf_assert(R, P, O, triple20)
+	),
+	update_plugin(T, R).
+
+mkliteral(Atom, literal(Atom)) :-
+	atom(Atom).
+mkliteral(String, literal(Atom)) :-
+	is_string(String), !,
+	atom_codes(Atom, String).
+
+is_string([]).
+is_string([H|T]) :-
+	integer(H),
+	between(0, 256, H),		% TBD: Unicode?
+	is_string(T).
+
+term_expansion(plugin_class(Id, C0),
+	       plugin_class(Id, C)) :-
+	rdf_global_id(C0, C).
+
+plugin_class(local,  t20:'LocalPlugin').
+plugin_class(user,   t20:'UserPlugin').
+plugin_class(system, t20:'SystemPlugin').

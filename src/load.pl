@@ -53,14 +53,6 @@
 	user:file_search_path/2.
 
 user:file_search_path(semweb,   library(semweb)).
-user:file_search_path(t20plugin, '.').
-user:file_search_path(t20plugin, user_profile(Base)) :-
-	(   current_prolog_flag(windows, true)
-	->  Base = 'Triple20'
-	;   Base = '.triple20'
-	).
-user:file_search_path(t20plugin, triple20('../Plugins')).
-
 
 :- user:(retractall(file_search_path(triple20, _)),
 	 prolog_load_context(directory, Dir),
@@ -91,13 +83,15 @@ user:file_search_path(t20plugin, triple20('../Plugins')).
 
 user:file_search_path(snapshot, user_profile(Dir)) :-
 	rdf_snapshot_directory(Dir).
+user:file_search_path(t20plugin, Spec) :-
+	plugin_dir(_Id, Spec).
 
 
 		 /*******************************
 		 *	      VERSION		*
 		 *******************************/
 
-t20_version('0.74, Oct 2005').
+t20_version('0.80, Nov 2005').
 required_prolog_version(50531).
 
 check_prolog_version :-
