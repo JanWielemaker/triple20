@@ -82,9 +82,7 @@ view_label_as(As) :-
 view_label_as(As) :-
 	retractall(view_label_as_setting(_)),
 	assert(view_label_as_setting(As)),
-	send(@resource_texts, for_all,
-	     message(@arg2, for_all,
-		     message(@arg1, update))),
+	update_labels,
 	broadcast(view_label_as(As)).
 
 
@@ -103,8 +101,6 @@ label(Resource, Label) :-
 label_class(literal(_), rdf_literal_text) :- !.
 label_class(Obj, ulan_timestamp_label) :-
 	rdfs_individual_of(Obj, ulan:'TimeStamp').
-label_class(Obj, wn_class_label) :-
-	rdfs_individual_of(Obj, wns:'LexicalConcept').
 label_class(Obj, rdf_property_label) :-
 	rdfs_individual_of(Obj, rdf:'Property').
 label_class(Obj, owl_restriction_label) :-
@@ -148,7 +144,6 @@ resource(untyped,     image, image('16x16/untyped.xpm')).
 resource(resource,    image, image('16x16/resource.xpm')).
 resource(restriction, image, image('16x16/restriction.xpm')).
 resource(description, image, image('16x16/description.xpm')).
-resource(wnclass,     image, image('16x16/wnclass.xpm')).
 resource(nil,         image, image('16x16/DisketteBoxEmpty.xpm')).
 resource(part,        image, image('16x16/part.xpm')).
 resource(inferred,    image, image('16x16/think.xpm')).
@@ -288,6 +283,8 @@ menu_item(view,   triples=view_triples).
 menu_item(edit,   rename_resource).
 menu_item(edit,	  set_language).
 menu_item(edit,   set_type).
+
+menu_item(namespace, namespace_abbreviation).
 
 %	sub_menu(Group)
 %	

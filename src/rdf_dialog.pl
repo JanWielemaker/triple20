@@ -34,6 +34,7 @@
 :- use_module(library(pce_util)).
 :- use_module(library(pce_identifier_item)).
 :- use_module(library(hyper)).
+:- use_module(semweb(rdf_edit)).
 :- use_module(semweb(rdf_db)).
 :- use_module(semweb(rdfs)).
 :- use_module(library(lists)).
@@ -288,11 +289,11 @@ selection(I, Sel:name) :<-
 :- pce_begin_class(rdf_dialog, dialog,
 		   "Generic parts").
 
-initialise(D, Client:client=[graphical], Label:label=[name]) :->
+initialise(D, Client:client=[visual], Label:label=[name]) :->
 	send_super(D, initialise, Label),
 	send(D, client, Client).
 
-client(D, For:[graphical]) :->
+client(D, For:[visual]) :->
 	(   For == @default
 	->  true
 	;   new(_, partof_hyper(For, D, dialog, client))
@@ -439,6 +440,63 @@ rename(D) :->
 	send(D, destroy).
 
 :- pce_end_class(rdf_rename_dialog).
+
+
+:- pce_begin_class(t20_new_namespace_dialog, rdf_dialog,
+		   "Define a new namespace abbreviation").
+
+initialise(D, Client:[visual], DefID:[name], DefURI:[name]) :->
+	"Prompt for a new namespace"::
+	send_super(D, initialise, Client, 'Define new namespace'),
+	send(new(report_dialog), below, D),
+	send(D, append, new(IDItem, identifier_item(id, DefID))),
+	send(D, append, new(URIItem, identifier_item(uri, DefURI)), right),
+	send(D, append, button(create, message(D, return, ok))),
+	send(D, append, button(cancel)),
+	send(IDItem, length, 6),
+	send(URIItem, length, 50),
+	(   DefURI == @default
+	->  send(URIItem, selection, 'http://')
+	;   true
+	),
+	send(D, default_button, create).
+
+run(D) :->
+	"Run the dialog"::
+	get(D, member, id, IDItem),
+	get(D, member, uri, URIItem),
+	repeat,
+	(   get(D, confirm, _Reply)
+	->  get(IDItem, selection, ID),
+	    get(URIItem, selection, URI),
+	    catch(rdfe_transaction(register_ns(ID, URI),
+				   define_namespace),
+		  E, true),
+	    (   var(E)
+	    ->  !, send(D, destroy)
+	    ;   message_to_string(E, Message),
+		send(D, report, error, Message),
+		fail
+	    )
+	;   !
+	).
+
+register_ns(ID, URI) :-
+	(   xml_name(ID)
+	->  true
+	;   throw(error(type_error(xml_name, ID), _))
+	),
+	(   (   sub_atom(URI, _, _, 0, #)
+	    ;	sub_atom(URI, _, _, 0, /)
+	    )
+	->  true
+	;   throw(error(type_error(namespace, URI),
+			context(_, 'Namespace URI must end in # or /')))
+	),
+	rdfe_register_ns(ID, URI).
+
+:- pce_end_class(t20_new_namespace_dialog).
+
 
 
 		 /*******************************

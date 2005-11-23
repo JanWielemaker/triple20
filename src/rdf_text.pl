@@ -30,11 +30,14 @@
 */
 
 
-:- module(rdf_text, []).
+:- module(rdf_text,
+	  [ update_labels/0
+	  ]).
 :- use_module(library(pce)).
 :- use_module(library(debug)).
 :- use_module(library(pce_util)).
 :- use_module(library(dragdrop)).
+:- use_module(library(broadcast)).
 :- use_module(owl).
 :- use_module(semweb(rdf_edit)).
 :- use_module(semweb(rdfs)).
@@ -45,6 +48,20 @@
 
 :- pce_autoload(editable_text, library(pce_editable_text)).
 :- pce_autoload(partof_hyper,  library(hyper)).
+
+%	update_labels
+%	
+%	Update all label texts.  Useful after global changes such as how
+%	labels are represented or registration of new namespaces.
+
+update_labels :-
+	send(@resource_texts, for_all,
+	     message(@arg2, for_all,
+		     message(@arg1, update))).
+
+
+:- listen(rdf_ns(_),
+	  update_labels).
 
 :- pce_begin_class(rdf_resource_text, text,
 		   "Visualize a resource as a text object").

@@ -64,51 +64,7 @@ fill_dialog(F, D:tool_dialog) :->
 
 new_namespace(F) :->
 	"Prompt for a new namespace"::
-	new(D, dialog('Define new namespace')),
-	send(new(report_dialog), below, D),
-	send(D, append, new(IDItem, identifier_item(id))),
-	send(D, append, new(URIItem, identifier_item(uri)), right),
-	send(D, append, button(create, message(D, return, ok))),
-	send(D, append, button(cancel, message(D, return, cancel))),
-	send(IDItem, length, 6),
-	send(URIItem, length, 50),
-	send(URIItem, selection, 'http://'),
-	send(D, default_button, create),
-	send(D, transient_for, F),
-	send(D, modal, transient),
-	repeat,
-	(   get(D, confirm_centered, F?area?center, Reply)
-	->  (   Reply == ok
-	    ->  get(IDItem, selection, ID),
-		get(URIItem, selection, URI),
-		catch(rdfe_transaction(register_ns(ID, URI),
-				       define_namespace),
-		      E, true),
-		(   var(E)
-		->  !, send(D, destroy)
-		;   message_to_string(E, Message),
-		    send(D, report, error, Message),
-		    fail
-		)
-	    ;   !, send(D, destroy)
-	    )
-	;   !
-	).
-
-register_ns(ID, URI) :-
-	(   xml_name(ID)
-	->  true
-	;   throw(error(type_error(xml_name, ID), _))
-	),
-	(   (   sub_atom(URI, _, _, 0, #)
-	    ;	sub_atom(URI, _, _, 0, /)
-	    )
-	->  true
-	;   throw(error(type_error(namespace, URI),
-			context(_, 'Namespace URI must end in # or /')))
-	),
-	rdfe_register_ns(ID, URI).
-
+	send(t20_new_namespace_dialog(F), run).
 
 :- pce_end_class(rdf_namespace_window).
 

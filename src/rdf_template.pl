@@ -205,11 +205,20 @@ copy_id(T)                :-> send(T, copy, resource).
 copy_as_xml_identifier(T) :-> send(T, copy, xml_identifier).
 copy_as_xml_attribute(T)  :-> send(T, copy, xml_attribute).
 
+namespace_abbreviation(T) :->
+	"Define abbreviation for namespace"::
+	get(T, resource, R),
+	(   rdf_global_id(Id:_Local, R)
+	->  rdf_db:ns(Id, NS)
+	;   rdf_split_url(NS, _Local, R),
+	    Id = @default
+	),
+	send(t20_new_namespace_dialog(T, Id, NS), run).
+
 rename_resource(T) :->
 	"Change the name of a resource"::
 	get(T, resource, R),
 	send(new(rdf_rename_dialog(R, T)), open).
-
 
 :- pce_group(diagram).
 

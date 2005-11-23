@@ -1,3 +1,8 @@
+Nov 22, 2005
+
+  * ADDED: Namespace abbreviation command.  Restructured the infrastructure
+    for the dialog.
+
 Oct 19, 2005
 
   * MODIFIED: Show root concepts of loaded files.
