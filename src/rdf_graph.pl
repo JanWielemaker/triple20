@@ -35,6 +35,7 @@
 :- use_module(library(toolbar)).
 :- use_module(library(pce_tagged_connection)).
 :- use_module(library(debug)).
+:- use_module(library(lists)).
 :- use_module(library(print_graphics)).
 :- use_module(semweb(rdf_db)).
 :- use_module(triple20(rdf_rules)).
@@ -80,6 +81,11 @@ resource(DF, Resource:name, Mode:[{sheet, label}]) :->
 	"Add resource to the diagram"::
 	get(DF, member, rdf_graph, D),
 	send(D, append, Resource, Mode).
+
+resource_bag(DF, Resources:chain) :->
+	"Add collapsed compound resource bag"::
+	get(DF, member, rdf_graph, D),
+	send(D, resource_bag, Resources).
 
 layout(DF) :->
 	"Re-run graph layout"::
@@ -128,7 +134,8 @@ append(D, Resource:resource=name,
 	    ->	send(Obj, move, Where)
 	    ;	true
 	    )
-	;   send(D, display, new(Obj, rdf_object(Resource, Mode)), Where),
+	;   call_rules(D, create_resource_sheet(Resource, Mode, Obj)),
+	    send(D, display, Obj, Where),
 	    (	Where == @default
 	    ->	(   get(D?graphicals, size, 1) % just me
 		->  send(Obj, set, 50, 50)
@@ -148,9 +155,24 @@ append(D, Resource:resource=name,
 	send(Obj, request_compute),
 	send(Obj, link_to_me).
 
-rdf_object(D, Resource:name, RdfObject:rdf_object) :<-
+
+rdf_object(D, Resource:name, RdfObject:'rdf_object|rdf_resource_bag') :<-
 	"Find object vizualising me"::
-	get(D, member, Resource, RdfObject).
+	(   get(D, member, Resource, RdfObject)
+	->  true
+	;   get(D?graphicals, find,
+		and(message(@arg1, instance_of, rdf_resource_bag),
+		    message(@arg1, contains, Resource)),
+		RdfObject)
+	).
+
+
+resource_bag(D, Resources:chain, At:[point]) :->
+	"Show bag representation"::
+	chain_list(Resources, List),
+	call_rules(D, create_resource_bag(List, BagGR)),
+	send(D, display, BagGR, At).
+
 
 :- pce_group(state).
 
@@ -650,10 +672,42 @@ initialise(C, Subject:rdf_object, Predicate:name, Object:rdf_object) :->
 
 
 		 /*******************************
+		 *	    COMPOSITES		*
+		 *******************************/
+
+:- pce_begin_class(rdf_resource_bag, figure,
+		   "Display bag of resources").
+
+variable(resources,	chain,	get,	"Represented resources").
+
+initialise(RB, Resources:chain) :->
+	send_super(RB, initialise),
+	send(O, opaque, @off),
+	send(O, pen, 1),
+	send(O, shadow, 2),
+	send(O, border, 5),
+	send(O, background, colour(white)),
+	send(O, display, text('Bag of resources')), % TBD
+	send(RB, slot, resources, Resources).
+
+contains(RB, Resource:name) :->
+	"True if I represent Resource"::
+	get(RB, resources, Chain),
+	send(Chain, member, Resource).
+
+:- pce_end_class(rdf_resource_bag).
+
+
+		 /*******************************
 		 *	       RULES		*
 		 *******************************/
 
-:- begin_rules(rdf_object, rdf_object).
+:- begin_rules(rdf_graph_frame, rdf_graph_frame).
+
+%	menu_item(-Group, -Item)
+%	
+%	Determine the popup item for resources displayed in the graph
+%	view.
 
 menu_item(graph, close).
 menu_item(graph, close_other_nodes).
@@ -667,9 +721,9 @@ menu_item(Group, Item) :-
 	;   Group = Group0
 	).
 
-:- end_rules.
-
-:- begin_rules(rdf_graph_frame, rdf_graph_frame).
+%	diagram_object_slots(+Object, -Slots)
+%	
+%	Determine the slots displayed by Object.
 
 diagram_object_slots(Object, Slots) :-
 	get(Object, resource, Resource),
@@ -678,6 +732,22 @@ diagram_object_slots(Object, Slots) :-
 diagram_resource_slots(Resource, Slots) :-
 	findall(P, rdf(Resource, P, _), Ps),
 	sort(Ps, Slots).
+
+%	create_resource_sheet(+Resource, +Mode, -Graphical)
+%	
+%	Create a graphical to represent the resource Resource in the
+%	diagram view.   Mode is one of 'sheet' or 'label'.
+
+create_resource_sheet(Resource, Mode, Sheet) :-
+	new(Sheet, rdf_object(Resource, Mode)).
+
+%	create_resource_bag(+Resources, -Bag)
+%	
+%	Create a graphical Bag that represents the set of resources
+%	Resources.
+
+create_resource_bag(Resources, Bag) :-
+	new(Bag, rdf_resource_bag(Resources)).
 
 :- end_rules.
 
