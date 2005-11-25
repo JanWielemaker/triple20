@@ -30,11 +30,10 @@
 */
 
 :- module(t20wn, []).
-:- use_module(triple20(rdf_rules)).
-:- use_module(triple20(rdf_util)).
-:- use_module(triple20(rdf_cache)).
-:- use_module(library('semweb/rdfs')).
-:- use_module(library('semweb/rdf_db')).
+:- include(triple20(plugin)).
+:- plugin([ rdfs:label   = 'WordNet',
+	    rdfs:comment = 'Vizualise Wordnet synsets'
+	  ]).
 
 /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 Triple20 plugin for the SKOS  framework   for  thesauri. It defines skos

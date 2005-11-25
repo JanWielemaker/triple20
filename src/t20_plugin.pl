@@ -31,10 +31,13 @@
 
 :- module(t20_plugin,
 	  [ load_plugins/0,		% Load registered plugins
+	    scan_plugins/0,		% Scan for Triple20 plugins
+	    save_plugins/0,		% Save plugin config
 	    plugin_dir/2		% ?Id, -Path
 	  ]).
 :- use_module(library('semweb/rdf_db')).
 :- use_module(library('semweb/rdfs')).
+:- use_module(library(lists)).
 
 :- dynamic
 	plugin_rdf_file/1.
@@ -143,7 +146,7 @@ scan_plugins :-
 %	plugins. Create a description for them in the RDF database.
 
 scan_plugin_dir(Id, Dir) :-
-	atom_concat(Dir, '*.pl', Pattern),
+	atom_concat(Dir, '/*.pl', Pattern),
 	expand_file_name(Pattern, Files),
 	(   member(File, Files),
 	    catch(open(File, read, In), _, fail),
@@ -169,7 +172,7 @@ register_plugin(File, Id, Attributes) :-
 	;   rdf_bnode(Plugin),
 	    rdf_assert(Plugin, rdf:type, Class, DB),
 	    rdf_assert(Plugin, t20:source, literal(Source)),
-	    update_plugin(Attributes, Plugin)
+	    update_plugin(Global, Plugin)
 	).
 
 update_plugin([], _).
@@ -183,7 +186,7 @@ update_plugin([P=V|T], R) :-
 	update_plugin(T, R).
 
 mkliteral(Atom, literal(Atom)) :-
-	atom(Atom).
+	atom(Atom), !.
 mkliteral(String, literal(Atom)) :-
 	is_string(String), !,
 	atom_codes(Atom, String).

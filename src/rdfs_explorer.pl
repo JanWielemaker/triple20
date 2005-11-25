@@ -57,6 +57,7 @@
 :- use_module(window).
 :- use_module(rdf_dialog).
 :- use_module(rdf_file).
+:- use_module(t20_plugin).
 
 :- pce_autoload(report_dialog,	       library(pce_report)).
 :- pce_autoload(rdf_statistics_dialog, library(rdf_statistics)).
@@ -198,6 +199,9 @@ fill_tool_dialog(OV) :->
 
 	send_list(Tools, append,
 		  [ add_missing_labels,
+		    gap,
+		    scan_for_plugins,
+		    save_plugin_configuration,
 		    gap,
 		    new(Maintenance, popup(maintenance))
 		  ]),
@@ -615,6 +619,14 @@ add_missing_labels(OV) :->
 	rdf_statistics(triples(T1)),
 	TDiff is T1 - T0,
 	send(OV, report, status, 'Added %s triples', TDiff).
+
+scan_for_plugins(_OV) :->
+	"Scan for available plugins"::
+	scan_plugins.
+
+save_plugin_configuration(_OV) :->
+	"Save current plugin configuration"::
+	save_plugins.
 
 :- pce_group(edit).
 

@@ -30,11 +30,15 @@
 */
 
 
-:- module(ulan, []).
+:- module(t20ulan_timestamp, []).
+:- include(triple20(plugin)).
+:- plugin([ rdfs:label   = 'ULAN-timestamp',
+	    rdfs:comment = 'Show old ULAN timestamp objects'
+	  ]).
+
 :- use_module(library(pce)).
 :- use_module(library('semweb/rdf_db')).
 :- use_module(library('semweb/rdfs')).
-:- use_module(triple20(rdf_template)).
 :- use_module(triple20(rdf_rules)).
 
 /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -

@@ -30,11 +30,11 @@
 */
 
 :- module(t20skos, []).
-:- use_module(triple20(rdf_rules)).
+:- include(triple20(plugin)).
 :- use_module(triple20(rdf_util)).
-:- use_module(triple20(rdf_cache)).
-:- use_module(library('semweb/rdfs')).
-:- use_module(library('semweb/rdf_db')).
+:- plugin([ rdfs:label   = 'SKOS',
+	    rdfs:comment = 'Vizualise and edit SKOS hierarchies'
+	  ]).
 
 /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 Triple20 plugin for the SKOS   (Simple  Knowledge Organisation Systems).
