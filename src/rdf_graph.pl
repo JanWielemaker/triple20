@@ -87,6 +87,11 @@ resource_bag(DF, Resources:chain) :->
 	get(DF, member, rdf_graph, D),
 	send(D, resource_bag, Resources).
 
+clear(DF) :->
+	"Clear the diagram window"::
+	get(DF, member, rdf_graph, D),
+	send(D, clear).
+
 layout(DF) :->
 	"Re-run graph layout"::
 	get(DF, member, rdf_graph, D),
@@ -162,7 +167,7 @@ rdf_object(D, Resource:name, RdfObject:'rdf_object|rdf_resource_bag') :<-
 	->  true
 	;   get(D?graphicals, find,
 		and(message(@arg1, instance_of, rdf_resource_bag),
-		    message(@arg1, contains, Resource)),
+		    message(@arg1?resources, member, Resource)),
 		RdfObject)
 	).
 
@@ -238,6 +243,13 @@ drop(D, What:any, Where:point) :->
 	(   get(What, attribute, slot_label_for, P),
 	    get(What, device, Obj)
 	->  send(Obj, expand_slot_values, P, Where)
+	;   send(What, instance_of, rdf_icon_label),
+	    get(What, device, Bag),
+	    send(Bag, instance_of, rdf_resource_bag),
+	    \+ send(Bag?area, in, Where)
+	->  get(What, resource, R),
+	    send(Bag, delete, R),
+	    send(D, append, R, @default, Where)
 	;   send(What, has_get_method, resource),
 	    get(What, resource, R),
 	    send(D, append, R, @default, Where)
@@ -537,25 +549,6 @@ update_layout(O) :->
 	get_chain(O, graphicals, Grs),
 	update_layout(Grs, 0, 0, 0, O).
 
-update_layout([], _, _, _, _).
-update_layout([H|T], X, Y, HL, D) :-
-	send(H, instance_of, layout_graphical), !,
-	get(H, name, Command),
-	(   Command == nl
-	->  Y2 is Y+HL,
-	    get(H, width, Indent),
-	    update_layout(T, Indent, Y2, 0, D)
-	;   update_layout(T, X, Y, HL, D)
-	).
-update_layout([H|T], X, Y, HL, D) :-
-	send(H, set, X, Y),
-	get(H, width, W),
-	get(H, height, H1),
-	HL2 is max(HL, H1),
-	X2 is X + W,
-	update_layout(T, X2, Y, HL2, D).
-
-
 arm(TF, Val:bool) :->
 	"Preview activity"::
 	(   Val == @on
@@ -662,7 +655,7 @@ variable(resource, name, get, "Represented predicate resource").
 :- pce_global(@rdf_arc_link, new(link(link, link,
 				      line(arrows := second)))).
 
-initialise(C, Subject:rdf_object, Predicate:name, Object:rdf_object) :->
+initialise(C, Subject:graphical, Predicate:name, Object:graphical) :->
 	send(C, slot, resource, Predicate),
 	send_super(C, initialise, Subject, Object, @rdf_arc_link),
 	call_rules(C, label(Predicate, Label)),
@@ -677,25 +670,214 @@ initialise(C, Subject:rdf_object, Predicate:name, Object:rdf_object) :->
 
 :- pce_begin_class(rdf_resource_bag, figure,
 		   "Display bag of resources").
+:- use_class_template(rdf_container).
 
-variable(resources,	chain,	get,	"Represented resources").
+variable(resources,	 chain,	   get, "Represented resources").
+variable(show_exemplars, int,	   get, "# Exemplars displayed").  
+
+class_variable(show_exemplars, int, 3).
+
+:- send(@class, handle, handle(w/2, 0, link, north)).
+:- send(@class, handle, handle(w/2, h, link, south)).
+:- send(@class, handle, handle(0, h/2, link, west)).
+:- send(@class, handle, handle(w, h/2, link, east)).
 
 initialise(RB, Resources:chain) :->
 	send_super(RB, initialise),
-	send(O, opaque, @off),
-	send(O, pen, 1),
-	send(O, shadow, 2),
-	send(O, border, 5),
-	send(O, background, colour(white)),
-	send(O, display, text('Bag of resources')), % TBD
-	send(RB, slot, resources, Resources).
+	send(RB, pen, 1),
+	send(RB, shadow, 2),
+	send(RB, border, 5),
+	send(RB, background, colour(white)),
+	send(RB, slot, resources, Resources),
+	send(RB, update_content).
 
 contains(RB, Resource:name) :->
 	"True if I represent Resource"::
 	get(RB, resources, Chain),
 	send(Chain, member, Resource).
 
+delete(RB, Resource:name) :->
+	"Delete a resource from the bag"::
+	get(RB, resources, Chain),
+	send(Chain, delete, Resource),
+	send(RB, update_content).	% request_compute?
+
+mode(_RB, _Mode:{label,sheet}) :->
+	"Dummy for integration purposes"::
+	true.
+
+link_to_me(RB) :->
+	"Make objects that refer to my resource use a link"::
+	get(RB, device, Dev),
+	send(Dev, has_get_method, rdf_object),
+	get_chain(RB, resources, Resources),
+	(   member(O, Resources),
+	    rdf(S, _P, O),
+	    get(Dev, rdf_object, S, SObj),
+	    send(SObj, update),
+	    fail
+	;   true
+	).
+
+		 /*******************************
+		 *	      CONTENT		*
+		 *******************************/
+
+update_content(RB) :->
+	"Create the content"::
+	send(RB, clear),
+	get_chain(RB, resources, Resources),
+	key_type(Resources, Pairs),
+	keysort(Pairs, TypeResources),
+	join(TypeResources, Bags),
+	(   member(bag(C, Rs, Count), Bags),
+	    call_rules(RB, label(C, CLabel)),
+	    send(RB, nl),
+	    send(RB, append, CLabel),
+	    send(RB, append, text(string(' (%d)', Count))),
+	    get(RB, show_exemplars, ExN),
+	    (	between(1, ExN, I),
+		nth1(I, Rs, R),
+		call_rules(RB, label(R, RLabel)),
+		send(RB, nl, 20),
+		send(RB, append, RLabel),
+		fail
+	    ;   true
+	    ),
+	    fail
+	;   true
+	).
+
+join([], []).
+join([C-R|T0], [bag(C,[R|Rs],N)|T]) :-
+	same_type(C, T0, Rs, T1),
+	length(Rs, N0),
+	N is N0 + 1,
+	join(T1, T).
+
+same_type(C, [C-R|T0], [R|Rs], T) :- !,
+	same_type(C, T0, Rs, T).
+same_type(_, T, [], T).
+
+key_type([], []).
+key_type([R|T0], [C-R|T]) :-
+	type_of(R, C),
+	key_type(T0, T).
+
+type_of(R, C) :-
+	rdf_has(R, rdf:type, C), !.
+type_of(_, C) :-
+	rdf_equal(C, rdfs:'Resource').
+
+	
+:- pce_group(layout).
+
+nl(O, Indent:[int]) :->
+	send(O, display, new(I, layout_graphical(nl))),
+	(   Indent \== @default
+	->  send(I, width, Indent)
+	;   true
+	).
+
+append(O, Gr:graphical) :->
+	send(O, display, Gr),
+	send(O, request_compute, layout).
+
+
+		 /*******************************
+		 *	       UPDATE		*
+		 *******************************/
+
+update(RB) :->
+	send(RB, request_compute, links).
+
+compute(RB) :->
+	(   get(RB, request_compute, links)
+	->  send(RB, update_links)
+	;   get(RB, request_compute, layout)
+	->  send(RB, update_layout)
+	;   true
+	),
+	send_super(RB, compute).
+
+update_links(RB) :->
+	"Create outgoing links to other objects"::
+	get(RB, device, Dev),
+	(   send(Dev, has_get_method, rdf_object)
+	->  get_chain(RB, resources, Resources),
+	    (	member(S, Resources),
+		rdf(S, P, O),
+		atom(O),
+		get(Dev, rdf_object, O, RdfObject),
+		\+ send(RB, connected_with_predicate, P, RdfObject),
+		new(_, rdf_arc(RB, P, RdfObject)),
+		fail
+	    ;   true
+	    )
+	;   true
+	).
+
+connected_with_predicate(RB, P:name, RdfObject:graphical) :->
+	"Test whether RB is connected to RdfObject using P"::
+	get(RB, connections, RdfObject, CList),
+	get(CList, find,
+	    and(message(@arg1, instance_of, rdf_arc),
+		@arg1?resource == P),
+	    _).
+
+update_layout(O) :->
+	"Update the layout"::
+	get_chain(O, graphicals, Grs),
+	update_layout(Grs, 0, 0, 0, O).
+
+
+		 /*******************************
+		 *	       EVENTS		*
+		 *******************************/
+
+:- pce_global(@rdf_resource_bag_recogniser,
+	      make_rdf_resource_bag_recogniser).
+
+make_rdf_resource_bag_recogniser(G) :-
+	new(G, move_gesture(left)).
+
+event(O, Ev:event) :->
+	(   get(Ev, id, ms_left_down),
+	    debug(rdf_object, 'MS-left-down on ~p~n', [O]),
+	    \+ ( get(O, find, Ev,
+		     or(message(@arg1, instance_of, rdf_icon_label),
+			message(@arg1, instance_of, bitmap)), % Hack
+		     Gr),
+		 debug(rdf_object, 'Found ~p~n', [Gr])),
+	    send(@rdf_resource_bag_recogniser, event, Ev)
+	->  true
+	;   send_super(O, event, Ev)
+	).
+
 :- pce_end_class(rdf_resource_bag).
+
+
+		 /*******************************
+		 *	       LAYOUT		*
+		 *******************************/
+
+update_layout([], _, _, _, _).
+update_layout([H|T], X, Y, HL, D) :-
+	send(H, instance_of, layout_graphical), !,
+	get(H, name, Command),
+	(   Command == nl
+	->  Y2 is Y+HL,
+	    get(H, width, Indent),
+	    update_layout(T, Indent, Y2, 0, D)
+	;   update_layout(T, X, Y, HL, D)
+	).
+update_layout([H|T], X, Y, HL, D) :-
+	send(H, set, X, Y),
+	get(H, width, W),
+	get(H, height, H1),
+	HL2 is max(HL, H1),
+	X2 is X + W,
+	update_layout(T, X2, Y, HL2, D).
 
 
 		 /*******************************
