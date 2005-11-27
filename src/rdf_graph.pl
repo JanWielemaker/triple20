@@ -118,10 +118,11 @@ open_resource(DF, R:name, How:name) :->
 :- use_class_template(rdf_arm).
 :- use_class_template(print_graphics).
 
-variable(mode, {sheet,label}, get, "Current mode for members").
-variable(bulk, int := 0,      get, "Bulk append mode").
+variable(mode,          {sheet,label}, get, "Current mode for members").
+variable(check_link_to, hash_table,    get, "Objects whose links to check").
 
 initialise(D) :->
+	send(D, slot, check_link_to, new(hash_table)),
 	send_super(D, initialise),
 	send(D, recogniser, @arm_recogniser).	% allow arming window for
 						% drag-and-drop
@@ -179,6 +180,32 @@ rdf_object(D, Resource:name, AllowBag:[bool],
 		RdfObject)
 	).
 
+resource_bag(D, Resources:chain, At:[point]) :->
+	"Show bag representation"::
+	chain_list(Resources, List),
+	call_rules(D, create_resource_bag(List, BagGR)),
+	send(D, display, BagGR, At).
+
+:- pce_group(compute).
+
+check_link_to(D, O:name) :->
+	get(D, check_link_to, Table),
+	send(Table, append, O, @on).
+
+compute(D) :->
+	get(D, check_link_to, Table),
+	send(Table, for_all,
+	     message(D, update_link_to, @arg1)),
+	send_super(D, compute).
+
+
+update_link_to(D, O:name) :->
+	(   rdf(S, _P, O),
+	    send(D, update_objects_showing, S, update),
+	    fail
+	;   true
+	).
+
 update_objects_showing(D, Resource:name, Message:name) :->
 	"Send all objects representing Resource ->Message"::
 	(    get(D, member, Resource, RdfObject)
@@ -189,13 +216,6 @@ update_objects_showing(D, Resource:name, Message:name) :->
 	     if(and(message(@arg1, instance_of, rdf_resource_bag),
 		    message(@arg1, contains, Resource)),
 		message(@arg1, Message))).
-
-
-resource_bag(D, Resources:chain, At:[point]) :->
-	"Show bag representation"::
-	chain_list(Resources, List),
-	call_rules(D, create_resource_bag(List, BagGR)),
-	send(D, display, BagGR, At).
 
 
 :- pce_group(state).
@@ -463,13 +483,9 @@ append_values([H|T], V, P) :-
 link_to_me(V) :->
 	"Make objects that refer to my resource use a link"::
 	get(V, device, Dev),
-	send(Dev, has_send_method, update_objects_showing),
+	send(Dev, has_send_method, check_link_to),
 	get(V, resource, O),
-	(   rdf(S, _P, O),
-	    send(Dev, update_objects_showing, S, update),
-	    fail
-	;   true
-	).
+	send(Dev, check_link_to, O).
 
 show_my_subjects(V) :->
 	"Show objects having me as subject"::
@@ -782,15 +798,11 @@ mode(_RB, _Mode:{label,sheet}) :->
 link_to_me(RB) :->
 	"Make objects that refer to my resource use a link"::
 	get(RB, device, Dev),
-	send(Dev, has_get_method, rdf_object),
-	get_chain(RB, resources, Resources),
-	(   member(O, Resources),
-	    rdf(S, _P, O),
-	    get(Dev, rdf_object, S, SObj),
-	    send(SObj, update),
-	    fail
-	;   true
-	).
+	send(Dev, has_send_method, check_link_to),
+	get(RB, resources, Resources),
+	send(Resources, for_all,
+	     message(Dev, check_link_to, @arg1)).
+
 
 		 /*******************************
 		 *	      CONTENT		*
