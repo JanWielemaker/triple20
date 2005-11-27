@@ -67,14 +67,14 @@ fill_dialog(DF, TD) :->
 	send_list(File, append,
 		  [ menu_item(print, message(D, print)),
 		    gap,
+		    menu_item(clear, message(D, clear)),
 		    menu_item(exit, message(DF, destroy))
 		  ]),
 
 	send_list(View, append,
 		  [ menu_item(layout, message(D, layout)),
 		    menu_item(collapse_all, message(D, mode, label)),
-		    menu_item(expand_all, message(D, mode, sheet)),
-		    menu_item(clear, message(D, clear))
+		    menu_item(expand_all, message(D, mode, sheet))
 		  ]).
 
 resource(DF, Resource:name, Mode:[{sheet, label}]) :->
@@ -119,6 +119,7 @@ open_resource(DF, R:name, How:name) :->
 :- use_class_template(print_graphics).
 
 variable(mode, {sheet,label}, get, "Current mode for members").
+variable(bulk, int := 0,      get, "Bulk append mode").
 
 initialise(D) :->
 	send_super(D, initialise),
@@ -276,7 +277,7 @@ drop(D, What:any, Where:point) :->
 	    send(Bag, excommunicate, R, D, Where)
 	;   send(What, has_get_method, resource),
 	    get(What, resource, R),
-	    send(D, append, R, @default, Where)
+	    send(D, append, R, at := Where)
 	).
 
 arm(_G, _Val:bool) :->
@@ -322,8 +323,7 @@ event(P, Ev:event) :->
 
 variable(mode,          {sheet, label}, get, "Current display mode").
 variable(layout_status, bool := @off,   get, "Status of auto-layout").
-variable(req_update_content, bool := @off,   get, "Require update content").
-variable(update_links,  bool := @off,   get, "Update link status?").
+variable(outdated,      chain,          get, "Outdated features").
 
 class_variable(mode, {sheet, label}, label).
 
@@ -334,6 +334,7 @@ class_variable(mode, {sheet, label}, label).
 
 initialise(O, R:name, Mode:[{sheet, label}]) :->
 	"Create from resource"::
+	send(O, slot, outdated, new(chain)),
 	send_super(O, initialise, R),
 	send(O, name, R),		% allow for <-member
 	send(O, format, @nil),
@@ -367,14 +368,9 @@ device(O, Dev:device*) :->
 
 
 update(O) :->
-	(   get(O, req_update_content, @off)
-	->  send(O, slot, req_update_content, @on),
-	    send(O, request_compute)
-	;   true
-	).
+	send(O, request_compute, content).
 
 update_content(O) :->
-	send(O, slot, req_update_content, @off),
 	send(O, clear, destroy),
 	get(O, resource, Resource),
 	get(O, mode, Mode),
@@ -415,22 +411,44 @@ link_attributes(Values, P, V, NoLinkedValues) :-
 	link_attributes2(Values, P, V, NoLinkedValues).
 link_attributes(Values, _, _, Values).
 
+%	link_attributes2(+Values, +Property, +RdfObj, -RestAttrs)
+%	
+%	Represent the Values on Property using links if the other object
+%	is present. Return the remaining attributes   in RestAttrs to be
+%	displayed on the rdf_object instance itself.
+
 link_attributes2([], _, _, []).
-link_attributes2([H|T], P, V, Rest) :-
+link_attributes2([H|Tail], P, V, Rest) :-
 	atom(H),
 	get(V, device, Dev),
 	get(Dev, rdf_object, H, RdfObject), !,
-	(   get(V, connections, RdfObject, CList),
+	canonical_property(P, V-RdfObject, CP, F-T),
+	(   get(F, connections, T, CList),
 	    get(CList, find,
 		and(message(@arg1, instance_of, rdf_arc),
-		    @arg1?resource == P),
+		    @arg1?resource == CP),
 		_)
 	->  true			% existing connection
-	;   new(_, rdf_arc(V, P, RdfObject))
+	;   new(_, rdf_arc(F, CP, T))
 	),
-	link_attributes2(T, P, V, Rest).
+	link_attributes2(Tail, P, V, Rest).
 link_attributes2([H|T], P, V, [H|Rest]) :-
 	link_attributes2(T, P, V, Rest).
+
+%	canonical_property(+P, +F-T, -CP, -CF-CT)
+%	
+%	We display relations between graphicals in the diagram using the
+%	`canonical property' to avoid getting   two properties displayed
+%	in the same location.  Now  it  is   a  bit  hard  to define the
+%	canonical property. As a way to get   going  we say that for any
+%	property that has an owl:inverseOf the relation it is an inverse
+%	of is the canonical one.
+
+canonical_property(P, F-T, CP, T-F) :-
+	rdf_has(P, owl:inverseOf, CP), !,
+	debug(rdf_object, '~p: Using inverse property ~p', [P, CP]).
+canonical_property(P, FT, P, FT).
+
 
 append_values([], _, _).
 append_values([H], V, P) :- !,
@@ -551,8 +569,20 @@ nl(O, Indent:[int]) :->
 	;   true
 	).
 
+request_compute(O, What:[name]) :->
+	(   atom(What)
+	->  get(O, outdated, OutDated),
+	    (   send(OutDated, member, What)
+	    ->  true
+	    ;   send(OutDated, append, What),
+		send_super(O, request_compute)
+	    )
+	;   send_super(O, request_compute)
+	).
+
 compute(O) :->
-	(   get(O, req_update_content, @on),
+	get(O, outdated, Outdated),
+	(   send(Outdated, delete, content),
 	    get(O, device, Dev),
 	    Dev \== @nil
 	->  send(O, update_content)
@@ -621,7 +651,7 @@ expand_slot_values(Obj, P:name, Where:point) :->
 	send(@display, busy_cursor),	% doesn't work?
 	(   rdf(S,P,O),
 	    atom(O),			% only resources
-	    send(Graph, append, O, @default, Pos),
+	    send(Graph, append, O, at := Pos),
 	    send(Pos, plus, point(5, 20)),
 	    fail
 	;   send(@display, busy_cursor, @nil)
@@ -714,6 +744,7 @@ initialise(C, Subject:rdf_resource_bag, Object:rdf_object) :->
 variable(resources,	 chain,	   get,  "Represented resources").
 variable(by_exemplar,    sheet,    none, "Exemlars by class").
 variable(show_exemplars, int,	   none, "Default # Exemplars").  
+variable(outdated,	 chain,    get,  "Outdated features").
 
 class_variable(show_exemplars, int, 3).
 
@@ -725,6 +756,7 @@ class_variable(show_exemplars, int, 3).
 initialise(RB, Resources:chain) :->
 	send_super(RB, initialise),
 	send(RB, slot, by_exemplar, new(sheet)),
+	send(RB, slot, outdated, new(chain)),
 	send(RB, pen, 1),
 	send(RB, shadow, 2),
 	send(RB, border, 5),
@@ -787,7 +819,7 @@ more(RB, Class:name, More:[int]) :->
 
 update_content(RB) :->
 	"Create the content"::
-	send(RB, clear),
+	send(RB, clear, destroy),
 	get_chain(RB, resources, Resources),
 	key_type(Resources, Pairs),
 	keysort(Pairs, TypeResources),
@@ -809,7 +841,8 @@ update_content(RB) :->
 	    ),
 	    fail
 	;   true
-	).
+	),
+	send(RB, request_compute, layout).
 
 join([], []).
 join([C-R|T0], [bag(C,[R|Rs],N)|T]) :-
@@ -854,10 +887,24 @@ append(O, Gr:graphical) :->
 update(RB) :->
 	send(RB, request_compute, links).
 
+request_compute(RB, What:[name]) :->
+	(   atom(What)
+	->  get(RB, outdated, OutDated),
+	    (   send(OutDated, member, What)
+	    ->  true
+	    ;   send(OutDated, append, What),
+		send_super(RB, request_compute)
+	    )
+	;   send_super(RB, request_compute)
+	).
+
 compute(RB) :->
-	(   get(RB, request_compute, links)
+	get(RB, outdated, Outdated),
+	(   send(Outdated, delete, links)
 	->  send(RB, update_links)
-	;   get(RB, request_compute, layout)
+	;   true
+	),
+	(   send(Outdated, delete, layout)
 	->  send(RB, update_layout)
 	;   true
 	),
