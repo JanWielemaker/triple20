@@ -196,6 +196,7 @@ compute(D) :->
 	get(D, check_link_to, Table),
 	send(Table, for_all,
 	     message(D, update_link_to, @arg1)),
+	send(Table, clear),
 	send_super(D, compute).
 
 
