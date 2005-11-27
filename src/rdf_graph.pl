@@ -178,6 +178,17 @@ rdf_object(D, Resource:name, AllowBag:[bool],
 		RdfObject)
 	).
 
+update_objects_showing(D, Resource:name, Message:name) :->
+	"Send all objects representing Resource ->Message"::
+	(    get(D, member, Resource, RdfObject)
+	->   send(RdfObject, Message)
+	;    true
+	),
+	send(D?graphicals, for_all,
+	     if(and(message(@arg1, instance_of, rdf_resource_bag),
+		    message(@arg1, contains, Resource)),
+		message(@arg1, Message))).
+
 
 resource_bag(D, Resources:chain, At:[point]) :->
 	"Show bag representation"::
@@ -223,11 +234,17 @@ create(Term, Obj) :-
 :- pce_group(actions).
 
 layout(D) :->
+	send(D, compute),		% create all links
+	get(D, visible, Area),
 	get(D?graphicals, find_all,
 	    or(message(@arg1, instance_of, rdf_object),
 	       message(@arg1, instance_of, rdf_resource_bag)),
 	    Objects),
-	send(Objects?head, layout, network := Objects).
+	send(Objects?head, layout,
+	     nominal := 50,
+	     area := Area,
+	     iterations := 1000,
+	     network := Objects).
 
 
 mode(D, Mode:{label,sheet}) :->
@@ -428,11 +445,10 @@ append_values([H|T], V, P) :-
 link_to_me(V) :->
 	"Make objects that refer to my resource use a link"::
 	get(V, device, Dev),
-	send(Dev, has_get_method, rdf_object),
+	send(Dev, has_send_method, update_objects_showing),
 	get(V, resource, O),
 	(   rdf(S, _P, O),
-	    get(Dev, rdf_object, S, SObj),
-	    send(SObj, update), % TBD: check if attribute is active
+	    send(Dev, update_objects_showing, S, update),
 	    fail
 	;   true
 	).
