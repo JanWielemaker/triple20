@@ -128,9 +128,14 @@ initialise(D) :->
 :- pce_group(content).
 
 append(D, Resource:resource=name,
-          Mode:mode=[{sheet, label}], Where:at=[point]) :->
+          Mode:mode=[{sheet, label}], AllowBag:[bool], Where:at=[point]) :->
 	"Display a resource in Mode at Where"::
-	(   get(D, rdf_object, Resource, Obj)
+	get(D, append, Resource, Mode, AllowBag, Where, _Obj).
+
+append(D, Resource:resource=name,
+       Mode:mode=[{sheet, label}], AllowBag:[bool], Where:at=[point], Obj) :<-
+	"Display a resource in Mode at Where"::
+	(   get(D, rdf_object, Resource, AllowBag, Obj)
 	->  (   Mode \== @default
 	    ->	send(Obj, mode, Mode)
 	    ;	true
@@ -161,13 +166,15 @@ append(D, Resource:resource=name,
 	send(Obj, link_to_me).
 
 
-rdf_object(D, Resource:name, RdfObject:'rdf_object|rdf_resource_bag') :<-
+rdf_object(D, Resource:name, AllowBag:[bool],
+	   RdfObject:'rdf_object|rdf_resource_bag') :<-
 	"Find object vizualising me"::
 	(   get(D, member, Resource, RdfObject)
 	->  true
-	;   get(D?graphicals, find,
+	;   AllowBag \== @off,
+	    get(D?graphicals, find,
 		and(message(@arg1, instance_of, rdf_resource_bag),
-		    message(@arg1?resources, member, Resource)),
+		    message(@arg1, contains, Resource)),
 		RdfObject)
 	).
 
@@ -217,7 +224,8 @@ create(Term, Obj) :-
 
 layout(D) :->
 	get(D?graphicals, find_all,
-	    message(@arg1, instance_of, rdf_object),
+	    or(message(@arg1, instance_of, rdf_object),
+	       message(@arg1, instance_of, rdf_resource_bag)),
 	    Objects),
 	send(Objects?head, layout, network := Objects).
 
@@ -248,8 +256,7 @@ drop(D, What:any, Where:point) :->
 	    send(Bag, instance_of, rdf_resource_bag),
 	    \+ send(Bag?area, in, Where)
 	->  get(What, resource, R),
-	    send(Bag, delete, R),
-	    send(D, append, R, @default, Where)
+	    send(Bag, excommunicate, R, D, Where)
 	;   send(What, has_get_method, resource),
 	    get(What, resource, R),
 	    send(D, append, R, @default, Where)
@@ -664,6 +671,22 @@ initialise(C, Subject:graphical, Predicate:name, Object:graphical) :->
 :- pce_end_class(rdf_arc).
 
 
+:- pce_begin_class(rdf_bag_member_arc, connection,
+		   "Relate between bag and instance").
+
+variable(resource, name, get, "Represented predicate resource").
+class_variable(colour, colour, grey60).
+
+:- pce_global(@rdf_bag_member_link, new(link(link, link))).
+
+initialise(C, Subject:rdf_resource_bag, Object:rdf_object) :->
+	send_super(C, initialise, Subject, Object, @rdf_bag_member_link),
+	get(C, class_variable_value, colour, Colour),
+	send(C, colour, Colour).
+
+:- pce_end_class(rdf_bag_member_arc).
+
+
 		 /*******************************
 		 *	    COMPOSITES		*
 		 *******************************/
@@ -672,8 +695,9 @@ initialise(C, Subject:graphical, Predicate:name, Object:graphical) :->
 		   "Display bag of resources").
 :- use_class_template(rdf_container).
 
-variable(resources,	 chain,	   get, "Represented resources").
-variable(show_exemplars, int,	   get, "# Exemplars displayed").  
+variable(resources,	 chain,	   get,  "Represented resources").
+variable(by_exemplar,    sheet,    none, "Exemlars by class").
+variable(show_exemplars, int,	   none, "Default # Exemplars").  
 
 class_variable(show_exemplars, int, 3).
 
@@ -684,6 +708,7 @@ class_variable(show_exemplars, int, 3).
 
 initialise(RB, Resources:chain) :->
 	send_super(RB, initialise),
+	send(RB, slot, by_exemplar, new(sheet)),
 	send(RB, pen, 1),
 	send(RB, shadow, 2),
 	send(RB, border, 5),
@@ -723,6 +748,27 @@ link_to_me(RB) :->
 		 *	      CONTENT		*
 		 *******************************/
 
+show_exemplars(RB, Class:name, Show:int) :<-
+	(   get(RB, slot, by_exemplar, Sheet),
+	    get(Sheet, value, Class, Show)
+	->  true
+	;   get(RB, slot, show_exemplars, Show)
+	).
+
+show_exemplars(RB, Class:[name], Show:int) :->
+	(   Class == @default
+	->  send(RB, slot, show_exemplars, Show)
+	;   get(RB, slot, by_exemplar, Sheet),
+	    send(Sheet, value, Class, Show)
+	),
+	send(RB, update_content).	% TBD: compute
+
+more(RB, Class:name, More:[int]) :->
+	default(More, 10, Extra),
+	get(RB, show_exemplars, Class, N0),
+	N is N0+Extra,
+	send(RB, show_exemplars, Class, N).
+
 update_content(RB) :->
 	"Create the content"::
 	send(RB, clear),
@@ -735,13 +781,14 @@ update_content(RB) :->
 	    send(RB, nl),
 	    send(RB, append, CLabel),
 	    send(RB, append, text(string(' (%d)', Count))),
-	    get(RB, show_exemplars, ExN),
-	    (	between(1, ExN, I),
-		nth1(I, Rs, R),
+	    get(RB, show_exemplars, C, ExN),
+	    (	nth1(I, Rs, R),
 		call_rules(RB, label(R, RLabel)),
 		send(RB, nl, 20),
 		send(RB, append, RLabel),
-		fail
+		I =:= ExN
+	    ->  send(RB, nl, 20),
+		send(RB, append, rdf_bag_more(C, Count, ExN))
 	    ;   true
 	    ),
 	    fail
@@ -832,6 +879,16 @@ update_layout(O) :->
 
 
 		 /*******************************
+		 *	ADD/DELETE OBJECTS	*
+		 *******************************/
+
+excommunicate(RB, R:name, Dev:device, Where:point) :->
+	"Show object on the workspace"::
+	get(Dev, append, R, @default, @off, Where, Obj),
+	new(_, rdf_bag_member_arc(RB, Obj)).
+
+
+		 /*******************************
 		 *	       EVENTS		*
 		 *******************************/
 
@@ -846,6 +903,7 @@ event(O, Ev:event) :->
 	    debug(rdf_object, 'MS-left-down on ~p~n', [O]),
 	    \+ ( get(O, find, Ev,
 		     or(message(@arg1, instance_of, rdf_icon_label),
+			message(@arg1, instance_of, rdf_bag_more),
 			message(@arg1, instance_of, bitmap)), % Hack
 		     Gr),
 		 debug(rdf_object, 'Found ~p~n', [Gr])),
@@ -855,6 +913,56 @@ event(O, Ev:event) :->
 	).
 
 :- pce_end_class(rdf_resource_bag).
+
+
+:- pce_begin_class(rdf_bag_more, device,
+		   "Indicate there are more").
+
+variable(for_class, name, get, "Class to show more exemplars").
+
+initialise(B, Class:name, Count:int, Show:int) :->
+	send(B, slot, for_class, Class),
+	send_super(B, initialise),
+	send(B, format, format(vertical, 1, @off)),
+	More is min(10, Count-Show),
+	(   More > 0
+	->  send(B, display, text('...', left, bold)),
+	    send(B, display,
+		 new(M10, text(string('+%d', More), left, bold))),
+	    send(M10, attribute, message,
+		 message(@arg1, more, @arg2, More))
+	;   true
+	),
+	(   Show \== 3
+	->  send(B, display, new(E03, text('=3', left, bold))),
+	    send(E03, attribute, message,
+		 message(@arg1, show_exemplars, @arg2, 3))
+	;   true
+	),
+	send(B?graphicals, for_all,
+	     if(message(@arg1, has_get_method, message),
+		and(message(@arg1, underline, @on),
+		    message(@arg1, colour, blue)))).
+
+clicked(B) :->
+	get(B, find, @event,
+	    message(@arg1, has_get_method, message),
+	    Text),
+	get(Text, message, Msg),
+	send(Msg, forward, B?device, B?for_class).
+
+:- pce_global(@rdf_bag_more_recogniser,
+	      new(click_gesture(left, '', single,
+				message(@receiver, clicked)))).
+
+event(B, Ev:event) :->
+	(   send_super(B, event, Ev)
+	->  true
+	;   send(@rdf_bag_more_recogniser, event, Ev)
+	).
+
+:- pce_end_class(rdf_bag_more).
+
 
 
 		 /*******************************
