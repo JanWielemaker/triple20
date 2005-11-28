@@ -1079,7 +1079,6 @@ menu_item(graph, close).
 menu_item(graph, close_other_nodes).
 menu_item(graph, close_related_nodes).
 menu_item(graph, show_my_subjects).
-menu_item(graph, values_to_nodes).
 menu_item(Group, Item) :-
 	super::menu_item(Group0, Item),
 	(   Group0 == select
