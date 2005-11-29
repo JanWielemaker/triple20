@@ -65,34 +65,22 @@
 :- multifile
 	user:goal_expansion/2.
 
-user:goal_expansion(owl_restriction_on(Class0, restriction(Prop0, R)),
-		    owl_restriction_on(Class, restriction(Prop, R))) :-
-	rdf_global_id(Class0, Class),
-	rdf_global_id(Prop0, Prop).
-user:goal_expansion(owl_restriction(Res0, Restriction),
-		    owl_restriction(Res, Restriction)) :-
-	rdf_global_id(Res0, Res).
-user:goal_expansion(owl_description(Res0, Description),
-		    owl_description(Res, Description)) :-
-	rdf_global_id(Res0, Res).
-user:goal_expansion(owl_satisfies(Desc0, Res0),
-		    owl_satisfies(Desc, Res)) :-
-	rdf_global_term(Desc0, Desc),
-	rdf_global_id(Res0, Res).
-user:goal_expansion(owl_has(S0, P0, O0),
-		    owl_has(S, P, O)) :-
-	rdf_global_id(S0, S),
-	rdf_global_id(P0, P),
-	rdf_global_id(O0, O).
-user:goal_expansion(owl_has_direct(S0, P0, O0),
-		    owl_has_direct(S, P, O)) :-
-	rdf_global_id(S0, S),
-	rdf_global_id(P0, P),
-	rdf_global_id(O0, O).
-user:goal_expansion(owl_same_as(X0, Y0),
-		    owl_same_as(X, Y)) :-
-	rdf_global_id(X0, X),
-	rdf_global_id(Y0, Y).
+:- rdf_meta
+	owl_restriction_on(r, t),
+	owl_merged_restriction(r, r, t),
+	owl_restriction(r, -),
+	owl_description(r, -),
+	owl_cardinality_on_subject(r, r, -),
+	owl_cardinality_on_class(r, r, -),
+	owl_satisfies(r, t),
+	owl_individual_of(r, t),
+	owl_direct_subclass_of(r, r),
+	owl_subclass_of(r, r),
+	owl_has(r, r, o),
+	owl_has_direct(r, r, o),
+	owl_same_as(r, r),
+	owl_find(+, t, t, +, -).
+	
 
 		 /*******************************
 		 *	       FACTS		*
@@ -128,9 +116,14 @@ user:goal_expansion(owl_same_as(X0, Y0),
 %		cardinality(Min, Max)
 
 owl_restriction_on(Class, Restriction) :-
-	owl_subclass_of(Class, RestrictionID),
-	rdfs_individual_of(RestrictionID, owl:'Restriction'),
-	owl_restriction(RestrictionID, Restriction).
+	owl_subclass_of(Class, Super),
+	(   rdfs_individual_of(Super, owl:'Restriction'),
+	    owl_restriction(Super, Restriction)
+	;   rdf_has(Property, rdfs:domain, Super),
+	    rdf_has(Property, rdfs:range, Range),
+	    Restriction = restriction(Property, 
+				      all_values_from(Range))
+	).
 
 owl_restriction(RestrictionID, restriction(Property, Restriction)) :-
 	rdf_has(RestrictionID, owl:onProperty, Property),
@@ -190,7 +183,7 @@ non_negative_integer(Atom, _, S, P) :-
 
 owl_merged_restriction(Class, Property, Restriction) :-
 	setof(Decl,
-	      owl_restriction(Class, restriction(Property, Decl)),
+	      owl_restriction_on(Class, restriction(Property, Decl)),
 	      Decls),
 	join_decls(Decls, Minimal),
 	member(Restriction, Minimal).
