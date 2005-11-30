@@ -49,6 +49,7 @@
 	    rdf_set_object/3,		% +S, +P, +Object
 	    rdf_set_rev_object/4,	% +S, +P, +Rev, +Object
 	    rdf_add_object/3,		% +S, +P, +O
+	    rdf_add_object/4,		% +S, +P, +O, +DB
 	    rdf_add_object_or_anon_instance/3,
 					% +S, +P, +O
 	    rdf_new_property/2,		% +S, +P
@@ -385,20 +386,27 @@ set_object(Subject, Predicate, Object) :-
 	    )
 	).
 
+%	rdf_add_object(Subject, Predicate, Object, Database)
 %	rdf_add_object(Subject, Predicate, Object)
 %	
 %	Guarded adding of a new triple. Must validate cardinality
 %	constraints too.
 
 rdf_add_object(Subject, Predicate, Object) :-
+	rdf_add_object(Subject, Predicate, Object, _DB).
+
+rdf_add_object(Subject, Predicate, Object, DB) :-
 	property_domain(Subject, Predicate, Domain),
 	(   owl_satisfies(Domain, Object)
-	->  rdfe_transaction(add_object(Subject, Predicate, Object),
+	->  rdfe_transaction(add_object(Subject, Predicate, Object, DB),
 			     add_property_value)
 	;   throw(error(domain_error(Domain, Object), _))
 	).
 
-add_object(Subject, Predicate, Object) :-
+add_object(Subject, Predicate, Object, DB) :-
+	nonvar(DB), !,
+	rdfe_assert(Subject, Predicate, Object, DB).
+add_object(Subject, Predicate, Object, File) :-
 	(   Object == '__not_filled'
 	->  File = user
 	;   rdf_default_file(Subject, File)
