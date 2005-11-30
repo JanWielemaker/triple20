@@ -145,6 +145,17 @@ arm(TF, Val:bool) :->
 popup(P, Popup:popup) :<-
 	call_rules(P, popup(P, Popup)).
 
+:- pce_group(drap_and_drop).
+
+prolog_source(P, Source:name) :<-
+	"Allows dropping objects on PceEmacs"::
+	get(P, resource, R),
+	(   rdf_global_id(NS:Local, R)
+	->  sformat(Source, '~q', [NS:Local])
+	;   sformat(Source, '~q', [R])
+	).
+
+
 :- pce_group(test).
 
 is_anonymous(TF) :->

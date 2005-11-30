@@ -36,14 +36,12 @@
 	  ]).
 
 /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-Triple20 plugin for the SKOS  framework   for  thesauri. It defines skos
-specific expansion of  the  hierarchy  as   well  as  editing  the  SKOS
-hierarchy.
+Triple20 plugin for Wordnet. It defines   Wordnet  specific expansion of
+the hierarchy and nice icons and labels.   This  version is based on the
+Wordnet translation by Mark van Assem  in   the  context of the W3C best
+practices working group.  See the URL below for details.
 
-Issues:
-	- Menus for creating new individuals, etc.
-	- Icons for skos class, part and individual.
-
+	http://www.cs.vu.nl/~mark/wn/wn-conversion.html
 - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
 
 :- rdf_register_ns(wn2,
@@ -85,29 +83,5 @@ parent(R, Parent, rdf_node) :-
 	rdf(R, wn2:hyponymOf, Parent).
 parent(R, Parent, Class) :-
 	super::parent(R, Parent, Class).
-
-
-		 /*******************************
-		 *	   DRAG AND DROP	*
-		 *******************************/
-
-%	drop_resource_command(+Onto, +Drop, -Command)
-%	
-%	Determine the command(s) to execute if an object representing Drop
-%	is dropped onto an object representing Ondo.  
-
-/*
-drop_resource_command(C, R, Command) :-
-	rdfs_individual_of(C, wn2:'Synset'),
-	skos_concept_relation(Command, _P).
-drop_resource_command(C, R, Command) :-
-	super::drop_resource_command(C, R, Command).
-
-drop_resource(Command, C, R) :-
-	skos_concept_relation(Command, Property), !,
-	rdf_set_object(R, Property, C).
-drop_resource(Command, C, R) :-
-	super::drop_resource(Command, C, R).
-*/
 
 :- end_rules.

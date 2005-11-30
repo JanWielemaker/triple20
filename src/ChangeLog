@@ -1,3 +1,8 @@
+Nov 30, 2005
+
+  * ADDED: Allow dropping objects from Triple20 on PceEmacs to include
+    resources in Prolog syntax.
+
 Nov 22, 2005
 
   * ADDED: Namespace abbreviation command.  Restructured the infrastructure
