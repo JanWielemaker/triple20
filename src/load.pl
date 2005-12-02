@@ -239,7 +239,7 @@ load_plugins(Av0, Av) :-
 load_pl_files([], []).
 load_pl_files([File|T0], T) :-
 	file_name_extension(_, pl, File), !,
-	load_files([File]),
+	load_files(user:[File]),
 	load_pl_files(T0, T).
 load_pl_files([H|T0], [H|T]) :-
 	load_pl_files(T0, T).
