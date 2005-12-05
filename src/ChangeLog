@@ -1,3 +1,7 @@
+Dec 5, 2005
+
+  * ADDED: Datatype stuff to the rdfs.rdfs base ontology.
+
 Nov 30, 2005
 
   * ADDED: Allow dropping objects from Triple20 on PceEmacs to include
