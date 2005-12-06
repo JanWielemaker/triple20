@@ -119,10 +119,10 @@ owl_restriction_on(Class, Restriction) :-
 	owl_subclass_of(Class, Super),
 	(   rdfs_individual_of(Super, owl:'Restriction'),
 	    owl_restriction(Super, Restriction)
-	;   rdf_has(Property, rdfs:domain, Super),
-	    rdf_has(Property, rdfs:range, Range),
-	    Restriction = restriction(Property, 
-				      all_values_from(Range))
+	;   Restriction = restriction(Property, 
+				      all_values_from(Range)),
+	    rdf_has(Property, rdfs:domain, Super),
+	    rdf_has(Property, rdfs:range, Range)
 	).
 
 owl_restriction(RestrictionID, restriction(Property, Restriction)) :-
@@ -809,7 +809,10 @@ owl_subclass_of(_, _) :-
 
 owl_gen_supers(Class, _, Class).
 owl_gen_supers(Class, Visited, Super) :-
-	owl_direct_subclass_of(Class, Super0),
+	(   owl_direct_subclass_of(Class, Super0)
+	*-> true
+	;   rdf_equal(Super0, rdfs:'Resource')
+	),
 	\+ memberchk(Super0, Visited),
 	owl_gen_supers(Super0, [Super0|Visited], Super).
 

@@ -77,10 +77,11 @@ fill_dialog(DF, TD) :->
 		    menu_item(expand_all, message(D, mode, sheet))
 		  ]).
 
-resource(DF, Resource:name, Mode:[{sheet, label}]) :->
+resource(DF, Resource:name, Mode:[{sheet, label}],
+	 AllowBag:[bool], Where:at=[point]) :->
 	"Add resource to the diagram"::
 	get(DF, member, rdf_graph, D),
-	send(D, append, Resource, Mode).
+	send(D, append, Resource, Mode, AllowBag, Where).
 
 resource_bag(DF, Resources:chain) :->
 	"Add collapsed compound resource bag"::
