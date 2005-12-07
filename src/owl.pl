@@ -115,15 +115,26 @@
 %		has_value(Value)
 %		cardinality(Min, Max)
 
+:- rdf_meta
+	rdf_phas(r,r,o).
+
 owl_restriction_on(Class, Restriction) :-
 	owl_subclass_of(Class, Super),
 	(   rdfs_individual_of(Super, owl:'Restriction'),
 	    owl_restriction(Super, Restriction)
 	;   Restriction = restriction(Property, 
 				      all_values_from(Range)),
-	    rdf_has(Property, rdfs:domain, Super),
-	    rdf_has(Property, rdfs:range, Range)
+	    rdf_phas(Property, rdfs:domain, Super),
+	    (	rdf_phas(Property, rdfs:range, Range)
+	    *-> true
+	    ;	rdf_equal(Range, rdfs:'Resource')
+	    )
 	).
+
+rdf_phas(Property, P, O) :-
+	rdfs_subproperty_of(Property, Super),
+	rdf_has(Super, P, O2), !,
+	O = O2.
 
 owl_restriction(RestrictionID, restriction(Property, Restriction)) :-
 	rdf_has(RestrictionID, owl:onProperty, Property),
