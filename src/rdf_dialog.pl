@@ -302,12 +302,20 @@ client(D, For:[visual]) :->
 open(D, Pt:[point]) :->
 	(   Pt = @default,
 	    get(D, hypered, client, Client),
-	    get(Client, frame, Frame),
-	    get(Client, display_position, point(X, Y)),
-	    get(Client?area, height, H)
-	->  send(D, transient_for, Frame),
-	    send(D, modal, transient),
-	    send_super(D, open, point(X, Y+H+5))
+	    (	send(Client, instance_of, frame)
+	    ->  send(D, transient_for, Client),
+		send(D, modal, transient),
+		send_super(D, open_centered, Client?area?center)
+	    ;   get(Client, frame, Frame),
+		(   send(Client, has_get_method, display_position)
+		->  get(Client, display_position, point(X, Y))
+		;   X = 0, Y = 0
+		),
+		get(Client?area, height, H)
+	    ->  send(D, transient_for, Frame),
+		send(D, modal, transient),
+		send_super(D, open, point(X, Y+H+5))
+	    )
 	;   send_super(D, open, Pt)
 	).
 
