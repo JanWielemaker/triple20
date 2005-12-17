@@ -506,7 +506,7 @@ show_my_subjects(V) :->
 	    State = state(Y0, 0),
 	    (	member(S, List),
 		arg(1, State, Y),
-		send(Dev, append, S, label, point(X, Y)),
+		send(Dev, append, S, label, at := point(X, Y)),
 		Y2 is Y + 30,
 		nb_setarg(1, State, Y2),
 		arg(2, State, C0),
