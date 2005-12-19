@@ -1622,6 +1622,8 @@ arm(D, Arm:bool) :->
 check_saved :-
 	rdfe_is_modified(_), !,
 	(   rdfe_is_modified(File),
+	    access_file(File, exist),	% dubiuos, but avoids tmp data
+					% in applications
 	    send(@display, confirm, 'Save %s?', File),
 	    rdf_save(File, File),
 	    fail
