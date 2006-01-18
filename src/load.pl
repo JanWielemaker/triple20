@@ -141,6 +141,7 @@ triple20 :-
 %	gtrace,
 %	fail.
 triple20(Argv) :-
+	assert_argv(Argv),
 	memberchk('--help', Argv), !,
 	usage,
 	halt(0).
@@ -197,6 +198,8 @@ parse_argv(['--base'|_], []) :- !,
 	;   true
 	),
 	halt(0).
+parse_argv(['--nochecksaved'|T], RDF) :-
+	parse_argv(T, RDF).
 parse_argv([Cmd|T], RDF) :-
 	atom_concat('--base=', Base, Cmd), !,
 	load_base_ontology(Base),
@@ -244,6 +247,13 @@ load_pl_files([File|T0], T) :-
 load_pl_files([H|T0], [H|T]) :-
 	load_pl_files(T0, T).
 
+assert_argv([]).
+assert_argv([H|T]) :-
+	(   option(H)
+	->  true
+	;   assert(option(H))
+	),
+	assert_argv(T).
 
 usage :-
 	print_message(informational, t20(usage)).
@@ -308,6 +318,7 @@ prolog:message(t20(usage)) -->
 	  '    --nobase            Do NOT load rdfs.rdfs and owl.owl', nl,	  '    --base              List known base ontologies', nl,
 	  '    --base=Base         Load base ontology', nl,
 	  '    --noplugins         Do not load any plugins', nl,
+	  '    --nochecksaved	   Do not check modified files on exit', nl,
 	  '  Files:', nl,
 	  '    file.pl             Load Triple20 (Prolog) plugin', nl,
 	  '    file.rdf            Load RDF file', nl,

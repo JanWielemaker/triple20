@@ -1620,6 +1620,8 @@ arm(D, Arm:bool) :->
 		 *******************************/
 
 check_saved :-
+	triple20:option('--nochecksaved'), !.
+check_saved :-
 	rdfe_is_modified(_), !,
 	(   rdfe_is_modified(File),
 	    access_file(File, exist),	% dubiuos, but avoids tmp data
