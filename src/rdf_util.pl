@@ -421,7 +421,7 @@ add_object(Subject, Predicate, Object, File) :-
 rdf_add_object_or_anon_instance(Subject, Predicate, Object) :-
 	property_domain(Subject, Predicate, Domain),
 	(   owl_satisfies(Domain, Object)
-	->  rdfe_transaction(add_object(Subject, Predicate, Object),
+	->  rdfe_transaction(add_object(Subject, Predicate, Object, _DB),
 			     add_property_value)
 	;   owl_satisfies(Domain, individual_of(Object))
 	->  rdfe_transaction(add_object_anon(Subject, Predicate, Object),
@@ -485,7 +485,7 @@ rdf_new_property(Subject, Predicate, Object) :-
 	),
 	rdf_new_property(Subject, Predicate, Object).
 rdf_new_property(Subject, Predicate, Default) :-
-	rdfe_transaction(add_object(Subject, Predicate, Default),
+	rdfe_transaction(add_object(Subject, Predicate, Default, _DB),
 			 new_property).
 
 
