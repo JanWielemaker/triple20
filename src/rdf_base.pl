@@ -264,10 +264,14 @@ requires(world,	   ic).
 %	automatically include the more primitive ones.
 
 required_base_ontology(Base) :-
-	rdf_file(Base, NS, _),
+	rdf_file(Base, NS, FileSpec),
 	rdf_db:ns(NS, Full),
 	(   referenced_predicate(P),
-	    rdf_url_namespace(P, Full)
+	    rdf_url_namespace(P, Full),
+	    absolute_file_name(FileSpec, _Path, 
+			       [ file_errors(fail),
+				 access(read)
+			       ])
 	->  true
 	).
 required_base_ontology(Base) :-
