@@ -308,7 +308,7 @@ owl_satisfies_restriction(Resource, Restriction) :-
 	    owl_individual_of(Value, Class)
 	;   rdf_subject(Resource)
 	),
-	owl_satisfies_cardinality(Resource, Property, Restriction).
+	owl_satisfies_cardinality(Resource, Restriction).
 
 all_individual_of([], _).
 all_individual_of([H|T], Class) :-
