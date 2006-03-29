@@ -505,6 +505,9 @@ update(T, _Cache:[int]) :->
 Some serious hacking to adjust the  margin of wrapped text-objects. This
 needs more thought in more  abstract  XPCE   classes,  but  for now this
 appears to do the job reasonably.
+
+NOTE: This has been  copied   to  library(tabular), class tabular_table.
+Needs merge, completion and documentation.
 - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
 
 :- pce_begin_class(rdf_property_manager, table,
