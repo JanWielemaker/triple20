@@ -37,6 +37,7 @@
 	    t20/1,			% +Action
 					% Maintenance
 	    t20_save/1,			% +File
+	    t20_version/1,		% -Version
 
 	    t20_winmain/0		% Windows toplevel
 	  ]).
@@ -61,7 +62,10 @@ user:file_search_path(semweb,   library(semweb)).
 	 asserta(file_search_path(ontology_root, triple20('../Ontologies')))).
 
 
-:- load_files([ rdf_base,		% Info on base ontologies
+:- load_files([ library(pce),
+		library(pce_image),
+		library(qsave),
+		rdf_base,		% Info on base ontologies
 		rdf_file,		% Info on files we manage
 		library(rdf),		% parser
 		library(lists),		% basic list predicates

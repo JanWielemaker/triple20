@@ -241,10 +241,10 @@ item_member(Method, Label, Items) :-
 
 menu_item(Gr, Group, Item, Receiver) :-
 	inner::menu_item(Gr, Group, Item),
-	item_method(Item, _Label, Method),
+	item_method(Item, Label, Method),
 	(   container_with_method(Gr, Method, Receiver)
 	->  debug(menu, '~p: mapping ~w to ~p->~w',
-		  [Gr, _Label, Receiver, Method])
+		  [Gr, Label, Receiver, Method])
 	;   debug(menu, '~p: no container implements ->~w',
 		  [Gr, Method]),
 	    fail

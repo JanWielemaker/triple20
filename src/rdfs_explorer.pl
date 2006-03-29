@@ -58,6 +58,7 @@
 :- use_module(rdf_dialog).
 :- use_module(rdf_file).
 :- use_module(t20_plugin).
+:- use_module(load, [t20_version/1]).
 
 :- pce_autoload(report_dialog,	       library(pce_report)).
 :- pce_autoload(rdf_statistics_dialog, library(rdf_statistics)).

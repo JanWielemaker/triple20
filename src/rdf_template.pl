@@ -208,9 +208,9 @@ copy_as_xml_attribute(T)  :-> send(T, copy, xml_attribute).
 namespace_abbreviation(T) :->
 	"Define abbreviation for namespace"::
 	get(T, resource, R),
-	(   rdf_global_id(Id:_Local, R)
+	(   rdf_global_id(Id:_, R)
 	->  rdf_db:ns(Id, NS)
-	;   rdf_split_url(NS, _Local, R),
+	;   rdf_split_url(NS, _, R),
 	    Id = @default
 	),
 	send(t20_new_namespace_dialog(T, Id, NS), run).
