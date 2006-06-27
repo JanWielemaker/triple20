@@ -66,10 +66,8 @@ ns(dcterms, 'http://purl.org/dc/terms/').
 ns(dctypes, 'http://purl.org/dc/dcmitype/').
 ns(vra,	    'http://www.swi.psy.uva.nl/mia/vra#').
 ns(foaf,    'http://xmlns.com/foaf/0.1/').
-ns(aat,	    'http://www.swi.psy.uva.nl/mia/aat#').
-ns(aat2004, 'http://www.getty.edu/vocabularies/aat#'). % BJW
-ns(ulan,    'http://www.swi.psy.uva.nl/mia/ulan#').
-ns(ulan2004,'http://www.getty.edu/vocabularies/ulan#'). % BJW
+ns(aat,	    'http://www.getty.edu/vocabularies/aat#').
+ns(ulan,    'http://www.getty.edu/vocabularies/ulan#').
 ns(wn,	    'http://www.cogsci.princeton.edu/~wn/concept#').
 ns(wns,	    'http://www.cogsci.princeton.edu/~wn/schema/').
 ns(paint,   'http://www.swi.psy.uva.nl/mia/painting#').
@@ -209,12 +207,6 @@ rdf_file(skos,		 skos, ontology('skos-core.rdfs')).
 rdf_file(foaf,		 foaf, ontology('foaf.owl')).
 
 rdf_file(t20,		 t20,  ontology('t20.rdfs')).
-
-rdf_file(aat,		 aat,  ontology('aatmeta.rdfs')).
-rdf_file(aat,		 aat,  ontology('aat.rdfs')).
-
-rdf_file(ulan,		 ulan, ontology('ulan.rdfs')).
-rdf_file(ulan,		 ulan, ontology('ulan.rdf')).
 
 rdf_file(wn,		 wns,  ontology('wordnet-20000620.rdfs')).
 rdf_file(wn,		 wn,   ontology('wordnet_glossary-20010201.rdf')).
