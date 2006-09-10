@@ -46,15 +46,16 @@
 :- use_module(library(ordsets)).
 :- use_module(library(option)).
 
-/* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+/** <module> Known ontologies
+
 This file defines commonly used namespaces,   base ontologies. etc. Note
 that the namespaces must be loaded *before*   they can be used in Prolog
 source-code.
 
-One  day  the  ontology  directories  should  be  holding  an  RDF  file
+@tbd One  day  the  ontology  directories  should  be  holding  an  RDF  file
 describing the directory contents and  their   dependencies.  This  is a
 quick hack.
-- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
+*/
 
 
 		 /*******************************
@@ -101,7 +102,7 @@ ns(nci,	    'http://ncicb.nci.nih.gov/xml/owl/EVS/Thesaurus.owl#').
 	  catch(rdf_register_ns(Alias, URI, [keep(true)]), E,
 		print_message(error, E))).
 
-%	register_default_ns(File, NS=URL)
+%%	register_default_ns(+File, +Map:list(NS=URL)) is det.
 %	
 %	Register a namespace as encounted in   the  namespace list of an
 %	RDF document. We only register if  both the abbreviation and URL
@@ -143,7 +144,13 @@ register_def_ns(NS=URL, File) :-
 		 *	  BASIC ONTOLOGIES	*
 		 *******************************/
 
-%	load_base_ontology(+Identifier)
+%%	load_base_ontology(+Identifier) is det.
+%%	load_base_ontology(+Identifier, +Options) is det.
+%
+%	Load indicated known ontology and all it requires.  Options include
+%	
+%		* transactions(Bool)
+%		If =true= (default), create a transaction to allow for undo.
 
 load_base_ontology(Category) :-
 	load_base_ontology(Category, []).
@@ -173,7 +180,7 @@ load_base(File, Options) :-
 	    rdfe_set_file_property(Path, access(ro))
 	).
 
-%	current_base_ontology(-Identifier)
+%%	current_base_ontology(-Identifier)
 %	
 %	Enemate defined base-ontologies
 
@@ -192,7 +199,7 @@ current_base_ontology(Id) :-
 rdf_file(Id, File) :-
 	rdf_file(Id, _DefNS, File).
 
-%	rdf_file(+Identifier, -DefNS, -File)
+%%	rdf_file(+Identifier, -DefNS, -File)
 %	
 %	Register the file that belong to a base ontology
 
@@ -220,7 +227,7 @@ rdf_file(ic,		 ic,   ontology('iconclass.rdfs')).
 rdf_file(cyc,		 cyc,  ontology('cyc03.rdfs')).
 rdf_file(sumo,		 sumo, ontology('sumo.rdfs')).
 
-%	requires(+Id1, -Id2)
+%%	requires(+Id1, -Id2)
 %	
 %	Base Id1 requires base Id2.
 
@@ -247,7 +254,7 @@ requires(world,	   ic).
 		 *	   REQUIRED BASES	*
 		 *******************************/
 
-%	required_base_ontology(-Base)
+%%	required_base_ontology(-Base)
 %	
 %	Deduce the required base ontologies from expressions used in the
 %	document.  This is heuristic and far from complete.
@@ -271,7 +278,7 @@ required_base_ontology(Base) :-
 	file_name_extension(_, Ext, X),
 	required_by_ext(Ext, Base).
 
-%	referenced_predicate(?P)
+%%	referenced_predicate(?P)
 %	
 %	Find the predicates that are referenced by the current data-set
 
@@ -285,7 +292,7 @@ referenced_predicate(P) :-
 required_by_ext(rdfs, rdfs).
 required_by_ext(owl, owl).
 
-%	load_required_base_ontologies/0
+%%	load_required_base_ontologies
 %	
 %	Load all registered base ontologies that are referred by the
 %	current set of documents.

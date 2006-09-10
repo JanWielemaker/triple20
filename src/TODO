@@ -1,88 +1,72 @@
-================================================================
-* Editing:
+---+ Triple20 TODO list
 
-	+ Obligatory slots: add to create-node
-	+ Rules defined specification of the `new' dialog.  See
+---++ Editing:
+
+	* Obligatory slots: add to create-node
+	* Rules defined specification of the `new' dialog.  See
 	  rdf_tree.
-		- Which triples to add?
-			- Similar to drag-and-drop
-		- Hierarchy: which node/role to create?
-			- Can we do that using the hierarchy roles
+		* Which triples to add?
+			* Similar to drag-and-drop
+		* Hierarchy: which node/role to create?
+			* Can we do that using the hierarchy roles
 
-===============================================================
-
-* Plugin infrastructure:
+---++ Plugin infrastructure:
 
 	* Finish SKOS plugin.  Document it.
 	* Specifying plugins:
-		- Global	Plugins
-		- User		.t20/Plugins
-		- Local		.t20/Plugins
-		- Directory with plugin files
-		- File with config (activated plugins)
-			- RDF!
 
+		| Global	| Plugins |
+		| User		| ~/.t20/Plugins |
+		| Local		| .t20/Plugins |
+
+==
 <t20:Plugin
   t20:source="..."
   t20:active="true">
 </t20:Plugin>
+==
 
-Settings
-	- Namespace vizualization
-	- 
+---++ Settings
+	* Namespace vizualization
 
+---++ rdf_db
 
-
-================================================================
-* Bugs:
-
-
-================================================================
-* rdf_db
-
-	+ Add undo at low level?  Possibly can also be a plugin running
+	* Add undo at low level?  Possibly can also be a plugin running
 	  on top of rdf_monitor.  Replace rdf_edit
-	+ Index by source to speedup saving individual sources
-	+ C-based fuzzy individual match.  Fuzzy hash-function?
-	+ Interval indexing.
+	* Index by source to speedup saving individual sources
+	* C-based fuzzy individual match.  Fuzzy hash-function?
+	* Interval indexing.
 
-================================================================
-* rdf_diagram
+---++ rdf_diagram
 
-	+ Undo visual changes
-	+ Summarise long literals
-	+ Selectively expand relations
-	+ Allow `abstract' paths based on class/property abstraction.
+	* Undo visual changes
+	* Summarise long literals
+	* Selectively expand relations
+	* Allow `abstract' paths based on class/property abstraction.
 
-================================================================
-* rdfs_class_sheet
+---++ rdfs_class_sheet
 
-	+ Rule based viewing of displayed slots (can use same ruleset)
+	* Rule based viewing of displayed slots (can use same ruleset)
 	  as diagram!
 	
-================================================================
-* MISC
+---++ MISC
 
-	+ Sort cache update to how long they take.  Update scheduling.
-	+ Slots with range rdfs:list, allow dropping a list to
+	* Sort cache update to how long they take.  Update scheduling.
+	* Slots with range rdfs:list, allow dropping a list to
 	  replace the empty list instead of creating a list-of-lists
        
-================================================================
-* VALIDATE
+---++ VALIDATE
 
-	+ Warn on resources that end/start with blank space and other
+	* Warn on resources that end/start with blank space and other
 	  non-canonical stuff (multiple spaces, tabs, newline).
 
-================================================================
-* OWL
+---++ OWL
 
-	+ Finish DL reasoner
+	* Finish DL reasoner
 
-================================================================
-* QUERY
+---++ QUERY
 
-	+ Result-set is (as in SeRQL) an RDF graph.
-	+ Specificationd of search slots, extented search syntax
+	* Result-set is (as in SeRQL) an RDF graph.
+	* Specification of search slots, extented search syntax
 	  (boolean expressions, namespaces, things similar to Anjo's
 	  tOKo).
-	+ SPARQL interface on top of SeRQL infrastructure.
