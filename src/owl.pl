@@ -110,15 +110,16 @@
 		 *	   RESTRICTIONS		*
 		 *******************************/
 
-%	owl_restriction(+ClassID, restriction(?PropertyID, ?Restriction))
+%%	owl_restriction_on(+ClassID,
+%%			   -Restriction:restriction(?PropertyID, ?Restriction)) is nondet.
 %
 %	Enumerate the restrictions that apply to PropertyID for Class.
 %	Restriction is one of
 %	
-%		all_values_from(Class)
-%		some_values_from(Class)
-%		has_value(Value)
-%		cardinality(Min, Max)
+%		* all_values_from(Class)
+%		* some_values_from(Class)
+%		* has_value(Value)
+%		* cardinality(Min, Max)
 
 :- rdf_meta
 	rdf_phas(r,r,o).
@@ -140,6 +141,12 @@ rdf_phas(Property, P, O) :-
 	rdfs_subproperty_of(Property, Super),
 	rdf_has(Super, P, O2), !,
 	O = O2.
+
+%%	owl_restriction(+Resource, -Prolog) is det.
+%
+%	Translate Resource, an individual of owl:restriction into a Prolog term.
+%	
+%	@see owl_restriction_on/2 for the Prolog representation.
 
 owl_restriction(RestrictionID, restriction(Property, Restriction)) :-
 	rdf_has(RestrictionID, owl:onProperty, Property),
@@ -191,10 +198,10 @@ non_negative_integer(Atom, _, S, P) :-
 		      rdf_illegal_object(S,Pred,literal(Atom),Range)),
 	fail.
 
-%	owl_merged_restriction(+Class, ?Property, ?Restriction)
+%%	owl_merged_restriction(+Class, ?Property, ?Restriction) is nondet.
 %	
-%	As owl_restriction_decl/3, but combines multiple restrictions
-%	into the least strict restriction satisfying the declared
+%	As owl_restriction_on/2, but combines multiple restrictions into
+%	the   least   strict   restriction   satisfying   the   declared
 %	restrictions.
 
 owl_merged_restriction(Class, Property, Restriction) :-
@@ -256,7 +263,7 @@ merge_values_from(all, C1, all, C2, all, C) :-
 		 *	    CARDINALITY		*
 		 *******************************/
 
-%	owl_cardinality_on_subject(+Subject, +Pred, -cardinality(Min, Max))
+%%	owl_cardinality_on_subject(+Subject, +Pred, -Card:cardinality(Min, Max)) is semidet.
 %	
 %	Deduces the minimum and maximum cardinality for a property of a
 %	resource.  This predicate may fail if no information is available.
@@ -275,6 +282,8 @@ cardinality_on_subject(Subject, Predicate, cardinality(Min, Max)) :-
 	rdf_has(RestrictionID, owl:onProperty, Predicate),
 	restriction_facet(RestrictionID, cardinality(Min, Max)).
 
+%%	owl_cardinality_on_class(+Class, ?Predicate, -Card:cardinality(Min, Max)) is semidet.
+
 owl_cardinality_on_class(Class, Predicate, Cardinality) :-
 	findall(C, cardinality_on_class(Class, Predicate, C), L),
 	join_decls(L, [Cardinality]).
@@ -285,15 +294,12 @@ cardinality_on_class(Class, Predicate, cardinality(Min, Max)) :-
 	rdf_has(RestrictionID, owl:onProperty, Predicate),
 	restriction_facet(RestrictionID, cardinality(Min, Max)).
 
-
-
-
-%	owl_satisfies_restriction(?Resource, +Restriction)
+%%	owl_satisfies_restriction(?Resource, +Restriction)
 %	
 %	True if Restriction satisfies the restriction imposed by Restriction.
 %	The current implementation makes the following assumptions:
 %	
-%		# Only one of hasValue, allValuesFrom or someValuesFrom
+%		* Only one of owl:hasValue, owl:allValuesFrom or owl:someValuesFrom
 %		  is present.
 
 owl_satisfies_restriction(Resource, Restriction) :-
@@ -364,28 +370,29 @@ non_negative_int(Atom, Number) :-
 		 *	    DESCRIPTION		*
 		 *******************************/
 
-%	owl_description(+DescriptionID, -Prolog)
+%%	owl_description(+DescriptionID, -Prolog) is det.
 %	
 %	Convert an owl description into a Prolog representation.  This
 %	representation is:
 %	
-%		class(Class)
-%		restriction(Property, Restriction)
-%		union_of(ListOfDescriptions)
-%		intersection_of(ListOfDescriptions)
-%		complement_of(Description)
-%		one_of(Individuals)
+%		* class(Class)
+%		* restriction(Property, Restriction)
+%		* union_of(ListOfDescriptions)
+%		* intersection_of(ListOfDescriptions)
+%		* complement_of(Description)
+%		* one_of(Individuals)
 %		
-%	where Restriction is defined with owl_restriction/3.
-%	
+%	where Restriction is defined by owl_restriction_on/2.
 %	For example, the union-of can be the result of
 %	
+%	==
 %	<rdfs:Class rdf:ID="myclass">
 %	  <owl:unionOf parseType=Collection>
 %	    <rdf:Description rdf:about="gnu"/>
 %	    <rdf:Description rdf:about="gnat"/>
 %	  </owl:unionOf>
 %	</rdfs:Class>
+%	==
 
 owl_description(ID, Restriction) :-
 	(   rdf_has(ID, rdf:type, owl:'Restriction')
@@ -419,23 +426,21 @@ owl_description(ID, Restriction) :-
 		 *	   OWL_SATISFIES	*
 		 *******************************/
 
-%	owl_satisfies(+Specification, ?Resource)
+%%	owl_satisfies(+Specification, ?Resource) is nondet.
 %	
 %	Test whether Resource satisfies Specification. All resources are
 %	considered to belong  to  rdfs:Resource,   which  is  not really
-%	enforced.
+%	enforced. Domain is one of
 %	
-%	Domain is one of
-%	
-%	  rdfs:Resource		  Allow for any resource
-%	  class(Class)		  Allow for a subclass of Class
-%	  union_of(Domains)	  
-%	  intersection_of(Domains)
-%	  complement_of(Domain)
-%	  one_of(Resources)	  One of these values
-%	  all_values_from(Class)  Individual of this class
-%	  some_values_from(Class) Not used
-%	  has_value(Value)	  Must have this value
+%	| rdfs:Resource		   | Allow for any resource	  |
+%	| class(Class)		   | Allow for a subclass of Class|
+%	| union_of(Domains)	   |				  |
+%	| intersection_of(Domains) |				  |
+%	| complement_of(Domain)	   |				  |
+%	| one_of(Resources)	   | One of these values	  |
+%	| all_values_from(Class)   | Individual of this class	  |
+%	| some_values_from(Class)  | Not used			  |
+%	| has_value(Value)	   | Must have this value	  |
 %	
 %	Resource can be a term individual_of(Class),  in which case this
 %	predicate succeeds if any individual  of   Class  is accepted by
@@ -496,9 +501,9 @@ in_all_domains([H|T], Resource) :-
 		 *	   INDIVIDUAL OF	*
 		 *******************************/
 
-%	owl_individual_of(?Resource, +Description)
+%%	owl_individual_of(?Resource, +Description) is nondet.
 %	
-%	Test or generate the resources that satisfy Description
+%	Test  or  generate  the  resources    that  satisfy  Description
 %	according the the OWL-Description entailment rules.
 
 owl_individual_of(Resource, Thing) :-
@@ -554,10 +559,10 @@ intersection_of(Nil, _) :-
 		 *	  OWL PROPERTIES	*
 		 *******************************/
 
-%	owl_has(?Subject, ?Predicate, ?Object)
+%%	owl_has(?Subject, ?Predicate, ?Object)
 %	
 %	True if this relation is specified or can be deduced using OWL
-%	inference ruls.
+%	inference rules.  It adds transitivity to owl_has_direct/3.
 
 owl_has(S, P, O) :-
 	(   var(P)
@@ -568,7 +573,7 @@ owl_has(S, P, O) :-
 	owl_has_transitive(S, SP, O).
 
 
-%	owl_has_transitive(?Subject, ?Predicate, ?Object)
+%%	owl_has_transitive(?Subject, ?Predicate, ?Object)
 %	
 %	If Predicate is transitive, do a transitive closure on the
 %	relation.
@@ -607,9 +612,10 @@ owl_has_equivalent(S, P, O) :-
 	owl_same_as(O0, O).
 
 
-%	owl_same_as(?X, ?Y)
+%%	owl_same_as(?X, ?Y) is nondet.
 %	
-%	True if X and Y are connected by the OWL identity relation.
+%	True if X and Y are  identical   or  connected by the owl:sameAs
+%	relation. Considers owl:sameAs transitive and symetric.
 
 owl_same_as(literal(X), literal(X)) :- !.
 owl_same_as(X, Y) :-
@@ -628,11 +634,14 @@ owl_same_as(X, Y, Visited) :-
 	owl_same_as(X1, Y, [X1|Visited]).
 
 
-%	owl_has_direct(?Subject, ?Predicate, ?Object)
+%%	owl_has_direct(?Subject, ?Predicate, ?Object)
 %	
-%	Deals with `One-step' OWL inferencing: inverse properties,
-%	symmetric properties and being subtype of a restriction with
-%	an owl:hasValue statement on this property.
+%	Deals  with  `One-step'  OWL  inferencing:  inverse  properties,
+%	symmetric properties and being subtype of  a restriction with an
+%	owl:hasValue statement on this property.
+%	
+%	@bug	owl_has_direct/3 also uses SWRL rules.  This should be
+%		moved elsewhere.
 
 owl_has_direct(S, P, O) :-
 	rdf(S, P, O).
@@ -766,13 +775,13 @@ owl_use_has_value(S, P, O) :-
 TBD: It is here that we must use a DL classifier!
 - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
 
-%	owl_direct_subclass_of(-SubClass, +Class)
-%	owl_direct_subclass_of(+SubClass, -Class)
+%%	owl_direct_subclass_of(-SubClass, +Class) is nondet.
+%%	owl_direct_subclass_of(+SubClass, -Class) is nondet.
 %	
-%	Returns both the RDFS subclasses and  classes that have Class in
-%	their owl:intersectionOf attribute.
+%	Returns both the RDFS subclasses and  subclass relations implied by
+%	owl:intersectionOf and owl:unionOf descriptions.
 %	
-%	The members of a union are its subclasses.
+%	@tbd	Should use full DL reasoning
 
 owl_direct_subclass_of(Class, R) :-
 	rdf_has(Class, rdfs:subClassOf, R).
@@ -803,9 +812,10 @@ list_head(List, Head) :-
 	).
 
 
-%	owl_subclass_of(?Class, ?R)
+%%	owl_subclass_of(+Sub, -Super) is nondet.
+%%	owl_subclass_of(-Sub, +Super) is nondet.
 %	
-%	Recursive version of owl_subclass_of.
+%	Transitive version of owl_direct_subclass_of/2.
 
 owl_subclass_of(Class, Super) :-
 	rdf_equal(rdfs:'Resource', Resource),
@@ -843,21 +853,23 @@ owl_gen_subs(Class, Visited, Sub) :-
 		 *     SEARCH IN HIERARCHY	*
 		 *******************************/
 
-%	owl_find(+String, +Domain, ?Properties, +Method, -Subject)
+%%	owl_find(+String, +Domain, ?Properties, +Method, -Subject) is nondet.
 %	
 %	Search all classes below Domain for a literal property with
 %	that matches String.  Method is one of
 %	
-%		substring
-%		word
-%		prefix
-%		exact
+%		* substring
+%		* word
+%		* prefix
+%		* exact
 %		
-%	domain is defined by owl_satisfy from owl.pl
+%	domain is defined by owl_satisfies/2 from owl.pl
 %		
 %	Note that the rdfs:label field is handled by rdfs_label/2,
 %	making the URI-ref fragment name the last resort to determine
 %	the label.
+%	
+%	@tbd	Use the RDF literal primitives
 
 owl_find(String, Domain, Fields, Method, Subject) :-
 	var(Fields), !,
