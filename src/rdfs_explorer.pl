@@ -710,7 +710,7 @@ about(M,
 	'redistribute it under certain conditions.',
 	url('http://www.swi-prolog.org/packages/Triple20/'),
 	'Jan Wielemaker\nBob Wielinga\nGuus Schreiber'-italic,
-	'HCS (formerly SWI)\nUniversity of Amsterdam\nKruislaanKruislaan 419\n1098 VA  Amsterdam\nThe Netherlands'
+	'HCS (formerly SWI)\nUniversity of Amsterdam\nKruislaan 419\n1098 VA  Amsterdam\nThe Netherlands'
       ]).
 
 add_about(D, X-Font) :- !,
