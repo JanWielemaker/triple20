@@ -79,28 +79,17 @@ register_extensions(D) :->
 	"Register the file extensions"::
 	get(D, member, extensions, M),
 	get_chain(M, selection, Exts),
-	checklist(win_register, Exts).
+	maplist(win_register, Exts).
 
 add_start_menu(D) :->
 	(   get(D, member, group, GrpItem),
 	    get(GrpItem, active, @on)
 	->  get(GrpItem, selection, Group),
-	    icon_file(IconFile),
-	    current_prolog_flag(executable, Exe),
-	    load_file(LoadFile),
-	    prolog_to_os_filename(IconFile, OsIconFile),
-	    sformat(CmdLine, '"~w" -s "~w" -L16m -G32m -T32m -g triple20',
-		    [Exe, LoadFile]),
-	    absolute_file_name(ontology_root(.),
-			       [ file_type(directory),
-				 access(read)
-			       ],
-			       Dir),
-	    progman_make_group(Group),
-	    progman_make_item(Group, 'Triple20',
-			      CmdLine,
-			      Dir,
-			      OsIconFile)
+	    (	add_start_menu(Group)
+	    ->	true
+	    ;	send(@display, inform,
+		     'Failed to add Triple20 to group %s', Group)
+	    )
 	;   true
 	).
 
@@ -114,7 +103,7 @@ cancel(D) :->
 
 :-pce_end_class.
 
-%	win_register(+Ext, +Name)
+%%	win_register(+Ext, +Name)
 %	
 %	Register files of type Ext to call this program as
 %	
@@ -125,13 +114,17 @@ win_register(Ext, Name) :-
 	atom_concat(IconFile, ',0', Icon),
 	current_prolog_flag(executable, Exe),
 	load_file(LoadFile),
-	sformat(Command, '"~w" -s "~w" -L16m -G32m -T32m -g t20_winmain -- "%1"',
-		[Exe, LoadFile]),
+	format(string(Command),
+	       '"~w" -s "~w" -L16m -G32m -T32m -g t20_winmain -- "%1"',
+	       [Exe, LoadFile]),
 	shell_register_file_type(Ext, 'triple20.type', Name, Command, Icon).
 
 win_register(Ext) :-
 	rdf_file_extension(Ext, Name),
-	win_register(Ext, Name).
+	(   win_register(Ext, Name)
+	->  true
+	;   send(@display, inform, 'Failed to register .%s extension', Ext)
+	).
 
 icon_file(IconFile) :-
 	absolute_file_name(image('32x32/triple20.ico'), IconFile).
@@ -143,5 +136,27 @@ load_file(LoadFile) :-
 			   LoadFile).
 
 
+%%	add_start_menu(+Group)
+%
+%	Add to the start menu
+
+add_start_menu(Group) :-
+	icon_file(IconFile),
+	current_prolog_flag(executable, Exe),
+	load_file(LoadFile),
+	prolog_to_os_filename(IconFile, OsIconFile),
+	format(string(CmdLine), '"~w" -s "~w" -L16m -G32m -T32m -g triple20',
+	       [Exe, LoadFile]),
+	absolute_file_name(ontology_root(.),
+			   [ file_type(directory),
+			     access(read)
+			   ],
+			   Dir),
+	progman_make_group(Group),
+	progman_make_item(Group, 'Triple20',
+			  CmdLine,
+			  Dir,
+			  OsIconFile).
+
 :- win_setup,
-   true.
+	true.
