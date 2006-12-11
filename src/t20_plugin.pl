@@ -68,7 +68,9 @@ load_plugin_config :-
 			     file_errors(fail)
 			   ]), !,
 	open(Path, read, In, [type(binary)]),
-	call_cleanup(rdf_load(stream(In), [db(triple20)]),
+	call_cleanup(rdf_load(stream(In),
+			      [ db(triple20)
+			      ]),
 		     close(In)),
 	assert(plugin_rdf_file(Path)),
 	rdf_load(ontology('t20.rdfs')).
