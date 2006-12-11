@@ -1,3 +1,8 @@
+Dec 11, 2006
+
+  * FIXED: Some code cleanup to be compatible with SWI-Prolog 5.6.25.
+    Should still be compatible to older versions.
+
 Jan 18, 2006
 
   * ADDED: Option --nochecksaved

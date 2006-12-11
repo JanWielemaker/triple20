@@ -691,9 +691,9 @@ print_cache_status(N) :->
 
 print_cache(N, Role:name) :->
 	get(N?caches, value, Role, Cache),
-	(   rdf_cache:cache_attributes(Cache, Generation, Size)
+	(   t20_cache:cache_attributes(Cache, Generation, Size)
 	->  format('   ~w: ~w: size=~D~n', [Role, Cache, Size])
-	;   rdf_cache:cache_empty(Cache, Generation, Empty)
+	;   t20_cache:cache_empty(Cache, Generation, Empty)
 	->  format('   ~w: ~w: empty=~w~n', [Role, Cache, Empty])
 	;   format('   ~w: ~w: <unknown>~n', [Role, Cache])
 	).

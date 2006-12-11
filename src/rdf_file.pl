@@ -89,14 +89,6 @@ prepare_ontology_dir(Dir) :-
 	->  true
 	;   assert(user:file_search_path(ontology, ontology_root(Dir)))
 	),
-	rdf_db:cache_dir(CacheBase),
-	concat_atom([Dir, CacheBase], /, CacheDir),
-	(   exists_directory(CacheDir)
-	->  true
-	;   catch(make_directory(CacheDir), _, fail)
-	->  debug(cache, 'Created cache directory ~w', [CacheDir])
-	;   true
-	),
 	forall(sub_dir(Dir, Sub),
 	       prepare_ontology_dir(Sub)).
 	

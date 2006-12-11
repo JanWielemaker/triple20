@@ -71,10 +71,13 @@ user:goal_expansion(rdf_cache(Var, Goal, Index),
 
 rdf_cache(Var, GoalSpec, Index) :-
 	strip_module(GoalSpec, Module, Goal),
-	with_mutex(rdf_cache, 
-		   rdf_cache:rdf_cache2(Var, Module:Goal, Index)).
+	rdf_cache2(Var, Module:Goal, Index).
 
 rdf_cache2(Var, Goal, Index) :-
+	with_mutex(rdf_cache, 
+		   rdf_cache_locked(Var, Goal, Index)).
+
+rdf_cache_locked(Var, Goal, Index) :-
 	copy_term(Var=Goal, Key),
 	numbervars(Key, 0, _),
 	(   cache_directory(Key, I)
