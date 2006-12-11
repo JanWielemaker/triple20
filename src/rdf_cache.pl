@@ -30,7 +30,7 @@
 */
 
 
-:- module(rdf_cache,
+:- module(t20_cache,
 	  [ rdf_cache/3,		% +Var, :Goal, -Cache
 	    rdf_cache_cardinality/2,	% +Cache, -Cardinality
 	    rdf_cache_result/3,		% +Cache, ?Index, -Value
