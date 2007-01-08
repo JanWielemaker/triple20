@@ -49,8 +49,8 @@
 	    owl_find/5			% +For, +Dom, ?Props, +Method, -Subj
 	  ]).
 :- use_module(library(lists)).
-:- use_module(semweb(rdf_db)).
-:- use_module(semweb(rdfs)).
+:- use_module(library('semweb/rdf_db')).
+:- use_module(library('semweb/rdfs')).
 
 
 		 /*******************************
