@@ -9,8 +9,8 @@
 
 :- module(rdf_literal_item, []).
 :- use_module(library(pce)).
-:- use_module('semweb/rdf_db').
-:- use_module('semweb/rdfs').
+:- use_module(library('semweb/rdf_db')).
+:- use_module(library('semweb/rdfs')).
 
 :- pce_begin_class(rdf_literal_item, dialog_group,
 		   "Enter literal value").

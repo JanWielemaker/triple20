@@ -32,8 +32,8 @@
 
 :- module(rdf_create, []).
 :- use_module(library(pce)).
-:- use_module('semweb/rdf_db').
-:- use_module('semweb/rdf_edit').
+:- use_module(library('semweb/rdf_db')).
+:- use_module(library('semweb/rdf_edit')).
 :- use_module(library(lists)).
 :- use_module(library(url)).
 :- use_module(rdf_rules).

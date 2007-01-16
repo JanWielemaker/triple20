@@ -35,9 +35,9 @@
 :- use_module(library(debug)).
 :- use_module(particle).
 :- use_module(rdf_rules).		% Get call_outer.  Must move
-:- use_module('semweb/rdfs').
-:- use_module('semweb/rdf_db').
-:- use_module('semweb/rdf_edit').
+:- use_module(library('semweb/rdfs')).
+:- use_module(library('semweb/rdf_db')).
+:- use_module(library('semweb/rdf_edit')).
 :- use_module(library(broadcast)).
 :- use_module(rdf_text).
 :- use_module(rdf_label).

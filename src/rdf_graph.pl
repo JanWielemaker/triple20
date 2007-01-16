@@ -37,7 +37,7 @@
 :- use_module(library(debug)).
 :- use_module(library(lists)).
 :- use_module(library(print_graphics)).
-:- use_module('semweb/rdf_db').
+:- use_module(library('semweb/rdf_db')).
 :- use_module(triple20(rdf_rules)).
 
 resource(expand,   image, image('expand.xpm')).

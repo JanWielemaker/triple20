@@ -34,9 +34,9 @@
 :- use_module(library(pce)).
 :- use_module(library(pce_util)).
 :- use_module(library(pce_unclip)).
-:- use_module('semweb/rdf_db').
-:- use_module('semweb/rdfs').
-:- use_module('semweb/rdf_edit').
+:- use_module(library('semweb/rdf_db')).
+:- use_module(library('semweb/rdfs')).
+:- use_module(library('semweb/rdf_edit')).
 :- use_module(rdf_rules).
 :- use_module(rdf_template).
 :- use_module(rdf_cache).

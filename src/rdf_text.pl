@@ -39,8 +39,8 @@
 :- use_module(library(dragdrop)).
 :- use_module(library(broadcast)).
 :- use_module(owl).
-:- use_module('semweb/rdf_edit').
-:- use_module('semweb/rdfs').
+:- use_module(library('semweb/rdf_edit')).
+:- use_module(library('semweb/rdfs')).
 :- use_module(rdf_template).
 :- use_module(rdf_rules).
 :- use_module(library(sgml_write)).

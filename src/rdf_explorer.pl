@@ -35,8 +35,8 @@
 :- use_module(library(toolbar)).
 :- use_module(library(pce_report)).
 :- use_module(library(rdf_diagram)).
-:- use_module('semweb/rdf_db').
-:- use_module('semweb/rdfs').
+:- use_module(library('semweb/rdf_db')).
+:- use_module(library('semweb/rdfs')).
 
 :- pce_begin_class(rdf_explorer, persistent_frame,
 		   "Explore RDF relations").

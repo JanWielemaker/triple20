@@ -40,7 +40,7 @@
 	    rdf_clear_ontology_cache/0,
 	    rdf_clear_snapshots/0
 	  ]).
-:- use_module('semweb/rdf_edit').
+:- use_module(library('semweb/rdf_edit')).
 :- use_module(library(debug)).
 :- use_module(library(lists)).
 
