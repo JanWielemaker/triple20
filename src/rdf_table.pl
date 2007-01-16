@@ -33,10 +33,10 @@
 :- module(rdf_table, []).
 :- use_module(library(pce)).
 :- use_module(library(tabular)).
-:- use_module(semweb(rdf_db)).
-:- use_module(semweb(rdfs)).
+:- use_module('semweb/rdf_db').
+:- use_module('semweb/rdfs').
 :- use_module(owl).
-:- use_module(semweb(rdf_edit)).
+:- use_module('semweb/rdf_edit').
 :- use_module(library(rdf_template)).
 :- use_module(rdf_rules).
 :- use_module(rdf_cache).

@@ -39,7 +39,7 @@
 :- use_module(library(pce_report)).
 :- use_module(library(broadcast)).
 :- use_module(library(lists)).
-:- use_module(semweb(rdf_edit)).
+:- use_module('semweb/rdf_edit').
 :- use_module(rdf_util).
 
 :- pce_autoload(identifier_item, library(pce_identifier_item)).

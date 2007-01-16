@@ -53,8 +53,6 @@
 :- dynamic
 	user:file_search_path/2.
 
-user:file_search_path(semweb,   library(semweb)).
-
 :- user:(retractall(file_search_path(triple20, _)),
 	 prolog_load_context(directory, Dir),
 	 asserta(file_search_path(triple20, Dir)),
@@ -70,9 +68,9 @@ user:file_search_path(semweb,   library(semweb)).
 		library(rdf),		% parser
 		library(lists),		% basic list predicates
 		library(debug),		% debugging facilities
-		semweb(rdf_db),		% triple store
-		semweb(rdfs),		% RDFS rules
-		semweb(rdf_edit),	% transactions and changes
+		'semweb/rdf_db',		% triple store
+		'semweb/rdfs',		% RDFS rules
+		'semweb/rdf_edit',	% transactions and changes
 		library(broadcast),	% Broadcasting service
 		owl,			% OWL inferencing
 		rdf_text,		% basic text representation

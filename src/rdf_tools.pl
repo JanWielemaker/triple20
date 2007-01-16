@@ -32,9 +32,9 @@
 :- module(rdf_tools,
 	  [ rdf_add_missing_labels/1	% +Property
 	  ]).
-:- use_module(semweb(rdf_db)).
-:- use_module(semweb(rdfs)).
-:- use_module(semweb(rdf_edit)).
+:- use_module('semweb/rdf_db').
+:- use_module('semweb/rdfs').
+:- use_module('semweb/rdf_edit').
 :- use_module(rdf_util).
 
 

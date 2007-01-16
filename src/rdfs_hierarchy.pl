@@ -7,7 +7,7 @@
 :- module(rdf_hierarchy, []).
 :- use_module(library(pce)).
 :- use_module(rdf_tree).
-:- use_module(semweb(rdf_db)).
+:- use_module('semweb/rdf_db').
 
 :- pce_begin_class(rdfs_hierarchy, rdf_tree,
 		   "Temporary stuff").

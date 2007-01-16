@@ -33,8 +33,8 @@
 :- use_module(library(pce)).
 :- use_module(library(lists)).
 :- use_module(rdfs_hierarchy).
-:- use_module(semweb(rdf_db)).
-:- use_module(semweb(rdfs)).
+:- use_module('semweb/rdf_db').
+:- use_module('semweb/rdfs').
 :- use_module(owl).
 :- use_module(rdf_dialog).
 :- use_module(rdf_rules).

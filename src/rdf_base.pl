@@ -38,9 +38,9 @@
 	    required_base_ontology/1,	% -Id
 	    register_default_ns/2	% +File, +List
 	  ]).
-:- use_module(semweb(rdf_db)).
-:- use_module(semweb(rdfs)).
-:- use_module(semweb(rdf_edit)).
+:- use_module('semweb/rdf_db').
+:- use_module('semweb/rdfs').
+:- use_module('semweb/rdf_edit').
 :- use_module(library(broadcast)).
 :- use_module(library(lists)).
 :- use_module(library(ordsets)).

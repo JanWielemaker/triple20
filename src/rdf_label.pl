@@ -33,9 +33,9 @@
 :- module(rdf_label, []).
 :- use_module(library(pce)).
 :- use_module(rdf_text).
-:- use_module(semweb(rdf_db)).
-:- use_module(semweb(rdfs)).
-:- use_module(semweb(rdf_edit)).
+:- use_module('semweb/rdf_db').
+:- use_module('semweb/rdfs').
+:- use_module('semweb/rdf_edit').
 :- use_module(rdf_rules).
 :- use_module(particle).
 :- use_module(rdf_template).

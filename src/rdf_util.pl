@@ -61,9 +61,9 @@
 	    
 	    rdf_change_resource/2	% +From, +To
 	  ]).
-:- use_module(semweb(rdf_db)).
-:- use_module(semweb(rdfs)).
-:- use_module(semweb(rdf_edit)).
+:- use_module('semweb/rdf_db').
+:- use_module('semweb/rdfs').
+:- use_module('semweb/rdf_edit').
 :- use_module(owl).
 :- use_module(library(option)).
 :- use_module(library(lists)).

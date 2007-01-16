@@ -34,9 +34,9 @@
 :- use_module(library(pce_util)).
 :- use_module(library(pce_identifier_item)).
 :- use_module(library(hyper)).
-:- use_module(semweb(rdf_edit)).
-:- use_module(semweb(rdf_db)).
-:- use_module(semweb(rdfs)).
+:- use_module('semweb/rdf_edit').
+:- use_module('semweb/rdf_db').
+:- use_module('semweb/rdfs').
 :- use_module(library(lists)).
 :- use_module(rdf_util).
 

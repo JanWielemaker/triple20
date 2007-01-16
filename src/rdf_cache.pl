@@ -44,8 +44,8 @@
 	    rdf_cache_statistics/1	% ?Term
 	  ]).
 :- use_module(library(debug)).
-:- use_module(semweb(rdf_db)).
-:- use_module(semweb(rdfs)).
+:- use_module('semweb/rdf_db').
+:- use_module('semweb/rdfs').
 :- use_module(library(broadcast)).
 
 :- dynamic
