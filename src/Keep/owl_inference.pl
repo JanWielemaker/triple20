@@ -44,7 +44,7 @@
 	    owl_individual_unique_types/2,
 	    owl_same_individual/2
 	  ]).
-:- use_module(semweb(rdf_db)).
+:- use_module(library('semweb/rdf_db')).
 :- use_module(sebweb(rdfs)).
 :- use_module(owl).
 

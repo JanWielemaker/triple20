@@ -68,9 +68,9 @@
 		library(rdf),		% parser
 		library(lists),		% basic list predicates
 		library(debug),		% debugging facilities
-		'semweb/rdf_db',		% triple store
-		'semweb/rdfs',		% RDFS rules
-		'semweb/rdf_edit',	% transactions and changes
+		library('semweb/rdf_db'), % triple store
+		library('semweb/rdfs'),	% RDFS rules
+		library('semweb/rdf_edit'), % transactions and changes
 		library(broadcast),	% Broadcasting service
 		owl,			% OWL inferencing
 		rdf_text,		% basic text representation
