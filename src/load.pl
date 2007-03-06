@@ -5,7 +5,7 @@
     Author:        Jan Wielemaker
     E-mail:        wielemak@science.uva.nl
     WWW:           http://www.swi-prolog.org
-    Copyright (C): 1985-2005, University of Amsterdam
+    Copyright (C): 1985-2007, University of Amsterdam
 
     This program is free software; you can redistribute it and/or
     modify it under the terms of the GNU General Public License
@@ -69,6 +69,7 @@
 		library(lists),		% basic list predicates
 		library(debug),		% debugging facilities
 		library('semweb/rdf_db'), % triple store
+		library('semweb/rdf_turtle'), % triple store
 		library('semweb/rdfs'),	% RDFS rules
 		library('semweb/rdf_edit'), % transactions and changes
 		library(broadcast),	% Broadcasting service
@@ -93,8 +94,8 @@ user:file_search_path(t20plugin, Spec) :-
 		 *	      VERSION		*
 		 *******************************/
 
-t20_version('0.80, Nov 2005').
-required_prolog_version(50531).
+t20_version('0.81, Mar 2007').
+required_prolog_version(50628).
 
 check_prolog_version :-
 	current_prolog_flag(version, MyVersion),

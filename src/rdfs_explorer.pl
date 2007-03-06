@@ -422,7 +422,7 @@ load_ontology(_OV) :->
 	get(@finder, file, open,
 	    chain(tuple('RDF-Schema and OWL files', chain(rdfs,owl)),
 		  tuple('OWL files', owl),
-		  tuple('RDF files', rdf)),
+		  tuple('RDF files', chain(rdf,ttl))),
 	    FileName),
 	absolute_file_name(FileName, Path),
 	rdfe_transaction(rdfe_load(Path,
@@ -434,7 +434,7 @@ load_ontology(_OV) :->
 load_rdf(_OV) :->
 	"Load plain RDF file"::
 	get(@finder, file, open,
-	    chain(tuple('RDF files', rdf)),
+	    chain(tuple('RDF files', chain(rdf,ttl))),
 	    FileName),
 	absolute_file_name(FileName, Path),
 	rdfe_transaction(rdfe_load(Path,

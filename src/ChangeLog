@@ -1,3 +1,7 @@
+Mar 6, 2007
+
+  * ADDED: Load Turtle (.ttl) files from the menu.
+
 Dec 11, 2006
 
   * FIXED: Some code cleanup to be compatible with SWI-Prolog 5.6.25.
