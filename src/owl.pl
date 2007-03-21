@@ -515,12 +515,35 @@ owl_individual_of(Resource, Thing) :-
 owl_individual_of(_Resource, Nothing) :-
 	rdf_equal(Nothing, owl:'Nothing'), !,
 	fail.
+owl_individual_of(Resource, Description) :-
+	rdfs_individual_of(Description, rdfs:'Class'),		% RDFS
+	rdfs_individual_of(Resource, Description).
 owl_individual_of(Resource, Class) :-
 	rdfs_individual_of(Class, owl:'Class'),
-	owl_subclass_of(Description, Class),
-	(   rdfs_individual_of(Description, owl:'Restriction')
-	->  owl_satisfies_restriction(Resource, Description)
-	;   rdf_has(Description, owl:unionOf, Set)
+	(   rdfs_individual_of(Resource, Class)
+	;   findall(R, restriction_of(Class, R), Rs),
+	    satifies_all_restrictions(Rs, Resource),
+	    owl_individual_of_description(Resource, Class)
+	).
+owl_individual_of(Resource, Description) :-			% RDFS
+	owl_individual_from_range(Resource, Description).
+
+restriction_of(Class, Restriction) :-
+	rdf_has(Class, rdfs:subClassOf, Restriction),		% also equivalentClass
+	rdfs_individual_of(Restriction, owl:'Restriction').
+
+satifies_all_restrictions([], _).
+satifies_all_restrictions([R0|Rs], Resource) :-
+	owl_satisfies_restriction(Resource, R0),
+	satifies_all_restrictions(Rs, Resource).
+
+
+%%	owl_individual_of_description(?Resource, +Description) is nondet.
+% 
+% 	@tbd	Can a description have multiple of these facets?
+
+owl_individual_of_description(Resource, Description) :-
+	(   rdf_has(Description, owl:unionOf, Set)
 	->  rdfs_member(Sub, Set),
 	    owl_individual_of(Resource, Sub)
 	;   rdf_has(Description, owl:intersectionOf, Set)
@@ -529,13 +552,9 @@ owl_individual_of(Resource, Class) :-
 	->  \+ owl_individual_of(Resource, Arg)
 	;   rdf_has(Description, owl:oneOf, Arg)
 	->  rdfs_member(Resource, Arg)
-	;   rdf_has(Resource, rdf:type, Description)
+	;   true			% not an OWL description
 	).
-owl_individual_of(Resource, Description) :-
-	rdfs_individual_of(Description, rdfs:'Class'),
-	rdfs_individual_of(Resource, Description).
-owl_individual_of(Resource, Description) :-
-	owl_individual_from_range(Resource, Description).
+
 
 owl_individual_from_range(Resource, Class) :-
 	nonvar(Resource), !,
