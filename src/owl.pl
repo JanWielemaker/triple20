@@ -515,8 +515,9 @@ owl_individual_of(Resource, Thing) :-
 owl_individual_of(_Resource, Nothing) :-
 	rdf_equal(Nothing, owl:'Nothing'), !,
 	fail.
-owl_individual_of(Resource, Description) :-
-	rdfs_individual_of(Description, owl:'Class'),
+owl_individual_of(Resource, Class) :-
+	rdfs_individual_of(Class, owl:'Class'),
+	owl_subclass_of(Description, Class),
 	(   rdfs_individual_of(Description, owl:'Restriction')
 	->  owl_satisfies_restriction(Resource, Description)
 	;   rdf_has(Description, owl:unionOf, Set)
@@ -528,7 +529,7 @@ owl_individual_of(Resource, Description) :-
 	->  \+ owl_individual_of(Resource, Arg)
 	;   rdf_has(Description, owl:oneOf, Arg)
 	->  rdfs_member(Resource, Arg)
-	;   rdfs_individual_of(Resource, Description)
+	;   rdf_has(Resource, rdf:type, Description)
 	).
 owl_individual_of(Resource, Description) :-
 	rdfs_individual_of(Description, rdfs:'Class'),
