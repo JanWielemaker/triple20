@@ -512,7 +512,7 @@ save_all(_OV) :->
 	"Save all modified files"::
 	(   rdfe_is_modified(File),
 	    send(@display, confirm, 'Save %s?', File),
-	    rdf_save(File, File),
+	    rdf_save(File, [db(File)]),
 	    fail
 	;   true
 	).
