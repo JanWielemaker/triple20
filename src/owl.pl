@@ -397,13 +397,7 @@ non_negative_int(Atom, Number) :-
 owl_description(ID, Restriction) :-
 	(   rdf_has(ID, rdf:type, owl:'Restriction')
 	->  owl_restriction(ID, Restriction)
-/*         owl_restriction(ID, restriction(P, F)), % unfolding problem BJW
-	    F=.. [Facet, RClass],
-	    owl_description(RClass, ClassDescription),
-	    F1 =.. [Facet, ClassDescription],
-	    Restriction = restriction(P, F1)
-*/
-	;   rdf_has(ID, rdf:type, owl:'Class') % was rdfs:'Class' BJW
+	;   rdf_has(ID, rdf:type, owl:'Class')
 	->  (   (   rdf_has(ID, owl:unionOf, Set)
 		->  Restriction = union_of(SubDescriptions)
 		;   rdf_has(ID, owl:intersectionOf, Set)
@@ -515,27 +509,20 @@ owl_individual_of(Resource, Thing) :-
 owl_individual_of(_Resource, Nothing) :-
 	rdf_equal(Nothing, owl:'Nothing'), !,
 	fail.
-owl_individual_of(Resource, Description) :-
-	rdfs_individual_of(Description, rdfs:'Class'),		% RDFS
+owl_individual_of(Resource, Description) :-			% RDFS
 	rdfs_individual_of(Resource, Description).
 owl_individual_of(Resource, Class) :-
 	rdfs_individual_of(Class, owl:'Class'),
-	(   rdfs_individual_of(Resource, Class)
-	;   findall(R, restriction_of(Class, R), Rs),
-	    satifies_all_restrictions(Rs, Resource),
-	    owl_individual_of_description(Resource, Class)
+	(   rdf_has(Class, owl:equivalentClass, EQ)
+	->  owl_individual_of(Resource, EQ)
+	;   rdfs_individual_of(Class, owl:'Restriction')
+	->  owl_satisfies_restriction(Resource, Class)
+	;   owl_individual_of_description(Resource, Class),
+	    findall(SC, rdf_has(Class, rdfs:subClassOf, SC), SubClasses),
+	    owl_individual_of_all(SubClasses, Resource)
 	).
 owl_individual_of(Resource, Description) :-			% RDFS
 	owl_individual_from_range(Resource, Description).
-
-restriction_of(Class, Restriction) :-
-	rdf_has(Class, rdfs:subClassOf, Restriction),		% also equivalentClass
-	rdfs_individual_of(Restriction, owl:'Restriction').
-
-satifies_all_restrictions([], _).
-satifies_all_restrictions([R0|Rs], Resource) :-
-	owl_satisfies_restriction(Resource, R0),
-	satifies_all_restrictions(Rs, Resource).
 
 
 %%	owl_individual_of_description(?Resource, +Description) is nondet.
@@ -549,11 +536,18 @@ owl_individual_of_description(Resource, Description) :-
 	;   rdf_has(Description, owl:intersectionOf, Set)
 	->  intersection_of(Set, Resource)
 	;   rdf_has(Description, owl:complementOf, Arg)
-	->  \+ owl_individual_of(Resource, Arg)
+	->  rdf_subject(Resource),
+	    \+ owl_individual_of(Resource, Arg)
 	;   rdf_has(Description, owl:oneOf, Arg)
 	->  rdfs_member(Resource, Arg)
 	;   true			% not an OWL description
 	).
+
+
+owl_individual_of_all([], _).
+owl_individual_of_all([C|T], Resource) :-
+	owl_individual_of(Resource, C),
+	owl_individual_of_all(T, Resource).
 
 
 owl_individual_from_range(Resource, Class) :-
