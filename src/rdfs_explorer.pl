@@ -417,7 +417,7 @@ open_file(OV) :->
 	;   send(OV, open_project)
 	).
 
-load_ontology(_OV) :->
+load_ontology(OV) :->
 	"Load RDF-Schema or OWL-ontology"::
 	get(@finder, file, open,
 	    chain(tuple('RDF-Schema and OWL files', chain(rdfs,owl)),
@@ -426,23 +426,33 @@ load_ontology(_OV) :->
 		  tuple('Turtle files', ttl)),
 	    FileName),
 	absolute_file_name(FileName, Path),
-	rdfe_transaction(rdfe_load(Path,
-				   [ namespaces(NSList)
-				   ]),
-			 load_file(FileName)),
+	catch(rdfe_transaction(rdfe_load(Path,
+					 [ namespaces(NSList)
+					 ]),
+			       load_file(FileName)),
+	      E,
+	      (	  message_to_string(E, Msg),
+		  send(OV, report, error, Msg),
+		  fail
+	      )),
 	register_default_ns(Path, NSList).
       
-load_rdf(_OV) :->
+load_rdf(OV) :->
 	"Load plain RDF file"::
 	get(@finder, file, open,
 	    chain(tuple('RDF files', rdf),
 		  tuple('Turtle files', ttl)),
 	    FileName),
 	absolute_file_name(FileName, Path),
-	rdfe_transaction(rdfe_load(Path,
-				   [ namespaces(NSList)
-				   ]),
-			 load_file(FileName)),
+	catch(rdfe_transaction(rdfe_load(Path,
+					 [ namespaces(NSList)
+					 ]),
+			       load_file(FileName)),
+	      E,
+	      (	  message_to_string(E, Msg),
+		  send(OV, report, error, Msg),
+		  fail
+	      )),
 	register_default_ns(Path, NSList).
       
 open_project(OV) :->
