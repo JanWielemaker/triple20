@@ -149,10 +149,11 @@ triple20(Argv) :-
 	usage,
 	halt(0).
 triple20(Argv) :-
-	debug(cache),
+	debug(rdf_cache),
 	check_prolog_version,
 	debug_options(Argv, Argv0a),
 	load_plugins(Argv0a, Argv0),
+	rdfe_clear_modified,
 	(   select(OSJournal, Argv0, Argv1),
 	    file_name_extension(_, rdfj, OSJournal)
 	->  prolog_to_os_filename(Journal, OSJournal),
@@ -261,6 +262,9 @@ assert_argv([H|T]) :-
 usage :-
 	print_message(informational, t20(usage)).
 
+rdfe_clear_modified :-
+	forall(rdf_source(File),
+	       rdfe_clear_modified(File)).
 
 		 /*******************************
 		 *	    SETUP PATHS		*
