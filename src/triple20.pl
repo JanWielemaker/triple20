@@ -1,4 +1,4 @@
-#!/staff/jan/bin/pl -G32m -T32m -L16m -s
+#!/home/jan/bin/pl -G32m -T32m -L16m -s
 
 /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 The driver for triple20. On Windows you   can  create a shortcut to this
@@ -9,7 +9,7 @@ directory in your $PATH.
 - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
 
 file_search_path(triple20, 'd:/oz/Triple20'). % BJW VAIO settings
-file_search_path(triple20, '/staff/jan/src/Triple20/src').
+file_search_path(triple20, '/home/jan/src/Triple20/src').
 :- load_files([ triple20(load)
 	      ],
 	      [ silent(true)
