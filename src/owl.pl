@@ -381,6 +381,8 @@ non_negative_int(Atom, Number) :-
 %		* intersection_of(ListOfDescriptions)
 %		* complement_of(Description)
 %		* one_of(Individuals)
+%		* thing
+%		* nothing
 %		
 %	where Restriction is defined by owl_restriction_on/2.
 %	For example, the union-of can be the result of
@@ -395,7 +397,11 @@ non_negative_int(Atom, Number) :-
 %	==
 
 owl_description(ID, Restriction) :-
-	(   rdf_has(ID, rdf:type, owl:'Restriction')
+	(   rdf_equal(owl:'Thing', ID)
+	->  Restriction = thing
+	;   rdf_equal(owl:'Nothing', ID)
+	->  Restriction = nothing
+	;   rdf_has(ID, rdf:type, owl:'Restriction')
 	->  owl_restriction(ID, Restriction)
 	;   rdf_has(ID, rdf:type, owl:'Class')
 	->  (   (   rdf_has(ID, owl:unionOf, Set)
