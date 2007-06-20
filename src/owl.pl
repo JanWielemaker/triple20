@@ -518,14 +518,19 @@ owl_individual_of(_Resource, Nothing) :-
 owl_individual_of(Resource, Description) :-			% RDFS
 	rdfs_individual_of(Resource, Description).
 owl_individual_of(Resource, Class) :-
+	nonvar(Resource),
+	setof(C, rdf_has(Resource, rdf:type, C), Cs), !,
+	member(C, Cs),
+	owl_subclass_of(C, Class).
+owl_individual_of(Resource, Class) :-
 	rdfs_individual_of(Class, owl:'Class'),
 	(   rdf_has(Class, owl:equivalentClass, EQ)
 	->  owl_individual_of(Resource, EQ)
 	;   rdfs_individual_of(Class, owl:'Restriction')
 	->  owl_satisfies_restriction(Resource, Class)
 	;   owl_individual_of_description(Resource, Class),
-	    findall(SC, rdf_has(Class, rdfs:subClassOf, SC), SubClasses),
-	    owl_individual_of_all(SubClasses, Resource)
+	    findall(SC, rdf_has(Class, rdfs:subClassOf, SC), SuperClasses),
+	    owl_individual_of_all(SuperClasses, Resource)
 	).
 owl_individual_of(Resource, Description) :-			% RDFS
 	owl_individual_from_range(Resource, Description).
