@@ -850,6 +850,9 @@ owl_subclass_of(Class, Super) :-
 	;   rdfs_individual_of(Class, owl:'Class')
 	).
 owl_subclass_of(Class, Super) :-
+	nonvar(Class), nonvar(Super), !,
+	owl_test_subclass(Class, Super).
+owl_subclass_of(Class, Super) :-
 	nonvar(Class), !,
 	owl_gen_supers(Class, [], Super).
 owl_subclass_of(Class, Super) :-
@@ -873,6 +876,31 @@ owl_gen_subs(Class, Visited, Sub) :-
 	\+ memberchk(Sub0, Class),
 	owl_gen_subs(Sub0, [Sub0|Visited], Sub).
 	
+
+%%	owl_test_subclass(+Class, +Super) is semidet.
+%
+%	Cached check for OWL subclass relation.
+
+:- dynamic
+	subclass_cache/3,		% +C1, +C2, -Boolean
+	subclass_generation/1.		% RDF generation of last compute
+
+owl_test_subclass(Class, Super) :-
+	(   rdf_generation(G),
+	    subclass_generation(G2),
+	    G \== G2
+	->  retractall(subclass_cache(_,_,_))
+	;   true
+	),
+	(   subclass_cache(Class, Super, Bool)
+	->  Bool = true
+	;   (   owl_gen_supers(Class, [], Super)
+	    ->	assert(subclass_cache(Class, Super, true))
+	    ;	assert(subclass_cache(Class, Super, false)),
+		fail
+	    )
+	).
+
 
 		 /*******************************
 		 *     SEARCH IN HIERARCHY	*
