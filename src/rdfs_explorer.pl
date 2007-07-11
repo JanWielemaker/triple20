@@ -361,7 +361,7 @@ show_roots_for_file(F, File:name) :->
 update_roots_popup(_OV, Popup:popup) :->
 	"Update menu with all sources"::
 	send(Popup, clear),
-	setof(F, rdf_source(F), Files),
+	setof(F, rdf_source(_DB, F), Files),
 	(   member(F, Files),
 	    send(Popup, append, menu_item(F, @default, F)),
 	    fail
@@ -497,7 +497,7 @@ merge_files(OV) :->
 update_save_popup(OV, Popup:popup) :->
 	"Update menu with all (modified) sources"::
 	send(Popup, clear),
-	setof(F, rdf_source(F), Files),
+	setof(F, rdf_source(_DB, F), Files),
 	(   member(F, Files),
 	    send(Popup, append, new(ME, menu_item(F, @default, F))),
 	    (	rdfe_is_modified(F)

@@ -263,8 +263,8 @@ usage :-
 	print_message(informational, t20(usage)).
 
 rdfe_clear_modified :-
-	forall(rdf_source(File),
-	       rdfe_clear_modified(File)).
+	forall(rdf_graph(DB),
+	       rdfe_clear_modified(DB)).
 
 		 /*******************************
 		 *	    SETUP PATHS		*

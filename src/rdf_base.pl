@@ -274,7 +274,7 @@ required_base_ontology(Base) :-
 	->  true
 	).
 required_base_ontology(Base) :-
-	rdf_source(X),
+	rdf_source(_DB, X),
 	file_name_extension(_, Ext, X),
 	required_by_ext(Ext, Base).
 

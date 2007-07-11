@@ -368,7 +368,7 @@ make_rdf_source_file_type :-
 
 rdf_source_files(Chain) :-
 	new(Chain, chain(user)),
-	forall(rdf_source(File), send(Chain, append, File)),
+	forall(rdf_source(_DB, File), send(Chain, append, File)),
 	send(Chain, sort).
 
 :- initialization
