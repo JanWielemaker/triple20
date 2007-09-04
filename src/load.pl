@@ -95,7 +95,7 @@ user:file_search_path(t20plugin, Spec) :-
 		 *******************************/
 
 t20_version('0.81, Mar 2007').
-required_prolog_version(50628).
+required_prolog_version(50639).
 
 check_prolog_version :-
 	current_prolog_flag(version, MyVersion),
