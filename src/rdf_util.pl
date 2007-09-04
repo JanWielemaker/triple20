@@ -329,7 +329,7 @@ rdf_set_object(Subject, Predicate, Old, New) :-
 
 set_object(Subject, Predicate, '__not_filled', _New) :-
 	rdf_default_file(Subject, File),
-	rdfe_update(Subject, Predicate, '__not_filled', source(File)),
+	rdfe_update(Subject, Predicate, '__not_filled', graph(File)),
 	fail.				% next clause
 set_object(Subject, Predicate, Old, New) :-
 	rdfe_update(Subject, Predicate, Old, object(New)).
@@ -613,7 +613,7 @@ merge_files(Into, From) :-
 		rdf_in_file(S,P,O,F,From),
 		Triples),
 	forall(member(rdf(S,P,O,F), Triples),
-	       rdfe_update(S, P, O, F, source(Into))).
+	       rdfe_update(S, P, O, F, graph(Into))).
 
 rdf_in_file(S,P,O,From:Line,From) :-
 	rdf(S, P, O, From:Line).

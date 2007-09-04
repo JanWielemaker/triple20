@@ -94,7 +94,7 @@ user:file_search_path(t20plugin, Spec) :-
 		 *	      VERSION		*
 		 *******************************/
 
-t20_version('0.81, Mar 2007').
+t20_version('0.82, Sep 2007').
 required_prolog_version(50639).
 
 check_prolog_version :-
@@ -149,7 +149,7 @@ triple20(Argv) :-
 	usage,
 	halt(0).
 triple20(Argv) :-
-	debug(rdf_cache),
+%	debug(rdf_cache),
 	check_prolog_version,
 	debug_options(Argv, Argv0a),
 	load_plugins(Argv0a, Argv0),
