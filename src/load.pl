@@ -56,7 +56,6 @@
 :- user:(retractall(file_search_path(triple20, _)),
 	 prolog_load_context(directory, Dir),
 	 asserta(file_search_path(triple20, Dir)),
-	 asserta(file_search_path(library,  triple20('.'))),
 	 asserta(file_search_path(ontology_root, triple20('../Ontologies')))).
 
 

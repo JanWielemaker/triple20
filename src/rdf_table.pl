@@ -37,7 +37,8 @@
 :- use_module(library('semweb/rdfs')).
 :- use_module(owl).
 :- use_module(library('semweb/rdf_edit')).
-:- use_module(library(rdf_template)).
+:- use_module(library(broadcast)).
+:- use_module(rdf_template).
 :- use_module(rdf_rules).
 :- use_module(rdf_cache).
 :- use_module(rdf_util).
