@@ -29,7 +29,7 @@
     the GNU General Public License.
 */
 
-:- module(owl,
+:- module(t20_owl,
 	  [ owl_restriction_on/2,	% ?Class, ?Restriction
 	    owl_merged_restriction/3,	% ?Class, ?Property, ?Restriction
 	    owl_restriction/2,		% +Resource, -Restriction
