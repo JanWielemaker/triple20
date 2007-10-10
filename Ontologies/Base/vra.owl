@@ -5,9 +5,9 @@
     <!ENTITY rdfs 'http://www.w3.org/2000/01/rdf-schema#'>
     <!ENTITY dc 'http://purl.org/dc/elements/1.1/'>
     <!ENTITY vra 'http://www.swi.psy.uva.nl/mia/vra#'>
-    <!ENTITY aat 'http://www.getty.edu/vocabularies/aat#'>
-    <!ENTITY ulan 'http://www.getty.edu/vocabularies/ulan#'>
-    <!ENTITY tgn 'http://www.getty.edu/vocabularies/tgn#'>
+    <!ENTITY aat 'http://e-culture.multimedian.nl/ns/getty/aat#'>
+    <!ENTITY ulan 'http://e-culture.multimedian.nl/ns/getty/ulan#'>
+    <!ENTITY tgn 'http://e-culture.multimedian.nl/ns/getty/tgn#'>
 ]>
 
 <rdf:RDF
