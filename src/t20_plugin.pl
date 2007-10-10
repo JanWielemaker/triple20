@@ -117,8 +117,9 @@ save_plugins :-
 
 rdf_modified(DB) :-
 	rdf_md5(DB, MD5),
-	rdf_db:rdf_source(DB, _Time, _Triples, UnmodifiedMD5),
+	rdf_db:rdf_source(DB, _URL, _Time, _Triples, UnmodifiedMD5),
 	MD5 \== UnmodifiedMD5.
+
 
 		 /*******************************
 		 *	     SCANNING		*
