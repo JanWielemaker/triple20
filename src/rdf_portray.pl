@@ -30,8 +30,20 @@
 */
 
 
-:- module(rdf_portray, []).
-:- use_module(library('semweb/rdfs')).
+:- module(rdf_portray,
+	  [ rdf_portray_as/1		% +Style
+	  ]).
+:- use_module(library(semweb/rdf_db)).
+:- use_module(library(semweb/rdfs)).
+:- use_module(library(error)).
+
+:- dynamic
+	style/1.
+
+rdf_portray_as(Style) :-
+	must_be(oneof([write, ns:id, ns:label]), Style),
+	retractall(style(_)),
+	assert(style(Style)).
 
 :- multifile
 	user:portray/1.
@@ -39,8 +51,16 @@
 user:portray(URL) :-
 	atom(URL),
 	sub_atom(URL, 0, _, _, 'http://'),
-	rdfs_ns_label(URL, Label),
-	write(Label).
+	(   style(write)
+	->  write(URL)
+	;   style(ns:id)
+	->  (   rdf_global_id(NS:Id, URL)
+	    ->	writeq(NS:Id)
+	    ;	writeq(URL)
+	    )
+	;   rdfs_ns_label(URL, Label),
+	    write(Label)
+	).
 user:portray(URL) :-
 	atom(URL),
 	atom_concat('__file://', URL2, URL),
