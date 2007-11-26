@@ -41,7 +41,7 @@
 	style/1.
 
 rdf_portray_as(Style) :-
-	must_be(oneof([write, ns:id, ns:label]), Style),
+	must_be(oneof([write, ns:id, ns:id=label, ns:label]), Style),
 	retractall(style(_)),
 	assert(style(Style)).
 
@@ -56,6 +56,12 @@ user:portray(URL) :-
 	;   style(ns:id)
 	->  (   rdf_global_id(NS:Id, URL)
 	    ->	writeq(NS:Id)
+	    ;	writeq(URL)
+	    )
+	;   style(ns:id=label)
+	->  (   rdfs_label(URL, Label),
+	        rdf_global_id(NS:Id, URL)
+	    ->	format('~q:~q="~w"', [NS, Id, Label])
 	    ;	writeq(URL)
 	    )
 	;   rdfs_ns_label(URL, Label),
