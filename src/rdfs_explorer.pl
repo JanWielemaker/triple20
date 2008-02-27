@@ -61,7 +61,7 @@
 :- use_module(load, [t20_version/1]).
 
 :- pce_autoload(report_dialog,	       library(pce_report)).
-:- pce_autoload(rdf_statistics_dialog, library(rdf_statistics)).
+:- pce_autoload(rdf_statistics_dialog, rdf_statistics).
 :- pce_autoload(rdf_namespace_window,  rdf_ns).
 :- pce_autoload(finder,		       library(find_file)).
 :- pce_autoload(rdf_property_on_class_dialog, rdf_create).
