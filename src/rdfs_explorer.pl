@@ -498,7 +498,8 @@ merge_files(OV) :->
 update_save_popup(OV, Popup:popup) :->
 	"Update menu with all (modified) sources"::
 	send(Popup, clear),
-	setof(F, rdf_source(_DB, F), Files),
+	findall(F, rdf_source(_DB, F), Files0),
+	sort(Files0, Files),
 	(   member(F, Files),
 	    send(Popup, append, new(ME, menu_item(F, @default, F))),
 	    (	rdfe_is_modified(F)
