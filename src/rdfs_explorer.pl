@@ -718,7 +718,7 @@ about(M) :->
 
 about(M,
       [ 'Triple20 version %s'+[M?version]-boldhuge,
-	'Copyright 2003-2005, University of Amsterdam',
+	'Copyright 2003-2008, University of Amsterdam',
 	'Triple20 comes with ABSOLUTELY NO WARRANTY.',
 	'This is free software (GPL), and you are welcome to',
 	'redistribute it under certain conditions.',
