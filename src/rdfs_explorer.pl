@@ -361,7 +361,8 @@ show_roots_for_file(F, File:name) :->
 update_roots_popup(_OV, Popup:popup) :->
 	"Update menu with all sources"::
 	send(Popup, clear),
-	setof(F, rdf_source(_DB, F), Files),
+	findall(F, rdf_source(_DB, F), Files0),
+	sort(Files0, Files),
 	(   member(F, Files),
 	    send(Popup, append, menu_item(F, @default, F)),
 	    fail
