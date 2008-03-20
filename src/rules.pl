@@ -403,16 +403,6 @@ child_cache(R, Cache, rdf_inferred_node) :-
 child_cache(R, Cache, rdf_list_item_node) :-
 	rdfs_individual_of(R, rdf:'List'), !,
 	rdf_cache(lsorted(V), rdfs_member(V, R), Cache).
-child_cache(R, Cache, rdf_part_node) :-	% TBD: move outside
-	rdf_has(erc:has_part, rdfs:domain, Domain),
-	rdf_has(R, rdf:type, Class),
-	rdfs_subclass_of(Class, Domain),
-	rdf_cache(lsorted(V), rdf_has(R, erc:has_part, V), Cache).
-child_cache(R, Cache, rdf_part_node) :-	% TBD: move outside
-	rdf_has(thales:hasPart, rdfs:domain, Domain),
-	rdf_has(R, rdf:type, Class),
-	rdfs_subclass_of(Class, Domain),
-	rdf_cache(lsorted(V), rdf_has(R, thales:hasPart, V), Cache).
 
 %	setting predicate that can be overruled
 
@@ -459,8 +449,6 @@ parent(R, Parent, Role) :-
 	;   Role = rdf_individual_node,
 	    Parent = Type
 	).
-parent(R, Parent, rdf_part_node) :-
-	rdf_has(Parent, erc:has_part, R).
 parent('__orphan_classes', Root, rdf_orphan_node) :-
 	rdf_equal(Root, rdfs:'Resource').
 parent('__orphan_resources', Root, rdf_orphan_node) :-
