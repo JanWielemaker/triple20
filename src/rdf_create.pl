@@ -96,9 +96,13 @@ do_create_resource(D, Resource:name, Label:name) :->
 	;   File = user
 	),
 	(   get(D, role, rdf_class_node) 		% TBD: generalise!
-	->  (   (   rdf_has(Super, rdf:type, MetaClass, Type)
-		*-> rdfe_assert(Resource, Type, MetaClass, File)
-		;   rdfe_assert(Resource, rdf:type, rdfs:'Class', File)
+	->  (   findall(MetaClass-Type,
+			rdf_has(Super, rdf:type, MetaClass, Type),
+			Pairs),
+		(   Pairs == []
+		->  rdfe_assert(Resource, rdf:type, rdfs:'Class', File)
+		;   forall(member(MetaClass-Type, Pairs),
+			   rdfe_assert(Resource, Type, MetaClass, File))
 		),
 		fail
 	    ;	true
