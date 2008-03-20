@@ -68,8 +68,11 @@ Issues:
 %	the child in this specific context.
 
 child_cache(R, Cache, rdf_class_node) :-
-	rdfs_individual_of(R, skos:'Concept'),
+	rdfs_individual_of(R, skos:'Concept'), !,
 	rdf_cache(lsorted(V), skos_narrower(R, V), Cache).
+child_cache(R, Cache, rdf_class_node) :-
+	rdfs_subclass_of(R, skos:'Concept'), !,
+	rdf_cache(lsorted(V), skos_root(R, V), Cache).
 child_cache(R, Cache, Class) :-
 	super::child_cache(R, Cache, Class).
 
@@ -79,6 +82,10 @@ skos_narrower(Class, Narrow) :-
 	rdf_has(Narrow, rdfs:subClassOf, Class).
 skos_narrower(Class, Narrow) :-
 	rdf_has(Class, skos:narrower, Narrow).
+
+skos_root(Class, Root) :-
+	rdf_has(Root, rdf:type, Class),
+	\+ rdf_has(Root, skos:broader, _).
 
 %	parent(+Resource, -Parent, -Class)
 %	
@@ -127,5 +134,19 @@ drop_resource(Command, C, R) :-
 	rdf_set_object(R, Property, C).
 drop_resource(Command, C, R) :-
 	super::drop_resource(Command, C, R).
+
+%%	label_text(Resource, Text)
+%
+%	Label to display
+
+label_text(Resource, Text) :-
+	rdf_has(Resource, skos:prefLabel, literal(Lit)), !,
+	text_of_literal(Lit, Text).
+label_text(Resource, Text) :-
+	super::label_text(Resource, Text).
+
+text_of_literal(lang(_, Text), Text) :- !.
+text_of_literal(type(_, Text), Text) :- !.
+text_of_literal(Text, Text).
 
 :- end_rules.
