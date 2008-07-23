@@ -426,24 +426,20 @@ load_ontology(OV) :->
 		  tuple('RDF files', rdf),
 		  tuple('Turtle files', ttl)),
 	    FileName),
-	absolute_file_name(FileName, Path),
-	catch(rdfe_transaction(rdfe_load(Path,
-					 [ namespaces(NSList)
-					 ]),
-			       load_file(FileName)),
-	      E,
-	      (	  message_to_string(E, Msg),
-		  send(OV, report, error, Msg),
-		  fail
-	      )),
-	register_default_ns(Path, NSList).
-      
+	send(OV, load_file, FileName).
+
 load_rdf(OV) :->
 	"Load plain RDF file"::
 	get(@finder, file, open,
 	    chain(tuple('RDF files', rdf),
 		  tuple('Turtle files', ttl)),
 	    FileName),
+	send(OV, load_file, FileName).
+      
+load_file(OV, FileName:file=name,
+	      SetDefault:set_default=[bool],
+	      LoadBase:load_base=[bool]) :->
+	"Low RDF document and required base ontologies"::
 	absolute_file_name(FileName, Path),
 	catch(rdfe_transaction(rdfe_load(Path,
 					 [ namespaces(NSList)
@@ -454,7 +450,26 @@ load_rdf(OV) :->
 		  send(OV, report, error, Msg),
 		  fail
 	      )),
-	register_default_ns(Path, NSList).
+	register_default_ns(Path, NSList),
+	(   SetDefault \== @off,
+	    access_file(Path, write),
+	    no_default_file
+	->  rdfe_set_file_property(Path, default(all))
+	;   true
+	),
+	(   LoadBase == @off
+	->  true
+	;   rdfe_transaction(load_required_base_ontologies,
+			     required_base_ontologies)
+	).
+
+%%	no_default_file is semidet.
+%
+%	True if there is no defined default file.
+
+no_default_file :-
+	rdfe_get_file_property(File, default(_How)),
+	File == user.
       
 open_project(OV) :->
 	"Open an existing journal file"::
