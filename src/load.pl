@@ -83,6 +83,10 @@
 	      ]).
 :- pce_image_directory(triple20(icons)).
 
+:- if(exists_source(library(semweb/rdf_zlib_plugin))).
+:- use_module(library(semweb/rdf_zlib_plugin)).
+:- endif.
+
 user:file_search_path(snapshot, user_profile(Dir)) :-
 	rdf_snapshot_directory(Dir).
 user:file_search_path(t20plugin, Spec) :-
