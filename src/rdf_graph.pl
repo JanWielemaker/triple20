@@ -29,7 +29,7 @@
     the GNU General Public License.
 */
 
-:- module(rdf_graph, []).
+:- module(t20_graph, []).
 :- use_module(library(pce)).
 :- use_module(library(persistent_frame)).
 :- use_module(library(toolbar)).
