@@ -73,6 +73,9 @@ child_cache(R, Cache, rdf_class_node) :-
 child_cache(R, Cache, rdf_class_node) :-
 	rdfs_subclass_of(R, skos:'Concept'), !,
 	rdf_cache(lsorted(V), skos_root(R, V), Cache).
+child_cache(R, Cache, rdf_class_node) :-
+        rdfs_individual_of(R, skos:'ConceptScheme'), !,
+        rdf_cache(lsorted(V), scheme_top_concept(R, V), Cache).
 child_cache(R, Cache, Class) :-
 	super::child_cache(R, Cache, Class).
 
@@ -86,6 +89,9 @@ skos_narrower(Class, Narrow) :-
 skos_root(Class, Root) :-
 	rdf_has(Root, rdf:type, Class),
 	\+ rdf_has(Root, skos:broader, _).
+
+scheme_top_concept(R, V) :-
+        rdf_has(R, skos:hasTopConcept, V).
 
 %	parent(+Resource, -Parent, -Class)
 %	
