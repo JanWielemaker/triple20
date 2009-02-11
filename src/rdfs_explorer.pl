@@ -65,6 +65,7 @@
 :- pce_autoload(rdf_namespace_window,  rdf_ns).
 :- pce_autoload(finder,		       library(find_file)).
 :- pce_autoload(rdf_property_on_class_dialog, rdf_create).
+:- pce_autoload(rdfs_resource_item, rdfs_resource_item).
 :- pce_global(@finder, new(finder)).
 
 
