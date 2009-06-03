@@ -90,7 +90,7 @@ arm(W, For:[name|code], Target:graphical) :<-
 	;   send(@display, arm_object, @nil),
 	    fail
 	).
-	
+
 :- pce_end_class(rdf_arm).
 
 
@@ -180,11 +180,15 @@ can_show_details(T, _How:{hierarchy,table}) :->
 view_rdf_source(T) :->
 	"Open Prolog editor on RDF source"::
 	get(T, resource, Id),
-	(   rdf_source_location(Id, File:Line),
+	(   rdf_source_location(Id, URL:Line),
+	    file_name_to_url(File, URL),
 	    integer(Line)
 	->  edit(file(File, line(Line)))
-	;   rdf_source_location(Id, File:Line)
+	;   rdf_source_location(Id, URL:Line),
+	    file_name_to_url(File, URL)
 	->  edit(file(File))
+	;   rdf_source_location(Id, URL:_)
+	->  send(T, report, warning, 'Cannot edit %s', URL)
 	;   send(T, report, warning, 'Cannot find source for %s', Id)
 	).
 
