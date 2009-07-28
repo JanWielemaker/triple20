@@ -73,7 +73,7 @@ label_text(Resource, Text) :-
 	rdfs_ns_label(Resource, Text).
 
 %	view_label_as(?Style)
-%	
+%
 %	This is not a rule, but intended to  be called to change the way
 %	labels are presented to the user.
 
@@ -91,10 +91,10 @@ label(Resource, Label) :-
 	Term =.. [Class, Resource],
 	new(Label, Term).
 
-%	label_class(+Resource, -Class) 
-%	
+%	label_class(+Resource, -Class)
+%
 %	Determine the visualiser to use for a short textual description
-%	of a resource.  Resource is the resource for which to create a 
+%	of a resource.  Resource is the resource for which to create a
 %	visualisation.  Role is one of subject, predicate or object and
 %	Class is the XPCE class to use.
 
@@ -227,7 +227,7 @@ item_method(Item,        Label, Item) :-
 	).
 
 %	item_label(+Item, -Label)
-%	
+%
 %	Items that need a dedicated label.
 
 item_label(new(rdf_class_node), new_subclass).
@@ -258,11 +258,11 @@ menu_item(Gr, print, save_postscript) :-
 	send(Gr, instance_of, window).
 
 %	menu_item(Group, Item)
-%	
+%
 %	Define menu items.  When  creating  the   popup  all  items  are
 %	collected by Group which are separated by a bar. The ordering is
 %	left unchanged.
-%	
+%
 %	Item is either a method name or of the form LabelName=Method
 
 menu_item(select, hierarchy_location).
@@ -285,7 +285,7 @@ menu_item(edit,   set_type).
 menu_item(namespace, namespace_abbreviation).
 
 %	sub_menu(Group)
-%	
+%
 %	Group of items to place in a sub-menu
 
 sub_menu(copy).
@@ -301,7 +301,7 @@ sub_menu(view).
 :- begin_rules(rdf_predicate, default).
 
 %	standard_predicate(+Resource, -Predicate, -Default)
-%	
+%
 %	Return, on backtracking, predicates  that   should  normally  be
 %	defined immediately when defining a   resource.  This should use
 %	properties of the  ontology,  but   often  it  doesn't.  Default
@@ -324,7 +324,7 @@ standard_predicate(Resource, Pred, _) :-
 	rdf_equal(Pred, owl:onProperty).
 
 %	visible_predicate(+Resource, -Predicate)
-%	
+%
 %	Return, on backtracking, predicates that should be displayed
 %	when showing a resource in a property table.
 
@@ -334,7 +334,7 @@ visible_predicate(Resource, Predicate) :-
 	member(Predicate, Predicates).
 
 %	class_predicate(+Class, -Predicates)
-%	
+%
 %	Return, on backtracking, proterties that are applicable to Class
 %	and must be displayed on the sheet for this class.
 
@@ -344,7 +344,7 @@ class_predicate(Class, Predicate) :-
 	member(Predicate, Predicates).
 
 %	rdf_default(+Subject, +Predicate, -Object)
-%	
+%
 %	Provide a default value for a new Predicate on Subject
 
 rdf_default(_, P, literal('1')) :-
@@ -370,7 +370,7 @@ default_object(literal(_), literal('')).
 :- begin_rules(class_hierarchy, default).
 
 %	child_cache(+Resource, -Cache, -Class)
-%	
+%
 %	Create a cache (see rdf_cache/3) for generating the childs of
 %	Resource.  The child-nodes are created as instances of Class.
 
@@ -428,7 +428,7 @@ owl_restriction_with_label(Class, Restriction, Label) :-
 
 
 %	parent(+Resource, -Parent, -Class)
-%	
+%
 %	Find parent relations to expand the hierarchy selectively for
 %	showing Resource.
 
@@ -460,7 +460,7 @@ parent(R, '__orphan_resources', rdf_node) :-
 	\+ rdf_has(R, rdf:type, _).
 
 %	root_property(+Class, -Property)
-%	
+%
 %	Generate the instances of Class (a subclass of rdf:Property)
 %	that have no super property and are of the same type
 
@@ -471,7 +471,7 @@ root_property(Class, P) :-
 	   ).
 
 %	file_root(+DB, -Root)
-%	
+%
 %	Enumerate both the roots of  classes   and  properties  that are
 %	defined on a iven file.
 
@@ -504,7 +504,7 @@ file_property_root(DB, Root) :-
 :- begin_rules(rdf_drag_and_drop, default).
 
 %	drop(Graphical, Resource)
-%	
+%
 %	Drop a resource on a graphical.  Determines the possible commands
 %	and executes ::drop(Command, Graphical, Resource)
 
@@ -567,7 +567,7 @@ drop_resource_command(C, R, change_type) :-
 	\+ rdfs_individual_of(R, rdfs:'Class').
 
 %	drop_files(+V, +ListOfFiles)
-%	
+%
 %	Deal with dropping files from the explorer
 
 drop_files(V, Files) :-
@@ -601,7 +601,7 @@ clicked(V) :-
 :- pce_autoload(image_window, img_tab).
 
 %	resource_tab(-Name, -Window)
-%	
+%
 %	Create the windows that appear as tabs in the right-hand window
 %	of the explorer.  The <-name of the window determines the label
 %	in the tab.
@@ -616,14 +616,14 @@ resource_tab(image, Window) :-
 	new(Window, image_window).
 
 %	default_resource_tab(+Resource, -Tab)
-%	
+%
 %	Return the name of the tab that should be on top after selecting
 %	Resource.
 
 default_resource_tab(Resource, class) :-
 	rdfs_individual_of(Resource, rdfs:'Class').
 default_resource_tab(_, instance).
-	
+
 :- end_rules.
 
 :- begin_rules(image_window, default).
@@ -643,10 +643,10 @@ image_extension(gif).
 :- end_rules.
 
 
-:- begin_rules(search, default).
+:- begin_rules(t20_search, default).
 
 %	find(+String, +Domain, ?Properties, +Method, -Subject)
-%	
+%
 %	Search for literal text in resources   belonging  to a specified
 %	domain.  Searching  for  ns:string  searches    for  string  for
 %	resources in the specified namespace.
@@ -708,7 +708,7 @@ open_resource(Resource, How) :-
 		    rdf_click,
 		    rdf_predicate,
 		    rdf_tab,
-		    search,
+		    t20_search,
 		    rdfs_explorer
 		  ]).
 :- end_particle.
@@ -925,11 +925,11 @@ drop_resource_command(_Me, _Resource, add) :-
 	true.				% must validate restrictions!
 
 drop(add, Gr, V) :-
-	get(V, resource, Resource),	
+	get(V, resource, Resource),
 	get(Gr, triple, rdf(Subject, Predicate, _)),
 	rdf_add_object(Subject, Predicate, Resource).
 drop(modify, Gr, V) :-
-	get(V, resource, NewP),	
+	get(V, resource, NewP),
 	get(Gr, triple, rdf(S, P, _)),
 	P \== NewP,
 	rdfe_transaction(forall(rdf(S,P,O),
