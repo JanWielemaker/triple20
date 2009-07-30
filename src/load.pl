@@ -41,7 +41,7 @@
 
 	    t20_winmain/0		% Windows toplevel
 	  ]).
-	    
+
 
 
 		 /*******************************
@@ -79,7 +79,8 @@
 		rdfs_explorer		% visualization
 %		rdf_portray
 	      ],
-	      [ silent(true)
+	      [ silent(true),
+		if(not_loaded)
 	      ]).
 :- pce_image_directory(triple20(icons)).
 
@@ -134,9 +135,9 @@ triple20 :-
 	triple20(Options).
 
 %	triple20(+Argv)
-%	
+%
 %	Main entry.  Options:
-%	
+%
 %		<file>.rdfj		Specify a journal file
 %		--base			List base ontologies
 %		--base=Base		Load base ontology
@@ -282,11 +283,11 @@ rdfe_clear_modified :-
 		 *******************************/
 
 %	t20(+Message)
-%	
+%
 %	Send a message to all Triple20 toplevel windows.  Note that this
 %	doesn't send any messages if no window exists.  Useful actions
 %	are:
-%	
+%
 %		* refresh
 %		Refresh the interface after substantial changes to the
 %		data.
@@ -303,7 +304,7 @@ t20_save(X) :-
 	qsave_program(X, []).
 
 %	t20_winmain/0
-%	
+%
 %	MS-Windows toplevel when started by clicking a .RDF* file.  See
 %	setup.pl for associating .RDF, etc. with Triple20.
 

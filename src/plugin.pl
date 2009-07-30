@@ -36,13 +36,14 @@ plugins.  The normal definition of a plugin is:
 :- module(t20myniceplugin, []).
 :- include(triple20(plugin)).
 :- t20_plugin([ t20:name = niceplugin,
-		rdfs:comment = "Nice plugin is a really nice plugin. 
+		rdfs:comment = "Nice plugin is a really nice plugin.
 				You\'ll be suprised what it can do for you"
 	      ]).
 - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
 
 :- use_module(triple20(t20_plugin_api)).
-:- use_module(triple20(rdf_rules)). 
+:- use_module(triple20(particle)).
+:- use_module(triple20(rdf_rules)).
 :- use_module(triple20(rdf_cache)).
 :- use_module(library('semweb/rdf_db')).
 :- use_module(library('semweb/rdfs')).
