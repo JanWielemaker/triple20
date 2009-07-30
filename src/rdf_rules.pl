@@ -46,9 +46,9 @@
 
 
 %	user:goal_expansion(+NSGoal, -Goal)
-%	
+%
 %	This predicate allows for writing down rdf queries in a friendly
-%	name-space fashion.  
+%	name-space fashion.
 
 :- multifile
 	user:goal_expansion/2.
@@ -67,7 +67,7 @@ user:goal_expansion(rdf_user_call(Gr, G0),
 
 %	:- begin_rules(+Class, +Id).
 %	:- end_rules.
-%	
+%
 %	Associate a ruleset with  Class  with   the  given  id. If Class
 %	already has a ruleset attached  a   new  ruleset is created that
 %	subsumes the current one and the class  is associated to the new
@@ -198,7 +198,7 @@ rdf_container(O, Container:device) :<-
 :- pce_global(@particle, new(?(@prolog, current_container))).
 
 %	call_rules(+Obj, +Goal)
-%	
+%
 %	Search the container classes for the first matching container
 %	defining Goal and call it.
 
@@ -216,7 +216,7 @@ container_with_particle_defining(Obj, Goal, Container, Particle) :-
 	      '~p: calling ~w::~p~n', [Obj, Particle, Goal]).
 
 %	defined(:G)
-%	
+%
 %	True  if  G  is  defined.  We  use  '$c_current_predicate'/2  as
 %	current_predicate/2 updates the foreign  library   index  and is
 %	therefore much too slow.
@@ -226,7 +226,7 @@ defined(M:G) :-
 	'$c_current_predicate'(_, S:G), !.
 
 %	call_outer(+Goal)
-%	
+%
 %	Called from a ruleset to invoke  rules of the outer environment.
 %	Where  super::Goal  walks   up    the   inheritance   hierarchy,
 %	outer::Goal walks the contained-in hierarchy.
@@ -252,7 +252,7 @@ current_container(Cont) :-
 	).
 
 %	call_inner(+Goal)
-%	
+%
 %	Calls Goal starting from the same place as the original
 %	call_rules.
 
@@ -280,7 +280,7 @@ container_with_particle(Obj, Container, Particle) :-
 	container_with_particle(Container0, Container, Particle).
 
 %	container(+Object, -Container)
-%	
+%
 %	Find container (context) in which Object   exists. If the object
 %	is being created, <-create_context  finds   the  receiver of the
 %	XPCE method in which the initialisation   method is executed or,
@@ -309,11 +309,11 @@ container(Obj, Container) :-
 		 *******************************/
 
 :- meta_predicate
-	rdf_user_call(:),
-	rdf_user_call(+, :).
+	rdf_user_call(0),
+	rdf_user_call(+, 0).
 
 %	rdf_user_call(:Goal)
-%	
+%
 %	Run goal, report messages in the status window.
 
 rdf_user_call(Goal) :-
