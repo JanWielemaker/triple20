@@ -35,7 +35,7 @@
 
 <owl:Class rdf:about="&owl;Thing"
     rdfs:label="Thing">
-  <owl:unionOf rdf:parseType=Collection>
+  <owl:unionOf rdf:parseType="Collection">
     <rdf:Description about="&owl;Nothing"/>
     <owl:Class>
       <owl:complementOf rdf:resource="&owl;Nothing"/>
