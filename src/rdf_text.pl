@@ -51,7 +51,7 @@
 :- pce_autoload(partof_hyper,  library(hyper)).
 
 %	update_labels
-%	
+%
 %	Update all label texts.  Useful after global changes such as how
 %	labels are represented or registration of new namespaces.
 
@@ -217,17 +217,17 @@ unfocussed(W, G) :-
 		 *******************************/
 
 %	@resource_texts
-%	
+%
 %	This object defines a table Resource --> resource text objects.
-%	
+%
 %	NOTE: it is a bit more general and can be used by any simple
 %	visualiser that may wish to change its visualisation if some
 %	property of the principle resource is changed.  The required
 %	methods are:
-%	
+%
 %		register: send(@resource_texts, append, Resource, Obj)
 %		un-	: send(@resource_texts, delete, Resource, Obj)
-%	
+%
 %	The Obj must implement ->update.
 
 :- pce_global(@resource_texts, new(chain_table)).
@@ -275,13 +275,14 @@ initialise(LT, Value:prolog, Subject:[name]*, Predicate:[name]*) :->
 	set_type_or_lang(TypeOrLang, LT).
 
 %	get_text(+Object, -TypeOrLanguage, -Text)
-%	
+%
 %	Extract Text and Language from an RDF Object.
 
 get_text(literal(X), Lang, Text) :- !,
 	get_text(X, Lang, Text).
 get_text(lang(Lang, Text), lang(Lang), Text) :- !.
-get_text(type(Type, Text), type(Type), Text) :- !.
+get_text(type(Type, Term), type(Type), Text) :- !,
+	typed_text(Type, Term, Text).
 get_text(Text, -, Text) :-
 	atomic(Text).
 get_text(XML, -, Text) :-
@@ -293,10 +294,18 @@ get_text(XML, -, Text) :-
 	memory_file_to_atom(MF, Text),
 	free_memory_file(MF).
 
+typed_text(_, Text, Text) :-
+	atom(Text), !.
+typed_text(XMLLiteral, Term, Text) :-
+	rdf_equal(rdfs:'XMLLiteral', XMLLiteral),
+	with_output_to(atom(Text), xml_write(Term, [header(false)])).
+typed_text(_, Term, Text) :-
+	term_to_atom(Term, Text).
+
 is_xml(0) :- !, fail.			% move to SGML library?
 is_xml([]).
 is_xml([H|T]) :-
-	is_xml(H), 
+	is_xml(H),
 	is_xml(T).
 is_xml(element(_, _, _)).
 
