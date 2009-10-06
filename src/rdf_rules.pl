@@ -38,7 +38,12 @@
 	    call_inner/1,		% :Goal
 
 	    rdf_user_call/1,		% :Goal
-	    rdf_user_call/2		% +Graphical, :Goal
+	    rdf_user_call/2,		% +Graphical, :Goal
+
+	    (::)/2,			% +Particle, +Goal
+
+	    op(600, xfy, ::),
+	    op(600, fy, ::)
 	  ]).
 :- use_module(library(pce)).
 :- use_module(library(debug)).

@@ -41,30 +41,33 @@
 	  ]).
 :- use_module(library(lists)).
 
-/* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+/** <module> Extremely lightweight class system
+
 Extremely lightweight package to do use modules more like classes. It
 allows of defining multiple modules in a single file between:
 
+	==
 	:- begin_particle(Name, Super).
 
 	:- end_particle.
+	==
 
 Predicates are inherited from the Super  particle. The following special
 calling primitives are provided:
 
-	# Particle::Goal
+	* Particle::Goal
 	Call Goal in Particle, setting the notion of the `self' particle
 	to Particle.
 
-	# ::Goal
+	* ::Goal
 	When called inside a particle, call Goal in the `self' particle.
 
-	# super::Goal
+	* super::Goal
 	When called inside a particle, call Goal in the Super particle.
 
-	# Particle:Goal
+	* Particle:Goal
 	Call Goal in Particle, not changing the notion of `self'.
-- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
+*/
 
 :- dynamic
 	loading_particle/2,		% Name, Context
