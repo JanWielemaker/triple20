@@ -146,14 +146,26 @@ user:goal_expansion(inner::G, call_inner(G)) :- !. % See rdf_template
 user:goal_expansion(::G, particle:particle_self(G)) :-
 	loading_particle(_, _).
 
-%	::(+Particle, +Goal)
+%%	::(+Particle, +Goal)
 %
 %	Call Goal in particle.  The reason for its existence is to keep
 %	track of `self'.
 
 ::(Name, Goal) :-
 	Name:Goal,
-	true.				% avoid last call optimization
+	no_gc(Name).
+
+%%	no_gc(@Term) is det.
+%
+%	Used as last call to  avoid   last-call  optimization  in places
+%	where we use  prolog_frame_attribute/3   with  the =parent_goal=
+%	attribute. We also provide an argument   for  the term that must
+%	*not* be garbage collected.
+%
+%	In fact, the latter is not needed   for  this library because we
+%	atoms are never GC'ed.
+
+no_gc(_).
 
 particle_self(Goal) :-
 	(   prolog_current_frame(Frame),

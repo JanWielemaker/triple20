@@ -202,7 +202,7 @@ rdf_container(O, Container:device) :<-
 
 :- pce_global(@particle, new(?(@prolog, current_container))).
 
-%	call_rules(+Obj, +Goal)
+%%	call_rules(+Obj, +Goal)
 %
 %	Search the container classes for the first matching container
 %	defining Goal and call it.
@@ -210,7 +210,7 @@ rdf_container(O, Container:device) :<-
 call_rules(Obj, Goal) :-
 	container_with_particle_defining(Obj, Goal, Container, Particle),
 	with_container(Container, Particle::Goal),
-	true.				% avoid tail recursion
+	no_gc(Obj).
 
 container_with_particle_defining(Obj, Goal, Container, Particle) :-
 	debug(container,
@@ -220,17 +220,15 @@ container_with_particle_defining(Obj, Goal, Container, Particle) :-
 	debug(container,
 	      '~p: calling ~w::~p~n', [Obj, Particle, Goal]).
 
-%	defined(:G)
+%%	defined(:G)
 %
-%	True  if  G  is  defined.  We  use  '$c_current_predicate'/2  as
-%	current_predicate/2 updates the foreign  library   index  and is
-%	therefore much too slow.
+%	True  if  G  is  defined.
 
 defined(M:G) :-
-	default_module(M, S),
-	'$c_current_predicate'(_, S:G), !.
+	functor(G, Name, Arity),
+	current_predicate(M:Name/Arity).
 
-%	call_outer(+Goal)
+%%	call_outer(+Goal)
 %
 %	Called from a ruleset to invoke  rules of the outer environment.
 %	Where  super::Goal  walks   up    the   inheritance   hierarchy,
@@ -243,9 +241,18 @@ call_outer(Goal) :-
 	defined(Particle:Goal), !,
 	with_container(Container, Particle::Goal).
 
-with_container(_Container, Goal) :-
+with_container(Container, Goal) :-
 	Goal,
-	true.				% avoid last-call optimisation
+	no_gc(Container).
+
+%%	no_gc(@Term) is det.
+%
+%	Used as last call to  avoid   last-call  optimization  in places
+%	where we use  prolog_frame_attribute/3   with  the =parent_goal=
+%	attribute. We also provide an argument   for  the term that must
+%	*not* be garbage collected.
+
+no_gc(_).
 
 current_container(Cont) :-
 	(   prolog_current_frame(Frame),
@@ -256,7 +263,7 @@ current_container(Cont) :-
 	    throw(error(existence_error(container, current), _))
 	).
 
-%	call_inner(+Goal)
+%%	call_inner(+Goal)
 %
 %	Calls Goal starting from the same place as the original
 %	call_rules.
@@ -284,7 +291,7 @@ container_with_particle(Obj, Container, Particle) :-
 	container(Obj, Container0),
 	container_with_particle(Container0, Container, Particle).
 
-%	container(+Object, -Container)
+%%	container(+Object, -Container)
 %
 %	Find container (context) in which Object   exists. If the object
 %	is being created, <-create_context  finds   the  receiver of the
