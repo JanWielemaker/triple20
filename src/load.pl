@@ -130,6 +130,12 @@ user_version(N, Version) :-
 :- multifile
 	option/1.
 
+%%	triple20
+%
+%	Start the Triple20 RDF browser. This   predicate is intended for
+%	embedding  Triple20  into  applications.   The  application  can
+%	specify options by adding clauses for triple20:option/1.
+
 triple20 :-
 	findall(O, option(O), Options),
 	triple20(Options).
