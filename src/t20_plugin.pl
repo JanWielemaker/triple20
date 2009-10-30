@@ -45,7 +45,7 @@
 	plugin_rdf_file/1.
 
 %	plugin_dir(?Id, -Path).
-%	
+%
 %	Enumerate the locations of the plugin directories.
 
 plugin_dir(local, '.').
@@ -57,27 +57,35 @@ plugin_dir(user,  user_profile(Base)) :-
 plugin_dir(system, triple20('../Plugins')).
 
 %	load_plugin_config/0
-%	
+%
 %	Load the plugin configuration. The  configuration is loaded from
-%	the first location. See search path t20plugin defined in load.pl
+%	the  first  location.  See  search  path  t20plugin  defined  in
+%	load.pl. We do not load from a file   because we do not want the
+%	files to endup in the file administration.
 
 load_plugin_config :-
 	absolute_file_name(t20plugin(plugins), Path,
-			   [ extensions([rdf]),
+			   [ extensions([rdf,ttl]),
 			     access(read),
 			     file_errors(fail)
 			   ]), !,
+	file_name_extension(_, Ext, Path),
+	ext_format(Ext, Format),
 	open(Path, read, In, [type(binary)]),
 	call_cleanup(rdf_load(stream(In),
-			      [ db(triple20)
+			      [ format(Format),
+				db(triple20)
 			      ]),
 		     close(In)),
 	assert(plugin_rdf_file(Path)),
 	rdf_load(ontology('t20.rdfs')).
 load_plugin_config.
 
+ext_format(ttl, turtle) :- !.
+ext_format(_,   xml).
+
 %	load_plugins/0
-%	
+%
 %	Load current plugin configuration.
 
 load_plugins :-
@@ -93,7 +101,7 @@ load_plugins :-
 
 load_plugin(Source) :-
 	use_module(user:t20plugin(Source), []).
-	
+
 %	save_plugins/0
 %
 %	Save plugin information. If writeable, the  info is saved to the
@@ -126,7 +134,7 @@ rdf_modified(DB) :-
 		 *******************************/
 
 %	scan_plugins
-%	
+%
 %	Scan plugin directories for defined plugins  and add them to the
 %	RDF descriptions.
 
@@ -144,7 +152,7 @@ scan_plugins :-
 
 
 %	scan_plugin_dir(+Dir)
-%	
+%
 %	Scan a directory for  Prolog  files   that  look  like  Triple20
 %	plugins. Create a description for them in the RDF database.
 

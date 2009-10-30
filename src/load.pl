@@ -84,9 +84,8 @@
 	      ]).
 :- pce_image_directory(triple20(icons)).
 
-:- if(exists_source(library(semweb/rdf_zlib_plugin))).
 :- use_module(library(semweb/rdf_zlib_plugin)).
-:- endif.
+:- use_module(library(semweb/rdf_turtle)).
 
 user:file_search_path(snapshot, user_profile(Dir)) :-
 	rdf_snapshot_directory(Dir).
@@ -98,8 +97,8 @@ user:file_search_path(t20plugin, Spec) :-
 		 *	      VERSION		*
 		 *******************************/
 
-t20_version('0.82, Sep 2007').
-required_prolog_version(50639).
+t20_version('0.9, Oct 2009').
+required_prolog_version(50800).
 
 check_prolog_version :-
 	current_prolog_flag(version, MyVersion),
