@@ -17,3 +17,11 @@ Triple20:WordNet
 	Triple20:source "wordnet.pl" ;
 	rdfs:comment "Vizualise WordNet 2.0 hierarchies" ;
 	rdfs:label "WordNet" .
+
+Triple20:DC
+	a Triple20:SystemPlugin ;
+	Triple20:active Triple20:true ;
+	Triple20:source "dc.pl" ;
+	rdfs:comment "Support dc:title as a label" ;
+	rdfs:label "DC" .
+

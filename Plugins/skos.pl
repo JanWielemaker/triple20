@@ -57,7 +57,7 @@ Issues:
 		 *******************************/
 
 %	child_cache(+Resource, -Cache, -Class)
-%	
+%
 %	Used to expand the hierarchy. Resource is the resource expanded.
 %	Cache is a mediator (see rdf_cache.pl)   that produces a list of
 %	objects in the poper order to be   displayed below this node. It
@@ -94,7 +94,7 @@ scheme_top_concept(R, V) :-
         rdf_has(R, skos:hasTopConcept, V).
 
 %	parent(+Resource, -Parent, -Class)
-%	
+%
 %	Used to show the minimal tree that displays a given resource. We
 %	could use child_cache/3 for this purpose,   but as this requires
 %	generating the entire tree this is in general too slow.
@@ -111,9 +111,9 @@ parent(R, Parent, Role) :-
 		 *******************************/
 
 %	drop_resource_command(+Onto, +Drop, -Command)
-%	
+%
 %	Determine the command(s) to execute if an object representing Drop
-%	is dropped onto an object representing Ondo.  
+%	is dropped onto an object representing Ondo.
 
 drop_resource_command(C, R, Command) :-
 	rdfs_individual_of(C, skos:'Concept'),
@@ -131,7 +131,7 @@ skos_concept_relation(skos_instance_of, skos:broaderInstantive).
 skos_concept_relation(skos_part_of,     skos:broaderPartitive).
 
 %	drop_resource(+Command, +Onto, +Drop)
-%	
+%
 %	Perform the rdf modifications for the   given Command if Drop is
 %	dropped Onto.
 
@@ -146,7 +146,10 @@ drop_resource(Command, C, R) :-
 %	Label to display
 
 label_text(Resource, Text) :-
-	rdf_has(Resource, skos:prefLabel, literal(Lit)), !,
+	(   rdf_has(Resource, skos:prefLabel, literal(Lit))
+	->  true
+	;   rdf_has(Resource, skos:altLabel, literal(Lit))
+	),
 	text_of_literal(Lit, Text).
 label_text(Resource, Text) :-
 	super::label_text(Resource, Text).
@@ -154,5 +157,12 @@ label_text(Resource, Text) :-
 text_of_literal(lang(_, Text), Text) :- !.
 text_of_literal(type(_, Text), Text) :- !.
 text_of_literal(Text, Text).
+
+has_label(Resource) :-
+	(   rdf_has(Resource, skos:prefLabel, _)
+	;   rdf_has(Resource, skos:altLabel, _)
+	), !.
+has_label(Resource) :-
+	super::has_label(Resource).
 
 :- end_rules.

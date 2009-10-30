@@ -68,11 +68,18 @@ label_text(Resource, Text) :-
 label_text(Resource, Text) :-
 	view_label_as_setting(resource), !,
 	rdf_global_id(NS:Local, Resource),
-	concat_atom([NS, :, Local], Text).
+	atomic_list_concat([NS, :, Local], Text).
 label_text(Resource, Text) :-
 	rdfs_ns_label(Resource, Text).
 
-%	view_label_as(?Style)
+%%	has_label(+Resource) is semidet.
+%
+%	True if Resource has a real label
+
+has_label(Resource) :-
+	rdf_has(Resource, rdfs:label, _), !.
+
+%%	view_label_as(?Style)
 %
 %	This is not a rule, but intended to  be called to change the way
 %	labels are presented to the user.
@@ -91,7 +98,7 @@ label(Resource, Label) :-
 	Term =.. [Class, Resource],
 	new(Label, Term).
 
-%	label_class(+Resource, -Class)
+%%	label_class(+Resource, -Class)
 %
 %	Determine the visualiser to use for a short textual description
 %	of a resource.  Resource is the resource for which to create a
@@ -120,7 +127,7 @@ label_class(Obj, rdf_list_label) :-
 	rdfs_individual_of(Obj, rdf:'List').
 label_class(Obj, rdf_bnode_label) :-
 	rdf_is_bnode(Obj),
-	\+ rdf_has(Obj, rdfs:label, _).
+	\+ inner::has_label(Obj).
 label_class(Obj, rdf_individual_label) :-
 	rdf_has(Obj, rdf:type, _).
 label_class('__not_filled', rdf_not_filled_label).
