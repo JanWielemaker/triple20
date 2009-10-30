@@ -162,7 +162,7 @@ is_anonymous(TF) :->
 	"Test if the object is unnamed"::
 	get(TF, resource, Resource),
 	\+ rdf_has(Resource, rdfs:label, _),
-	sub_atom(Resource, _, _, _, '__'), !.
+	rdf_is_bnode(Resource).
 
 :- pce_group(layout).
 
@@ -384,7 +384,7 @@ triple_from_part(L, Part:graphical, Triple:prolog) :<-
 	Triple = rdf(Subject, Predicate, Object).
 
 %	->owl_description_type: Type=name
-%	
+%
 %	Set the type of the OWL description.  Type is the full owl
 %	predicate name for the attribute.
 

@@ -39,7 +39,7 @@
 
 
 %	rdf_add_missing_labels(+Predicate)
-%	
+%
 %	Add a label using Predicate to any non-anonymous resource that has
 %	no rdfs:label property.
 
@@ -50,7 +50,7 @@ rdf_add_missing_labels(Predicate) :-
 add_missing_labels(Predicate) :-
 	(   rdf_subject(Subject),
 	    \+ rdf_has(Subject, rdfs:label, _),
-	    \+ anonymous_subject(Subject),
+	    \+ rdf_is_bnode(Subject),
 	    rdf_global_id(_:Local, Subject),
 	    replace(Local,
 		    [ "-" = " ",
@@ -67,11 +67,6 @@ add_missing_labels(Predicate) :-
 	    fail
 	;   true
 	).
-
-%	see comments in rdf_db!  Must move!
-
-anonymous_subject(S) :-
-	sub_atom(S, 0, _, _, '__'), !.
 
 %	replace(+In, +[From=To, ...], -Out)
 
