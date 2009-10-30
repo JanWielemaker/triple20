@@ -345,7 +345,7 @@ show_roots_for_file(F, File:name) :->
 	send(Tree, collapse_domain),
 	get(Tree, device, P),
 	send(P, scroll_to, point(0,0)),
-	send(F, report, status, 
+	send(F, report, status,
 	     'Showing root concepts and properties from %s', File),
 	new(Hits, hash_table),
 	(   call_rules(F, file_root(File, Root)),
@@ -354,7 +354,7 @@ show_roots_for_file(F, File:name) :->
 	    send(Tree, show_hit, Root),
 	    get(Hits, size, Count),
 	    Count > 100, !,
-	    send(F, report, status, 
+	    send(F, report, status,
 		 'Displayed first 100 root objects from %s', File)
 	;   true
 	).
@@ -436,7 +436,7 @@ load_rdf(OV) :->
 		  tuple('Turtle files', ttl)),
 	    FileName),
 	send(OV, load_file, FileName).
-      
+
 load_file(OV, FileName:file=name,
 	      SetDefault:set_default=[bool],
 	      LoadBase:load_base=[bool]) :->
@@ -471,7 +471,7 @@ load_file(OV, FileName:file=name,
 no_default_file :-
 	rdfe_get_file_property(File, default(_How)),
 	File == user.
-      
+
 open_project(OV) :->
 	"Open an existing journal file"::
 	rdf_file_extension(rdfj, Comment),
@@ -531,7 +531,7 @@ update_save_popup(OV, Popup:popup) :->
 					  user))
 	;   true
 	).
-	
+
 save_file(_OV, File:name) :->
 	"Save (export) given file"::
 	send(file(File), backup),
@@ -711,7 +711,7 @@ wiki(_) :->
 	www_open_url('http://gollem.swi.psy.uva.nl/twiki/pl/bin/view/Development/TripleTwenty').
 
 %	<-version
-%	
+%
 %	Return Triple20 version
 
 version(_M, Version:name) :<-
@@ -719,7 +719,7 @@ version(_M, Version:name) :<-
 	triple20:t20_version(Version).
 
 %	->about
-%	
+%
 %	Should move to a library or (even better) be changed to use the
 %	text-rendering library.  This code is compied from the XPCE manual
 
@@ -786,7 +786,7 @@ initialise(B, Action:{undo,redo}) :->
 		   image(resource(Action)),
 		   Action,		% tooltip
 		   message(B, verify)).
-						
+
 
 verify(B) :->
 	"Verify action is available"::
@@ -809,7 +809,7 @@ help_message(B, _Which:{tag,summary}, _Ev:[event], Tooltip:char_array) :<-
 	).
 
 %	t_name(+TID, -Atom)
-%	
+%
 %	Describe a transaction using the rdfe_transaction_name/2 data.  This
 %	must be generalised and centralised as it can also be used for general
 %	version management on the journal.
@@ -881,7 +881,7 @@ value(OS, Object:any*, Sheet:[name]) :->
 	send(OS?members, for_all,
 	     message(OS, window_value, @arg1, Object)),
 	send(OS?history, location, vector(Object, TabName)).
-	
+
 window_value(_OS, Window:window, Value:any) :->
 	"Try to send a value to a window"::
 	debug(tab, 'Sending ~p to ~p', [Value, Window]),
@@ -904,7 +904,7 @@ resource(OS, Resource:name*) :->
 	send(OS, value, Resource).
 
 %	->triples: Cache:int*
-%	
+%
 %	Display triples from the rdf-cache Cache, which must return
 %	results of the format rdf(Subject, Predicate, Object).
 
@@ -955,7 +955,7 @@ resize(TT) :->
 	get(TT?size, width, W),
 	TW is max(0, W-2),		% table-width excludes the border
 	send(Table, table_width, TW).
-	
+
 scroll_vertical(TW,
 		Direction:{forwards,backwards,goto},
 		Unit:{page,file,line},
@@ -1264,7 +1264,7 @@ append_class_property(AL, Slot:name, Class:[name]) :->
 
 
 %	<-triple_from_part: graphical --> rdf(S,P,O)
-%	
+%
 %	Compute the triple of which graphical is a part.
 
 triple_from_part(AL, Part:graphical, Triple:prolog) :<-
@@ -1288,7 +1288,7 @@ add_property(AL, For:graphical) :->
 	"Add a new property to the class"::
 	get(AL, resource, S),
 	send(rdf_property_on_class_dialog(S, For), open).
-	
+
 :- pce_end_class(rdf_class_sheet).
 
 
@@ -1369,7 +1369,7 @@ display_predicates_title(AL) :->
 	     halign := center, colspan := 2, background := khaki1),
 	send(AL, next_row).
 
-	
+
 append_slots(AL) :->
 	(   rdf_current_dialect(owl)
 	->  send(AL, append_inferred_slots)
@@ -1402,7 +1402,7 @@ reserved_instance_slot(Label) :-
 
 
 %	->append_inferred_slots
-%	
+%
 %	Append values inferred using owl_has/3 and not yet known for the
 %	property.
 
@@ -1423,7 +1423,7 @@ append_inferred_slots(AL) :->
 	;   true
 	).
 
-	
+
 append_slot_values(AL, Pairs:prolog) :->
 	"Append list of Predicate-ListOfValues"::
 	get(AL, resource, I),
@@ -1444,7 +1444,7 @@ append_slot_values(AL, Pairs:prolog) :->
 	).
 
 %	remove_super_properties(+Pairs, -Clean, -Covered)
-%	
+%
 %	If Pairs is a list of Property-Values, delete all elements whole
 %	values are completely covered by subproperties of Property.
 
@@ -1465,7 +1465,7 @@ sub_property_values(P, [_|T], Values) :-
 	sub_property_values(P, T, Values).
 
 %	sort_by_predicate_label(+Pairs, -Sorted)
-%	
+%
 %	Sort list if Property-Values to the label of Property
 
 sort_by_predicate_label(Pairs, Sorted) :-
@@ -1486,7 +1486,7 @@ untag([_-V|T0], [V|T]) :-
 
 
 %	<-triple_from_part: graphical --> rdf(S,P,O)
-%	
+%
 %	Compute the triple of which graphical is a part.
 
 triple_from_part(AL, Part:graphical, Triple:prolog) :<-
@@ -1557,7 +1557,7 @@ new_predicate(AL, Predicate:name, Value:any, Type:{resource,literal}) :->
 			 add_property).
 
 %	missing_subject_predicate(+Sheet, -Property)
-%	
+%
 %	Enumerate the properties that are defined for the subject, but
 %	do not yet have a value.  Note that this should be made more
 %	subtle if we include OWL (probably calling rules).
@@ -1665,4 +1665,4 @@ check_saved :-
 check_saved.
 
 :- at_halt(check_saved).
-	
+
