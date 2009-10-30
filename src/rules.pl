@@ -118,6 +118,9 @@ label_class(Obj, LabelClass) :-
 	).
 label_class(Obj, rdf_list_label) :-
 	rdfs_individual_of(Obj, rdf:'List').
+label_class(Obj, rdf_bnode_label) :-
+	rdf_is_bnode(Obj),
+	\+ rdf_has(Obj, rdfs:label, _).
 label_class(Obj, rdf_individual_label) :-
 	rdf_has(Obj, rdf:type, _).
 label_class('__not_filled', rdf_not_filled_label).
@@ -993,6 +996,19 @@ drop(Action, Gr, V) :-
 	rdf_list_operation(Action, Triple, Resource).
 
 :- end_rules.
+
+
+		 /*******************************
+		 *	       BNODE		*
+		 *******************************/
+
+:- begin_rules(rdf_bnode_label, default).
+
+icon_resource(R, Icon) :-		% kill outer extra icons
+	display:icon_resource(R, Icon).
+
+:- end_rules.
+
 
 
 		 /*******************************

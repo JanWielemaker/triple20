@@ -314,6 +314,74 @@ delete_member(L, Part:graphical) :->
 :- pce_end_class(rdf_list_label).
 
 
+:- pce_begin_class(rdf_bnode_label, rdf_composite_label,
+		   "Show slots of a blank node").
+
+variable(cache,	   int*, get, "Cache for members").
+variable(max_size, int,  get, "Maximum elements to show").
+
+class_variable(max_size, int, 5).
+class_variable(opaque, bool, @off).
+
+initialise(T, Resource:name) :->
+	rdf_cache(P-O, rdf(Resource, P, O), Cache),
+	send(T, slot, cache, Cache),
+	rdf_cache_attach(Cache, T),
+	send_super(T, initialise, Resource).
+
+unlink(T) :->
+	(   get(T, cache, Cache),
+	    Cache \== @nil
+	->  rdf_cache_detach(Cache, T)
+	;   true
+	),
+	send_super(T, unlink).
+
+update(L, _Cache:[int]) :->
+	get(L, cache, Cache),
+	send(L, clear, destroy),
+	get(L, resource, R),
+	(   Cache == @nil		% rdf:nil
+	->  send(L, print, R)
+	;   get(L, max_size, Max),
+	    rdf_cache_cardinality(Cache, Size),
+	    (	Size > Max
+	    ->	send(L, print, '<'),
+		rdf_cache_result(Cache, Index, P-O),
+		send(L, append_resource, P),
+		send(L, print, '='),
+		send(L, append_resource, O),
+		(   Index < Max
+		->  send(L, print, '; '),
+		    fail
+		;   !,
+		    send(L, print, '; ...>')
+		)
+	    ;	send(L, print, '<'),
+		(   rdf_cache_result(Cache, Index, P-O),
+		    send(L, append_resource, P),
+		    send(L, print, '='),
+		    send(L, append_resource, O),
+		    (	Index < Size
+		    ->	send(L, print, '; ')
+		    ;	true
+		    ),
+		    fail
+		;   send(L, print, '>')
+		)
+	    )
+	).
+
+%delete_member(L, Part:graphical) :->
+%	"Called from the delete menu on parts"::
+%	send(Part, has_get_method, resource),
+%	get(Part, resource, Resource),
+%	get(L, triple, Triple),
+%	rdf_list_operation(delete, Triple, Resource).
+
+:- pce_end_class(rdf_bnode_label).
+
+
 		 /*******************************
 		 *	       OWL		*
 		 *******************************/
