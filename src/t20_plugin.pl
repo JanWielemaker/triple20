@@ -49,6 +49,7 @@
 %	Enumerate the locations of the plugin directories.
 
 plugin_dir(local, '.').
+plugin_dir(local, 'Triple20').
 plugin_dir(user,  user_profile(Base)) :-
 	(   current_prolog_flag(windows, true)
 	->  Base = 'Triple20'
