@@ -385,7 +385,7 @@ default_object(literal(_), literal('')).
 %	Resource.  The child-nodes are created as instances of Class.
 
 child_cache(R, Cache, Class) :-
-	rdfs_individual_of(R, rdfs:'Class'),
+	rdfs_class(R),
 	(   rdfs_subclass_of(R, rdf:'Property')
 	->  (   rdf_cache(lsorted(V), rdf_has(V, rdfs:subClassOf, R), Cache),
 	        Class = rdf_class_node
@@ -413,6 +413,30 @@ child_cache(R, Cache, rdf_inferred_node) :-
 child_cache(R, Cache, rdf_list_item_node) :-
 	rdfs_individual_of(R, rdf:'List'), !,
 	rdf_cache(lsorted(V), rdfs_member(V, R), Cache).
+
+:- thread_local
+	seen_type/1.
+
+%%	rdfs_class(-R)
+%
+%	Generate all (rdfs) classes. Also deals   with  classes that are
+%	implicitely defined trough rdf:type statements.
+
+rdfs_class(R) :-
+	setup_call_cleanup(true,
+			   rdfs_class_gen(R),
+			   retractall(seen_type(_))).
+
+rdfs_class_gen(R) :-
+	rdfs_individual_of(R, rdfs:'Class'),
+	\+ seen_type(R),
+	assert(seen_type(R)).
+rdfs_class_gen(R) :-
+	rdf_subject(S),
+	rdf_has(S, rdf:type, R),
+	\+ seen_type(R),
+	assert(seen_type(R)).
+
 
 %	setting predicate that can be overruled
 
