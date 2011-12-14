@@ -217,7 +217,8 @@ parse_argv([Cmd|T], RDF) :-
 	atom_concat('--base=', Base, Cmd), !,
 	load_base_ontology(Base),
 	parse_argv(T, RDF).
-parse_argv([File|T], [AbsName|RDF]) :-
+parse_argv([OSFile|T], [AbsName|RDF]) :-
+	prolog_to_os_filename(File, OSFile),
 	file_name_extension(_, Ext, File),
 	rdf_file_extension(Ext, _Name),
 	Ext \== rdfj, !,
