@@ -30,7 +30,7 @@
 */
 
 
-:- module(rdf_label, []).
+:- module(t20_label, []).
 :- use_module(library(pce)).
 :- use_module(rdf_text).
 :- use_module(library('semweb/rdf_db')).
