@@ -348,7 +348,7 @@ classification.
 \subsection{Undo and redo}
 
 Triple20 provides unlimited undo and redo using toolbar buttons. Note
-however that some operations, notably file merge 
+however that some operations, notably file merge
 
 
 \subsection{View consistency}
@@ -423,7 +423,7 @@ resources that satisfy the restriction prefixed by the
     \item [OWL Descriptions]
 It also shows a special icon and (if the resource is anonymous)
 dedicated label for OWL descriptions.  Descriptions visualise the
-class extension as restrictions described above. 
+class extension as restrictions described above.
 
     \item [Subclass]
 The hierarchy displays, in addition to \const{rdfs:subClassOf},
@@ -455,7 +455,7 @@ Triples in \emph{rdf_db} are actually quadruples. The last part
 registers the origin of the triple, so the tool can load ontologies from
 multiple files, present the joined view and still save the modified
 triples to a specific file.  As Triple20 provides an integrated view
-and editing capabilities on all triples loaded from all sources it 
+and editing capabilities on all triples loaded from all sources it
 requires some machinery and defaults to define the source assigned
 to newly created triples.  The \menuref{File/Statistics} menu gives
 access to an overview of the loaded files and allows to inspect and
@@ -513,7 +513,7 @@ load-modify-save cycle.
     \item A journal protects the user from loosing work due to crashes or
           other malfunctioning of experimental software.
 
-    \item A journal provides an excellent starting point for advanced 
+    \item A journal provides an excellent starting point for advanced
           version management as well as studying user behaviour.
 \end{itemize}
 
@@ -535,7 +535,7 @@ the ontology file itself.
 
 \section{Triple20 as a library}
 
-Triple20 can be used in two modes: as a stand-alone applicationn and as
+Triple20 can be used in two modes: as a stand-alone application and as
 a Prolog library. \Secref{install} discusses installation as a
 stand-alone executable. This section discusses the steps to use Triple20
 as a GUI in another Prolog program. This usage aims at non-GUI RDF
@@ -564,7 +564,7 @@ Now, Triple20 can be loaded using the directive
 \begin{code}
 :- use_module(triple20(load)).
 \end{code}
- 
+
 
 \subsection{Interacting with Triple20}
 
@@ -622,7 +622,7 @@ which also download RDF versions of
 \subsection{Finishing in MS-Windows}
 
 After installing Prolog, double click \file{setup.bat} to register
-\fileext{RDFJ} project files to start Triple20.  Optionally 
+\fileext{RDFJ} project files to start Triple20.  Optionally
 also associate \fileext{RDF}, \fileext{RDFS} and \fileext{OWL} to
 lauch Triple20 and load the file.
 
