@@ -686,9 +686,9 @@ delete_cached_ontologies(OV) :->
 delete_snapshots(OV) :->
 	"Delete file@MD5.trp from ~/.triple20"::
 	send(@display, confirm,
-	     'Snapshots represent the state of an ontology as recorded\n\
-	      in a project file.  Deleting them may render project files\n\
-	      unusable.  Make sure you understand what you are doing before\n\
+	     'Snapshots represent the state of an ontology as recorded\n\c
+	      in a project file.  Deleting them may render project files\n\c
+	      unusable.  Make sure you understand what you are doing before\n\c
 	      continuing this operation.'),
 	send(OV, report, progress, 'Deleting all snapshots ...'),
 	rdf_clear_snapshots,
@@ -1114,7 +1114,7 @@ attach_cache(AL) :->
 	->  rdf_cache(X, class_property(Resource, X), Cache),
 	    send(AL, slot, cache, Cache),
 	    rdf_cache_attach(Cache, AL),
-	    rdf_cache_cardinality(Cache, _Card) 	% force cache to update
+	    rdf_cache_cardinality(Cache, _Card)		% force cache to update
 	;   true
 	).
 
@@ -1320,7 +1320,7 @@ attach_cache(AL) :->
 	->  rdf_cache(P=O, rdf(Resource, P, O), Cache),
 	    send(AL, slot, cache, Cache),
 	    rdf_cache_attach(Cache, AL),
-	    rdf_cache_cardinality(Cache, _Card) 	% force cache to update
+	    rdf_cache_cardinality(Cache, _Card)		% force cache to update
 	;   true
 	).
 

@@ -108,8 +108,8 @@ check_prolog_version :-
 	;   user_version(MyVersion, MyV),
 	    user_version(Required, Req),
 	    send(@display, confirm,
-		 'This version of Triple20 requires SWI-Prolog %s\n\
-		  while you are running %s.  Triple20 may not function\n\
+		 'This version of Triple20 requires SWI-Prolog %s\n\c
+		  while you are running %s.  Triple20 may not function\n\c
 		  properly.', Req, MyV)
 	->  true
 	;   halt
@@ -119,7 +119,7 @@ user_version(N, Version) :-
 	Major is N // 10000,
 	Minor is (N // 100) mod 100,
 	Patch is N mod 100,
-	concat_atom([Major, Minor, Patch], '.', Version).
+	atomic_list_concat([Major, Minor, Patch], '.', Version).
 
 
 		 /*******************************

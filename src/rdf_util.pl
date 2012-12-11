@@ -58,7 +58,7 @@
 	    rdf_delete_hierarchy/3,	% +Root, +Relation, +Options
 
 	    rdf_merge_files/2,		% +Into, +From
-	    
+
 	    rdf_change_resource/2	% +From, +To
 	  ]).
 :- use_module(library('semweb/rdf_db')).
@@ -71,9 +71,9 @@
 :- use_module(rdf_rules).
 
 %	user:goal_expansion(+NSGoal, -Goal)
-%	
+%
 %	This predicate allows for writing down rdf queries in a friendly
-%	name-space fashion.  
+%	name-space fashion.
 
 :- multifile
 	user:goal_expansion/2.
@@ -118,7 +118,7 @@ dialect(owl_full).			% initial default
 
 %	rdf_set_dialect(+Dialect)
 %	rdf_current_dialect(?Dialect).
-%	
+%
 %	Set/query the current dialect. Allowed values are rdfs,
 %	owl_lite, owl_dl or owl_full.
 
@@ -144,7 +144,7 @@ rdf_current_dialect(Dialect) :-
 
 
 %	property_domain(+Subject, +Property, -Domain)
-%	
+%
 %	Determine the domain of this property. Note that if the domain
 %	is a class we want the selector to select a class by browsing
 %	the class-hierarchy.  There is some issue around meta-classes
@@ -165,14 +165,14 @@ property_restriction(Subject, Property, R) :-
 	rdf_has(Subject, rdf:type, Class),
 	owl_restriction_on(Class, restriction(Property, R0)),
 	adjust_restriction(R0, R).
-	
+
 adjust_restriction(cardinality(_,_), _) :- !,
 	fail.
 adjust_restriction(R, R).
 
 
 %	property_type(+Subject, +Property, -Type)
-%	
+%
 %	Classify the type of the object. For now the return values are
 %	one of
 %
@@ -198,7 +198,7 @@ property_type(Subject, Property, Type) :-
 	).
 
 %	sort_by_label(+Resources, -Sorted)
-%	
+%
 %	Sort a list of resources by `ns'-label.  Removes duplicates.
 %	Note that objects can have multiple labels.  We will sort by
 %	the first for the time being.  Maybe we should sort on the
@@ -237,10 +237,10 @@ same_label(L-_, L-_).
 
 %	rdf_default_file(+Resource, -File, -NS)
 %	rdf_default_file(+Resource, -File)
-%	
+%
 %	Where to store facts about Resource? Should be extended to
 %	include triples (or at least relations).  Default rules:
-%	
+%
 %		File of the rdf:type declaration
 %		File of any property on subject
 %		File of resource as object
@@ -271,7 +271,7 @@ rdf_default_file(_, File, NS) :-
 	rdf_default_ns(File, NS).
 
 %	rdf_default_ns(+File, -NameSpace)
-%	
+%
 %	Provide a default namespace  identifier  for   a  triple  to  be
 %	associated with the given File.
 
@@ -285,7 +285,7 @@ rdf_default_ns(File, NS) :-
 	).
 
 %	rdf_set_default_ns(+File, +Namespace)
-%	
+%
 %	Set  the  default  namespace  for   this    file.   If  File  is
 %	uninstantiated it will be added as a fallback clause at the end.
 
@@ -302,7 +302,7 @@ rdf_set_default_ns(File, NS) :-
 	    asserta(default_ns(File, NS))
 	),
 	broadcast(rdf_default_ns(File, NS)).
-	    
+
 %	pick messages from load_base_ontology/2.
 
 :- initialization
@@ -315,7 +315,7 @@ rdf_set_default_ns(File, NS) :-
 		 *******************************/
 
 %	rdf_set_object(+Subject, +Predicate, +Old, +New)
-%	
+%
 %	Modify object aspect of a triple.   This code also checks checks
 %	the domain, but does not yet check the cardinality.
 
@@ -335,7 +335,7 @@ set_object(Subject, Predicate, Old, New) :-
 	rdfe_update(Subject, Predicate, Old, object(New)).
 
 %	rdf_set_object_or_anon_instance(+Subject, +Predicate, +Old, +New)
-%	
+%
 %	As rdf_set_object/4, but  create  an   anonymous  instance  when
 %	setting a property  that  allows   for  all_values_from(C)  to a
 %	subclass of C.
@@ -359,7 +359,7 @@ set_object_anon(Subject, Predicate, Old, Class) :-
 
 
 %	rdf_set_object(+Subject, +Predicate, +New)
-%	
+%
 %	Remove all rdf(Subject, Predicate, _) and add rdf(Subject,
 %	Predicate, New).
 
@@ -388,7 +388,7 @@ set_object(Subject, Predicate, Object) :-
 
 %	rdf_add_object(Subject, Predicate, Object, Database)
 %	rdf_add_object(Subject, Predicate, Object)
-%	
+%
 %	Guarded adding of a new triple. Must validate cardinality
 %	constraints too.
 
@@ -415,7 +415,7 @@ add_object(Subject, Predicate, Object, File) :-
 
 
 %	rdf_add_object_or_anon_instance(+Subject, +Predicate, +Object)
-%	
+%
 %	See rdf_set_object_or_anon_instance/4
 
 rdf_add_object_or_anon_instance(Subject, Predicate, Object) :-
@@ -436,7 +436,7 @@ add_object_anon(Subject, Predicate, Class) :-
 	rdfe_assert(Subject, Predicate, Object, File).
 
 %	rdf_set_rev_object(+Subject, +Predicate, +Reverse, +New)
-%	
+%
 %	Make a relation rdf(Subject, Predicate, New) and a relation
 %	rdf(New, Reverse, Subject) after deleting the old relations.
 
@@ -468,7 +468,7 @@ set_rev_object(Subject, Predicate, Reverse, Object) :-
 
 
 %	rdf_new_property(+Subject, +Property, [Value])
-%	
+%
 %	Add a dummy value for a new property on Subject that can be
 %	filled by editing or drag-and-drop modification.
 %
@@ -490,13 +490,13 @@ rdf_new_property(Subject, Predicate, Default) :-
 
 
 %	rdf_list_operation(+Action, +Triple, +Resource)
-%	
+%
 %	If Triple is a triple whose object is rdf:nil or a proper RDF
 %	list, merge Resource into this list according to Action:
-%	
+%
 %		# append/prepend
 %		Add Resource at the start/end of the list
-%		
+%
 %		# delete
 %		Remove resource from the list
 %
@@ -526,7 +526,7 @@ tail_triple(S, P, O, S, P, O) :-
 tail_triple(_, _, L, S, P, O) :-
 	rdf_has(L, rdf:rest, O1, P1), !,
 	tail_triple(L, P1, O1, S, P, O).
-	
+
 
 list_append(S, P, O, New) :-
 	rdf_default_file(S, Source),
@@ -537,7 +537,7 @@ list_append(S, P, O, New) :-
 	rdfe_update(S, P, O, object(Node)).
 
 %	list_delete(+Subject, +Predicate, +List, +Resource)
-%	
+%
 %	Delete Resource from List, which is connected to Subject using
 %	Predicate. Actually, this is extremely tricky. We cannot delete
 %	from a list while maintaining the identity of the list. We could
@@ -555,18 +555,18 @@ list_delete(S, P, O, Resource) :-
 list_delete(_, _, O, Resource) :-
 	rdf_has(O, rdf:rest, Rest, P1),
 	list_delete(O, P1, Rest, Resource).
-	
-	
+
+
 		 /*******************************
 		 *	 HIERACHY DELETE	*
 		 *******************************/
 
 %	rdf_delete_hierarchy(+Root, +Property, +Options)
-%	
+%
 %	Delete all objects reachable from Root through property that
 %	have no relations of type property, unless they have another
 %	relation to the root.  Options:
-%	
+%
 %	    * unless_reachable_from(Root)
 %	      Do not delete resources that can be reached from the
 %	      given Root.
@@ -595,13 +595,13 @@ delete_hierarchy(Root, Property, Options) :-
 	forall(member(R, DelSet),
 	       rdfe_delete(R)).
 
-	
+
 		 /*******************************
 		 *	      FILES		*
 		 *******************************/
-	
+
 %	rdf_merge_files(+Into, +From)
-%	
+%
 %	Merge all triple that have From as their payload into Into.
 
 rdf_merge_files(Into, From) :-
@@ -619,14 +619,14 @@ rdf_in_file(S,P,O,From:Line,From) :-
 	rdf(S, P, O, From:Line).
 rdf_in_file(S,P,O,From, From) :-
 	rdf(S, P, O, From).
-	    
+
 
 		 /*******************************
 		 *	      RESOURCES		*
 		 *******************************/
 
 %	rdf_change_resource(+From, +To)
-%	
+%
 %	Change the resource From into To.
 
 rdf_change_resource(To, To) :- !.
@@ -635,7 +635,7 @@ rdf_change_resource(From, To) :-
 	    ;	rdf(_, To, _)
 	    ;	rdf(_, _, To)
 	    )
-	->  send(@display, confirm, 'Target resource %s already exists.\n\
+	->  send(@display, confirm, 'Target resource %s already exists.\n\c
 				     Do you want to merge these resources?',
 		 To)
 	;   true
@@ -663,4 +663,4 @@ change_object(From, To) :-
 	findall(rdf(S,P,O), rdf(S, P, O), Set),
 	forall(member(rdf(S,P,O), Set),
 	       rdfe_update(S,P,O,object(To))).
-	    
+
