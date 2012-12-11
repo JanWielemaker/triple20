@@ -1,4 +1,4 @@
-#!/home/jan/bin/pl -G32m -T32m -L16m -s
+#!/usr/bin/swipl -s
 
 /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 The driver for triple20. On Windows you   can  create a shortcut to this
