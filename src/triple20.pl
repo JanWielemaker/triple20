@@ -17,7 +17,9 @@ file_search_path(triple20, '/home/jan/src/Triple20/src').
 
 main :-
 	current_prolog_flag(argv, Argv),
-        append(_, [--|Av], Argv),
-	triple20(Av).
+        (   append(_, [--|Av], Argv)
+	->  triple20(Av)
+	;   triple20([])
+	).
 
 :- main.
