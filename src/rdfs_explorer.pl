@@ -48,7 +48,7 @@
 :- use_module(library('semweb/rdfs')).
 :- use_module(rdf_table).
 :- use_module(library('semweb/rdf_edit')).
-:- use_module(pce_history).
+:- use_module(library(pce_history)).
 :- use_module(library(broadcast)).
 :- use_module(rdf_template).
 :- use_module(rdf_rules).
