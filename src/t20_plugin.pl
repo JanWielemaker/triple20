@@ -124,10 +124,15 @@ save_plugins :-
 	->  rdf_save(Save, [db(triple20)])
 	).
 
+:- if(current_predicate(rdf_graph_property/2)).
+rdf_modified(DB) :-
+	rdf_graph_property(DB, modified(true)).
+:- else.
 rdf_modified(DB) :-
 	rdf_md5(DB, MD5),
 	rdf_db:rdf_source(DB, _URL, _Time, _Triples, UnmodifiedMD5),
 	MD5 \== UnmodifiedMD5.
+:- endif.
 
 
 		 /*******************************

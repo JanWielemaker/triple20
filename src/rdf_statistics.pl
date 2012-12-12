@@ -89,14 +89,13 @@ show_sources(ST) :->
 	send(ST, append, 'Loaded source', bold, center, background := khaki1),
 	send(ST, append, 'Namespace',     bold, center, background := khaki1),
 	send(ST, append, 'Triples',       bold, center, background := khaki1),
-	send(ST, append, 'Loaded',        bold, center, background := khaki1),
 	send(ST, append, 'Access',        bold, center, background := khaki1),
 	send(ST, next_row),
 	flag(rdf_triples, Old, 0),
-	(   rdf_source(Source),
-	    rdf_statistics(triples_by_file(Source, Triples)),
+	(   rdf_graph(Graph),
+	    graph_triples(Graph, Triples),
 	    flag(rdf_triples, C, C+Triples),
-	    send(ST, show_source, Source),
+	    send(ST, show_graph, Graph),
 	    fail
 	;   flag(rdf_triples, Total, Old)
 	),
@@ -108,26 +107,30 @@ show_sources(ST) :->
 	send(ST, append, TotalDB, bold, halign := right),
 	send(ST, next_row).
 
-show_source(ST, Source:name) :->
+show_graph(ST, Graph:name) :->
 	get(ST, layout_manager, LM),	% TBD: move to tabular
 	get(LM, current, point(_, Y)),
 	get(LM, row, Y, @on, Row),
 	send(Row, valign, center),
-	send(ST, append, rdf_file_text(Source)),
+	send(ST, append, rdf_file_text(Graph)),
 	rdf_default_ns(Source, NS),
 	send(ST, append,		% TBD: listen to broadcast
 	     rdf_ns_menu(NS, message(ST, default_ns, Source, @arg1))),
-	rdf_statistics(triples_by_file(Source, Triples)),
+	graph_triples(Graph, Triples),
 	send(ST, append, Triples, halign := right),
-	(   rdf_db:rdf_source(Source, _SourceURL, _Time, Loaded, _MD5)
-	->  true
-	;   Loaded = 0
-	),
-	send(ST, append, Loaded, halign := right),
 	send(ST, append, new(AM, rdf_file_access_menu(Source)),
 	     halign := center),
 	send(AM, border, 2),		% narrow version to improve layout
 	send(ST, next_row).
+
+:- if((rdf_version(V),V>=30000)).
+graph_triples(Source, Triples) :-
+	rdf_statistics(triples_by_graph(Source, Triples)).
+:- else.
+graph_triples(Source, Triples) :-
+	rdf_statistics(triples_by_file(Source, Triples)).
+:- endif.
+
 
 default_ns(_ST, Source:name, DefNS:name) :->
 	rdf_set_default_ns(Source, DefNS).
@@ -175,7 +178,7 @@ save(T) :->
 	"Save data back to a file"::
 	get(T?string, value, Name),
 	rdf_save(Name, [db(Name)]).
-	
+
 remove(T) :->
 	"Remove all associated triples"::
 	get(T?string, value, DB),
@@ -245,7 +248,7 @@ initialise(D) :->
 	send(T, append, 'Object', bold, center, Khaki),
 	send(T, append, 'Predicate', bold, center, Khaki),
 	send(T, next_row),
-	(   rdf_statistics(lookup(rdf(S,P,O), Calls)),
+	(   rdf_statistics(lookup(rdf(S,P,O,_G), Calls)),
 	    send(T, append, S, bold, center),
 	    send(T, append, P, bold, center),
 	    send(T, append, O, bold, center),
@@ -256,15 +259,22 @@ initialise(D) :->
 	),
 	send(T, append, 'Statistics', bold, center, Khaki, colspan := 4),
 	send(T, next_row),
-	rdf_statistics(core(Core)),
-	MB is round(Core/(1024*1024)),
-	sformat(CoreMB, '~D MB', [MB]),
-	send(D, count, memory_usage, CoreMB),
-	rdf_statistics(gc(GC, GCTime)),
-	rdf_statistics(rehash(Rehash, RehashTime)),
-	send(D, rehash, 'GC', GC, GCTime),
-	send(D, rehash, rehash, Rehash, RehashTime),
-
+	(   rdf_statistics(core(Core))
+	->  MB is round(Core/(1024*1024)),
+	    format(atom(CoreMB), '~D MB', [MB]),
+	    send(D, count, memory_usage, CoreMB)
+	;   true
+	),
+	(   (   rdf_statistics(gc(GC, GCTime))
+	    ;	rdf_statistics(gc(GC, _Reclaimed, _Reindexed, GCTime))
+	    )
+	->  send(D, rehash, 'GC', GC, GCTime)
+	;   true
+	),
+	(   rdf_statistics(rehash(Rehash, RehashTime))
+	->  send(D, rehash, rehash, Rehash, RehashTime)
+	;   true
+	),
 	(   rdf_statistics(searched_nodes(Nodes))
 	->  send(D, count, searched_nodes, Nodes)
 	;   true
