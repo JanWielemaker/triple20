@@ -171,7 +171,7 @@ hierarchy_location(T) :->
 details(T) :->
 	send(T, show_details, table).
 
-can_show_details(T, _How:{hierarchy,table}) :->
+can_show_details(T, _0How:{hierarchy,table}) :->
 	"Test if we are embedded in a context that can show details"::
 	get(T, frame, Frame),
 	send(Frame, has_send_method, open_resource).
@@ -184,7 +184,7 @@ view_rdf_source(T) :->
 	    file_name_to_url(File, URL),
 	    integer(Line)
 	->  edit(file(File, line(Line)))
-	;   rdf_source_location(Id, URL:Line),
+	;   rdf_source_location(Id, URL:_Line),
 	    file_name_to_url(File, URL)
 	->  edit(file(File))
 	;   rdf_source_location(Id, URL:_)

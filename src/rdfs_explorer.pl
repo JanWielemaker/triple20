@@ -792,8 +792,8 @@ verify(B) :->
 	"Verify action is available"::
 	get(B, name, Action),
 	(   Action == undo
-	->  rdfe_can_undo(TID)
-	;   rdfe_can_redo(TID)
+	->  rdfe_can_undo(_0TID)
+	;   rdfe_can_redo(_1TID)
 	).
 
 help_message(B, _Which:{tag,summary}, _Ev:[event], Tooltip:char_array) :<-

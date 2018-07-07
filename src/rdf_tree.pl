@@ -133,9 +133,9 @@ add(OT, Resource:name, _Role:[name], Node:rdf_node) :<-
 	    ),
 	    fail
 	).
-	
+
 %	path(+Resource, +Root, +Tree, -Path)
-%	
+%
 %	Find path from Resource to Root using the rules of Tree. Path is
 %	a list of Resource-Role, where role is the visualiser role
 %	(=class) to be used for the node.
@@ -165,7 +165,7 @@ display_path([H-Role|T], OT, Node) :-
 	).
 
 %	->show_all_parents: Resource
-%	
+%
 %	Show Resource as a child of  all   its  parents in the preferred
 %	role. This is very tricky. We only use non-determinism selecting
 %	the immediate parent as the  visualisation   of  all paths often
@@ -459,12 +459,12 @@ add_child(N, Resource:name, Role:name, Before:[node], Son:rdf_node) :<-
 add_child(N, Resource:name, Role:name, Before:[node]) :->
 	"Create node for resource in Role"::
 	get(N, add_child, Resource, Role, Before, _Son).
-	
+
 add_child_from_cache(N, Resource:name, Role:name, Cache:int, Before:[node]) :->
 	"Create node for resource in Role"::
 	get(N, add_child, Resource, Role, Before, Son),
 	send(Son, slot, cache, Cache).
-	
+
 show_more(N, Role:name, Count:int) :->
 	"Show next Count nodes on Role"::
 	get(N?caches, value, Role, Cache),
@@ -479,7 +479,7 @@ show_more(N, Role:name, Count:int) :->
 	->  send(MoreNode, here, End + 1)
 	;   send(MoreNode, destroy)
 	).
-	
+
 prefix_role(N, Role:name, Prefix:name) :->
 	"Collapse nodes of Role"::
 	get(N?caches, value, Role, Cache),
@@ -566,7 +566,7 @@ update_role(N, Role:name, Cache:int) :->
 	    )
 	),
 	free(Existing).
-	    
+
 delete_upto(R, Existing) :-
 	get(Existing, delete_head, Node),
 	(   Node == R
@@ -587,7 +587,7 @@ insert_node(R, Role, Existing, Cache, Parent) :-
 	),
 	send(Node, slot, cache, Cache).
 insert_node(R, Role, Existing, Cache, Parent) :-
-	get(Existing, head, Next), !, 		% inserted
+	get(Existing, head, Next), !,		% inserted
 	get(Parent, add_child, R, Role, Next, NewNode),
 	send(NewNode, slot, cache, Cache).
 insert_node(R, Role, _, Cache, Parent) :-
@@ -623,12 +623,12 @@ head_of_next_role(N, Cache, Head) :-
 
 make_rdf_node_recogniser(G) :-
 	new(P, popup_gesture(@receiver?popup)),
-			      
+
 	new(C2, click_gesture(left, '', double,
 			      message(@receiver,
 				      on_double_left_click))),
 	new(G, handler_group(P, C2)).
-			      
+
 
 popup(N, Popup:popup) :<-
 	call_rules(N, popup(N, Popup)).
@@ -691,9 +691,9 @@ print_cache_status(N) :->
 
 print_cache(N, Role:name) :->
 	get(N?caches, value, Role, Cache),
-	(   t20_cache:cache_attributes(Cache, Generation, Size)
+	(   t20_cache:cache_attributes(Cache, _0Generation, Size)
 	->  format('   ~w: ~w: size=~D~n', [Role, Cache, Size])
-	;   t20_cache:cache_empty(Cache, Generation, Empty)
+	;   t20_cache:cache_empty(Cache, _1Generation, Empty)
 	->  format('   ~w: ~w: empty=~w~n', [Role, Cache, Empty])
 	;   format('   ~w: ~w: <unknown>~n', [Role, Cache])
 	).
@@ -1054,7 +1054,7 @@ search(SI, For:name) :->
 
 
 %	bfind_prefix(+Cache, +Prefix, -Offset)
-%	
+%
 %	Find  offset  of  resource  with  Prefix.  Currently  search  is
 %	case-sensitive, which is required because  the lsorted(X) option
 %	of rdf_cache_result returns them sorted   case insensitive. Both
