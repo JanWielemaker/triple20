@@ -1,4 +1,4 @@
-#!/usr/bin/swipl -s
+#!/usr/bin/env swipl
 
 /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 The driver for triple20. On Windows you   can  create a shortcut to this
@@ -8,8 +8,7 @@ below to find the installation.  Then  copy   or  create  a  link from a
 directory in your $PATH.
 - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
 
-file_search_path(triple20, 'd:/oz/Triple20'). % BJW VAIO settings
-file_search_path(triple20, '/home/jan/src/Triple20/src').
+file_search_path(triple20, '/home/jan/src/prolog/triple20/src').
 :- load_files([ triple20(load)
 	      ],
 	      [ silent(true)
@@ -17,9 +16,6 @@ file_search_path(triple20, '/home/jan/src/Triple20/src').
 
 main :-
 	current_prolog_flag(argv, Argv),
-        (   append(_, [--|Av], Argv)
-	->  triple20(Av)
-	;   triple20([])
-	).
+	triple20(Argv).
 
-:- main.
+:- initialization(main, main).

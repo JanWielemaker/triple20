@@ -61,6 +61,7 @@
 
 	    rdf_change_resource/2	% +From, +To
 	  ]).
+:- use_module(library(pce)).
 :- use_module(library('semweb/rdf_db')).
 :- use_module(library('semweb/rdfs')).
 :- use_module(library('semweb/rdf_edit')).

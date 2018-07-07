@@ -32,6 +32,7 @@
 :- module(rdf_default_rules,
 	  [
 	  ]).
+:- use_module(library(pce)).
 :- use_module(library(debug)).
 :- use_module(particle).
 :- use_module(rdf_rules).		% Get call_outer.  Must move
