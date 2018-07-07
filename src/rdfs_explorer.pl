@@ -382,7 +382,7 @@ open_resource(OV, Resource:name, How:name) :->
 	    send(Tree, compute),
 	    send(Tree, selection, Node?image),
 	    send(Tree?window, normalise, Node?image, y)
-	;   How == table
+	;   How == (table)
 	->  get(OV, member, rdf_sheet, Sheet),
 	    send(Sheet, resource, Resource)
 	).
