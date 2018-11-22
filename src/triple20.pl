@@ -16,6 +16,7 @@ file_search_path(triple20, '/home/jan/src/prolog/triple20/src').
 
 main :-
 	current_prolog_flag(argv, Argv),
-	triple20(Argv).
+	triple20(Argv),
+	set_prolog_flag(toplevel_goal, prolog).
 
 :- initialization(main, main).

@@ -32,7 +32,7 @@
 :- module(t20anonymous, []).
 :- include(triple20(plugin)).
 :- plugin([ rdfs:label   = 'Anonymous',
-	    rdfs:comment = 'Display anonymous instances of classes using \
+	    rdfs:comment = 'Display anonymous instances of classes using \c
 		            the class label and a special icon'
 	  ]).
 
