@@ -1,6 +1,4 @@
-/*  $Id$
-
-    Part of SWI-Prolog
+/*  Part of SWI-Prolog
 
     Author:        Jan Wielemaker
     E-mail:        wielemak@science.uva.nl
@@ -85,7 +83,8 @@
 :- pce_image_directory(triple20(icons)).
 
 :- use_module(library(semweb/rdf_zlib_plugin)).
-:- use_module(library(semweb/rdf_turtle)).
+:- use_module(library(semweb/rdf_turtle), []).
+:- use_module(library(semweb/rdf_ntriples), []).
 
 user:file_search_path(snapshot, user_profile(Dir)) :-
 	rdf_snapshot_directory(Dir).
@@ -128,6 +127,8 @@ user_version(N, Version) :-
 
 :- multifile
 	option/1.
+:- dynamic
+	option/1.
 
 %%	triple20
 %
@@ -139,7 +140,7 @@ triple20 :-
 	findall(O, option(O), Options),
 	triple20(Options).
 
-%	triple20(+Argv)
+%%	triple20(+Argv)
 %
 %	Main entry.  Options:
 %
@@ -148,10 +149,6 @@ triple20 :-
 %		--base=Base		Load base ontology
 %		<file>.{rdf,rdfs,owl}	Load this file
 
-%triple20(_Argv) :-
-%	protocol('triple20.log'),
-%	gtrace,
-%	fail.
 triple20(Argv) :-
 	assert_argv(Argv),
 	memberchk('--help', Argv), !,
@@ -343,7 +340,7 @@ prolog:message(t20(usage)) -->
 	  '    file.owl            Load OWL file', nl,
 	  '    file.rdfj           Append/overwrite journal file'
 	],
-	{ current_prolog_flag(argv, Argv),
+	{ current_prolog_flag(os_argv, Argv),
 	  (   append(_, ['-s',Path|_], Argv)
 	  ->  true
 	  ;   Argv = [Path|_]

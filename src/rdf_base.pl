@@ -90,7 +90,7 @@ ns(nci,	    'http://ncicb.nci.nih.gov/xml/owl/EVS/Thesaurus.owl#').
 		print_message(error, E))).
 
 %%	register_default_ns(+File, +Map:list(NS=URL)) is det.
-%	
+%
 %	Register a namespace as encounted in   the  namespace list of an
 %	RDF document. We only register if  both the abbreviation and URL
 %	are not already known. Is there a   better  way? This code could
@@ -105,10 +105,15 @@ register_def_ns(X, _) :-
 	var(X), !,
 	throw(error(instantiation_error, _)).
 register_def_ns([], _) :- !.
+register_def_ns([NS-URL|T], File) :- !,
+	register_def_ns(NS=URL, File),
+	register_def_ns(T, File).
 register_def_ns([NS=URL|T], File) :- !,
 	register_def_ns(NS=URL, File),
 	register_def_ns(T, File).
 register_def_ns([]=_, _) :- !.		% xmlns= (overall default)
+register_def_ns(NS-URL, File) :- !,
+	register_def_ns(NS=URL, File).
 register_def_ns(NS=URL, File) :-
 	(   rdf_db:ns(NS, URL)
 	->  true
@@ -135,7 +140,7 @@ register_def_ns(NS=URL, File) :-
 %%	load_base_ontology(+Identifier, +Options) is det.
 %
 %	Load indicated known ontology and all it requires.  Options include
-%	
+%
 %		* transactions(Bool)
 %		If =true= (default), create a transaction to allow for undo.
 
@@ -156,7 +161,7 @@ load_base(File:NS, Options) :- !,
 			   ], Path),
 	load_base(Path, Options),
 	broadcast(rdf_set_default_ns(Path, NS)).
-load_base(File, Options) :- 
+load_base(File, Options) :-
 	absolute_file_name(File,
 			   [ access(read),
 			     extensions([rdf,rdfs,owl,''])
@@ -168,14 +173,14 @@ load_base(File, Options) :-
 	).
 
 %%	current_base_ontology(-Identifier)
-%	
+%
 %	Enemate defined base-ontologies
 
 current_base_ontology(Id) :-
 	findall(X, (rdf_file(X, _);requires(X, _)), Xs),
 	sort(Xs, List),
 	member(Id, List),
-	forall(expand_category(Id, FileSpec:_NS), 	% check existence
+	forall(expand_category(Id, FileSpec:_NS),	% check existence
 	       absolute_file_name(FileSpec,
 				  [ access(read),
 				    file_errors(fail)
@@ -187,16 +192,16 @@ rdf_file(Id, File) :-
 	rdf_file(Id, _DefNS, File).
 
 %%	rdf_file(+Identifier, -DefNS, -File)
-%	
+%
 %	Register the file that belong to a base ontology
 
-rdf_file(rdfs,	 	 rdfs, ontology('rdfs.rdfs')).
+rdf_file(rdfs,		 rdfs, ontology('rdfs.rdfs')).
 rdf_file(owl,		 owl,  ontology('owl.owl')).
 rdf_file(owlfull,        owl,  ontology('owlfull.owl')).
-rdf_file(dc,	 	 dc,   ontology('dc.rdfs')).
-rdf_file(dc,	 	 dc,   ontology('dcterms.rdfs')).
-rdf_file(dc,	 	 dc,   ontology('dctypes.rdfs')).
-rdf_file(dc,	 	 eor,  ontology('eor.rdfs')).
+rdf_file(dc,		 dc,   ontology('dc.rdfs')).
+rdf_file(dc,		 dc,   ontology('dcterms.rdfs')).
+rdf_file(dc,		 dc,   ontology('dctypes.rdfs')).
+rdf_file(dc,		 eor,  ontology('eor.rdfs')).
 rdf_file(skos,		 skos, ontology('skos-core.rdfs')).
 rdf_file(foaf,		 foaf, ontology('foaf.owl')).
 
@@ -215,7 +220,7 @@ rdf_file(cyc,		 cyc,  ontology('cyc03.rdfs')).
 rdf_file(sumo,		 sumo, ontology('sumo.rdfs')).
 
 %%	requires(+Id1, -Id2)
-%	
+%
 %	Base Id1 requires base Id2.
 
 requires(owl,	   rdfs).
@@ -242,10 +247,10 @@ requires(world,	   ic).
 		 *******************************/
 
 %%	required_base_ontology(-Base)
-%	
+%
 %	Deduce the required base ontologies from expressions used in the
 %	document.  This is heuristic and far from complete.
-%	
+%
 %	Note we first check for  the  high   level  bases  as  this will
 %	automatically include the more primitive ones.
 
@@ -254,7 +259,7 @@ required_base_ontology(Base) :-
 	rdf_db:ns(NS, Full),
 	(   referenced_predicate(P),
 	    rdf_url_namespace(P, Full),
-	    absolute_file_name(FileSpec, _Path, 
+	    absolute_file_name(FileSpec, _Path,
 			       [ file_errors(fail),
 				 access(read)
 			       ])
@@ -266,7 +271,7 @@ required_base_ontology(Base) :-
 	required_by_ext(Ext, Base).
 
 %%	referenced_predicate(?P)
-%	
+%
 %	Find the predicates that are referenced by the current data-set
 
 referenced_predicate(P) :-
@@ -280,7 +285,7 @@ required_by_ext(rdfs, rdfs).
 required_by_ext(owl, owl).
 
 %%	load_required_base_ontologies
-%	
+%
 %	Load all registered base ontologies that are referred by the
 %	current set of documents.
 

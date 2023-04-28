@@ -50,6 +50,7 @@ rdf_file_extension(rdf,  'RDF file').
 rdf_file_extension(rdfs, 'RDF Schema file').
 rdf_file_extension(owl,  'OWL ontology file').
 rdf_file_extension(ttl,  'Turtle file').
+rdf_file_extension(nt,   'N-Triples file').
 rdf_file_extension(rdfj, 'Triple20 project file').
 
 
@@ -63,7 +64,7 @@ rdf_file_extension(rdfj, 'Triple20 project file').
 	user:file_search_path/2.
 
 %	rdf_prepare_ontology_dirs/0
-%	
+%
 %	Prepare all subdirectories of the expansion of the ontology_root
 %	path-alias as ontology directories. It creates a cache directory
 %	if allowed and  adds  the  directory   to  the  search  path for
@@ -92,7 +93,7 @@ prepare_ontology_dir(Dir) :-
 	),
 	forall(sub_dir(Dir, Sub),
 	       prepare_ontology_dir(Sub)).
-	
+
 sub_dir(Dir, Sub) :-
 	(   Dir == '.'
 	->  Pattern = '*'
@@ -135,7 +136,7 @@ rdf_clear_ontology_cache :-
 		 *******************************/
 
 %	snapshot_directory(-Dir)
-%	
+%
 %	Basename for directory to use for snapshots.
 
 rdf_snapshot_directory(Dir) :-
@@ -145,7 +146,7 @@ rdf_snapshot_directory(Dir) :-
 	).
 
 %	rdf_ensure_snapshot_directory
-%	
+%
 %	Ensure the existence of a directory for storing snapshots. On
 %	Unix the preferred location is ~/.triple20.  On Windows
 %	%USERPROFILE%\Triple20.  If necessary the local directory will
@@ -181,7 +182,7 @@ snapshot_directory(Dir) :-
 			   Dir).
 
 %	rdf_clear_snapshots
-%	
+%
 %	Clear the contents of the  users   snapshot  directory. Use with
 %	care as it may make  it  difficult   or  impossible  to  reuse a
 %	project file.
@@ -201,7 +202,7 @@ rdf_clear_snapshots :-
 		 *******************************/
 
 %	rdf_archive_journal(+FileSpec)
-%	
+%
 %	Create, using InfoZip, an archive containing the journal
 %	(project) file and all files on which it depends.
 
@@ -219,7 +220,7 @@ rdf_archive_journal(Spec) :-
 	shell(Cmd).
 
 %	rdf_install_archive(+Spec)
-%	
+%
 %	Extract an archive created with rdf_archive_journal/1 to the
 %	proper environment.
 
