@@ -5,7 +5,8 @@
     Author:        Jan Wielemaker
     E-mail:        jan@swi.psy.uva.nl
     WWW:           http://www.swi-prolog.org
-    Copyright (C): 1985-2002, University of Amsterdam
+    Copyright (C): 1985-2023, University of Amsterdam
+			      SWI-Prolog Solutions b.v.
 
     This program is free software; you can redistribute it and/or
     modify it under the terms of the GNU General Public License
@@ -29,6 +30,7 @@
     the GNU General Public License.
 */
 
+:- use_module(library(pce)).
 :- use_module(library(pce_identifier_item)).
 :- use_module(library(pce_tick_box)).
 
@@ -45,9 +47,9 @@ win_setup :-
 	send(D, destroy).
 win_setup :-
 	format(user_error,
-	       '~nERROR: This setup file is only for Windows users.  Check the\n\
+	       '~nERROR: This setup file is only for Windows users.  Check the\n\c
 	          ERROR: documentation on the doc directory for other systems.\n', []).
-	
+
 :- pce_begin_class(win_setup_dialog, dialog).
 
 initialise(D) :->
@@ -104,9 +106,9 @@ cancel(D) :->
 :-pce_end_class.
 
 %%	win_register(+Ext, +Name)
-%	
+%
 %	Register files of type Ext to call this program as
-%	
+%
 %		plwin.exe -s load.pl -g winmain -- <file.ext>
 
 win_register(Ext, Name) :-
